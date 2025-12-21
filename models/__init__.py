@@ -13,10 +13,8 @@ from models.metadata import (
 )
 from models.project import (
     Block,
-    BlockInput,
     Comment,
     Costume,
-    Extension,
     Meta,
     Monitor,
     ScratchProject,
@@ -37,10 +35,8 @@ __all__ = [
     "Stats",
     # Project models
     "Block",
-    "BlockInput",
     "Comment",
     "Costume",
-    "Extension",
     "Meta",
     "Monitor",
     "ScratchProject",

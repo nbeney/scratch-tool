@@ -49,22 +49,18 @@ class Sound(BaseModel):
     md5ext: str
 
 
-class BlockInput(BaseModel):
-    """An input to a block (can be a value, variable reference, or nested block)."""
-    # This is a complex structure - usually a list with type indicator and value
-    # We'll keep it flexible as Any for now
-    root: List[Any] = Field(default_factory=list)
-
-    def __init__(self, **data):
-        if isinstance(data.get('root'), list):
-            super().__init__(**data)
-        else:
-            # If initialized with a list directly, wrap it
-            super().__init__(root=data if not data else [data])
-
-
 class Block(BaseModel):
-    """A Scratch code block."""
+    """A Scratch code block.
+    
+    Inputs format: Dict[name, array] where array is:
+      [1, ...] - shadow block
+      [2, ...] - no shadow
+      [3, ..., ...] - obscured shadow (2nd element is input, 3rd is shadow)
+    
+    Fields format: Dict[name, array] where array is:
+      [value] - simple field
+      [value, id] - field with ID (for variables, broadcasts, etc.)
+    """
     opcode: str
     next: Optional[str] = None  # ID of next block in sequence
     parent: Optional[str] = None  # ID of parent block
@@ -93,7 +89,8 @@ class Target(BaseModel):
     isStage: bool
     name: str
     
-    # Variables: Dict[id, [name, value]]
+    # Variables: Dict[id, [name, value]] or Dict[id, [name, value, true]] for cloud variables
+    # The third element (if present and true) indicates this is a cloud variable
     variables: Dict[str, List[Union[str, int, float, bool]]] = Field(default_factory=dict)
     
     # Lists: Dict[id, [name, list_contents]]
@@ -131,20 +128,37 @@ class Target(BaseModel):
 
 
 class Meta(BaseModel):
-    """Project metadata."""
+    """Project metadata.
+    
+    According to Scratch File Format specification:
+    - semver: Always "3.0.0" for Scratch 3.0 projects
+    - vm: Scratch VM version used to create/save the project
+    - agent: User agent string of the browser/editor
+    """
     semver: str  # Scratch version (e.g., "3.0.0")
     vm: str  # VM version
     agent: str  # User agent string
 
 
-class Extension(BaseModel):
-    """Information about extensions used in the project."""
-    extensionId: str
-    extensionName: Optional[str] = None
-
-
 class ScratchProject(BaseModel):
-    """Complete Scratch 3.0 project.json structure."""
+    """Complete Scratch 3.0 project.json structure.
+    
+    Based on the Scratch File Format specification:
+    https://en.scratch-wiki.info/wiki/Scratch_File_Format
+    
+    Extensions are stored as an array of extension IDs (strings):
+    - "pen" - Pen Extension
+    - "music" - Music Extension
+    - "videoSensing" - Video Sensing Extension
+    - "text2speech" - Text to Speech Extension
+    - "translate" - Translate Extension
+    - "wedo2" - LEGO Education WeDo 2.0
+    - "microbit" - micro:bit Extension
+    - "ev3" - LEGO MINDSTORMS EV3
+    - "makeymakey" - Makey Makey
+    - "boost" - LEGO BOOST
+    - "gdxfor" - Go Direct Force & Acceleration
+    """
     targets: List[Target]
     monitors: List[Monitor] = Field(default_factory=list)
     extensions: List[str] = Field(default_factory=list)  # Extension IDs
