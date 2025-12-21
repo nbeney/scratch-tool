@@ -13,14 +13,14 @@ from pygments.formatters import TerminalFormatter
 from pygments.lexers import JsonLexer
 from pydantic import ValidationError
 
-from models import ErrorResponse, ProjectMetadata
+from models.metadata import ErrorResponse, ProjectMetadata
 
 app = typer.Typer()
 
 
 def print_colored_json(data: dict) -> None:
     """Pretty print JSON with syntax highlighting."""
-    json_str = json.dumps(data, indent=2, sort_keys=True)
+    json_str = json.dumps(data, indent=4, sort_keys=True)
     colored_json = highlight(json_str, JsonLexer(), TerminalFormatter())
     typer.echo(colored_json)
 

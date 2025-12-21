@@ -231,7 +231,7 @@ class TestPydanticModels:
     )
     def test_project_metadata_valid(self):
         """Test ProjectMetadata model with valid data."""
-        from models import ProjectMetadata
+        from models.metadata import ProjectMetadata
         
         with open("project-meta-pass.json") as f:
             data = json.load(f)
@@ -250,7 +250,7 @@ class TestPydanticModels:
     )
     def test_error_response_valid(self):
         """Test ErrorResponse model with valid error data."""
-        from models import ErrorResponse
+        from models.metadata import ErrorResponse
         
         with open("project-meta-fail.json") as f:
             data = json.load(f)
