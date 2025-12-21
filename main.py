@@ -1,6 +1,10 @@
+#!/home/nbeney/.local/bin/uv run
+
+import json
 import re
 from pathlib import Path
 from typing import Optional
+from zipfile import ZipFile
 
 import requests
 import typer
@@ -35,6 +39,8 @@ def download(
     """
     Download a Scratch 3 project given its URL or ID.
     
+    Note: Only public and shared projects can be downloaded.
+    
     Examples:
         scratch-tool download https://scratch.mit.edu/projects/1190972813/
         scratch-tool download https://scratch.mit.edu/projects/1190972813/editor
@@ -60,15 +66,47 @@ def download(
         # Get the project token
         project_token = metadata.get('project_token')
         if not project_token:
-            raise ValueError("Could not retrieve project token. The project may be private or not exist.")
+            raise ValueError("Could not retrieve project token. The project may be private or unshared. Only public and shared projects can be downloaded.")
         
         # Construct the download URL with token
         download_url = f"https://projects.scratch.mit.edu/{project_id}?token={project_token}"
         
-        # Download the project
-        typer.echo("Downloading project file...")
+        # Download the project.json
+        typer.echo("Downloading project.json...")
         response = requests.get(download_url, headers=headers, timeout=30)
         response.raise_for_status()
+        project_json = response.json()
+        
+        # Extract all asset information from the project
+        typer.echo("Collecting asset information...")
+        assets = []
+        seen_assets = set()
+        
+        # Iterate through all targets (sprites and stage)
+        for target in project_json.get('targets', []):
+            # Get costumes
+            for costume in target.get('costumes', []):
+                if 'assetId' in costume and 'md5ext' in costume:
+                    md5ext = costume['md5ext']
+                    if md5ext not in seen_assets:
+                        seen_assets.add(md5ext)
+                        assets.append({
+                            'id': costume['assetId'],
+                            'md5ext': md5ext,
+                            'type': 'costume'
+                        })
+            
+            # Get sounds
+            for sound in target.get('sounds', []):
+                if 'assetId' in sound and 'md5ext' in sound:
+                    md5ext = sound['md5ext']
+                    if md5ext not in seen_assets:
+                        seen_assets.add(md5ext)
+                        assets.append({
+                            'id': sound['assetId'],
+                            'md5ext': md5ext,
+                            'type': 'sound'
+                        })
         
         # Determine output filename
         if name:
@@ -76,14 +114,45 @@ def download(
         else:
             filename = f"{project_id}.sb3"
         
-        # Save to file
+        # Create the .sb3 file as a ZIP archive
+        typer.echo(f"Building .sb3 file with {len(assets)} assets...")
         output_path = Path(filename)
-        output_path.write_bytes(response.content)
+        
+        with ZipFile(output_path, 'w') as sb3_file:
+            # Write project.json
+            sb3_file.writestr('project.json', json.dumps(project_json))
+            
+            # Download and add each asset
+            for i, asset in enumerate(assets, 1):
+                md5ext = asset['md5ext']
+                asset_url = f"https://assets.scratch.mit.edu/internalapi/asset/{md5ext}/get/"
+                
+                typer.echo(f"  Downloading asset {i}/{len(assets)}: {md5ext}")
+                
+                try:
+                    asset_response = requests.get(asset_url, headers=headers, timeout=30)
+                    asset_response.raise_for_status()
+                    sb3_file.writestr(md5ext, asset_response.content)
+                except requests.exceptions.RequestException as e:
+                    typer.secho(f"  Warning: Failed to download asset {md5ext}: {e}", fg=typer.colors.YELLOW)
         
         typer.secho(f"✓ Successfully downloaded to {filename}", fg=typer.colors.GREEN)
         
     except ValueError as e:
         typer.secho(f"Error: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 404:
+            typer.secho(f"Error: Project not found (404)", fg=typer.colors.RED, err=True)
+            typer.secho("", err=True)
+            typer.secho("This could mean:", fg=typer.colors.YELLOW, err=True)
+            typer.secho("  • The project ID is incorrect", fg=typer.colors.YELLOW, err=True)
+            typer.secho("  • The project is not shared or is private", fg=typer.colors.YELLOW, err=True)
+            typer.secho("  • The project has been deleted", fg=typer.colors.YELLOW, err=True)
+            typer.secho("", err=True)
+            typer.secho("Note: Only public and shared projects can be downloaded.", fg=typer.colors.CYAN, err=True)
+        else:
+            typer.secho(f"Error downloading project: {e}", fg=typer.colors.RED, err=True)
         raise typer.Exit(1)
     except requests.exceptions.RequestException as e:
         typer.secho(f"Error downloading project: {e}", fg=typer.colors.RED, err=True)
