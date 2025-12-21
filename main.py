@@ -14,6 +14,7 @@ from pygments.lexers import JsonLexer
 from pydantic import ValidationError
 
 from models.metadata import ErrorResponse, ProjectMetadata
+from models.project import ScratchProject
 
 app = typer.Typer()
 
@@ -306,6 +307,164 @@ def download(
         raise typer.Exit(1)
     except requests.exceptions.RequestException as e:
         typer.secho(f"Error downloading project: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+    except Exception as e:
+        typer.secho(f"Unexpected error: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+
+
+@app.command()
+def analyze(
+    source: str = typer.Argument(..., help="Scratch project URL, ID, or path to project.json file"),
+):
+    """
+    Analyze a Scratch project and display detailed statistics.
+    
+    Can analyze from:
+    - Project URL (e.g., https://scratch.mit.edu/projects/1252755893/)
+    - Project ID (e.g., 1252755893)
+    - Local project.json file (e.g., my-project.json)
+    
+    Note: When using URL or ID, only public and shared projects can be accessed.
+    
+    Examples:
+        scratch-tool analyze https://scratch.mit.edu/projects/1252755893/
+        scratch-tool analyze 1252755893
+        scratch-tool analyze sample-project.json
+    """
+    try:
+        project: ScratchProject
+        source_name: str
+        
+        # Check if source is a local file
+        file_path = Path(source)
+        if file_path.exists() and file_path.is_file():
+            # Load from local file
+            typer.echo(f"Loading project from file: {file_path.name}")
+            typer.echo("=" * 60)
+            
+            with open(file_path) as f:
+                project = ScratchProject.model_validate_json(f.read())
+            source_name = file_path.name
+        else:
+            # Try to extract project ID and download from Scratch
+            project_id = extract_project_id(source)
+            typer.echo(f"Fetching project {project_id} from Scratch...")
+            typer.echo("=" * 60)
+            
+            # Get metadata
+            api_url = f"https://api.scratch.mit.edu/projects/{project_id}"
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            
+            metadata_response = requests.get(api_url, headers=headers, timeout=30)
+            metadata_response.raise_for_status()
+            metadata_dict = metadata_response.json()
+            
+            # Validate metadata
+            try:
+                project_metadata = ProjectMetadata.model_validate(metadata_dict)
+            except ValidationError:
+                try:
+                    error = ErrorResponse.model_validate(metadata_dict)
+                    raise ValueError(f"API Error: {error.code}. The project may be private, unshared, or deleted.")
+                except ValidationError:
+                    raise ValueError("Could not parse project metadata.")
+            
+            # Download project.json
+            download_url = f"https://projects.scratch.mit.edu/{project_id}?token={project_metadata.project_token}"
+            response = requests.get(download_url, headers=headers, timeout=30)
+            response.raise_for_status()
+            
+            project = ScratchProject.model_validate(response.json())
+            source_name = f"{project_metadata.title} (ID: {project_id})"
+        
+        # Basic project info
+        typer.echo(f"\n📊 Project Overview:")
+        typer.echo(f"  Semver: {project.meta.semver}")
+        typer.echo(f"  VM: {project.meta.vm}")
+        typer.echo(f"  User Agent: {project.meta.agent or 'N/A'}")
+        
+        # Stage information
+        stage = project.stage
+        typer.echo(f"\n🎭 Stage:")
+        typer.echo(f"  Name: {stage.name}")
+        typer.echo(f"  Costumes: {len(stage.costumes)}")
+        typer.echo(f"  Sounds: {len(stage.sounds)}")
+        typer.echo(f"  Variables: {len(stage.variables)}")
+        typer.echo(f"  Lists: {len(stage.lists)}")
+        typer.echo(f"  Blocks: {len(stage.blocks)}")
+        
+        # Sprites
+        sprites = project.sprites
+        typer.echo(f"\n🎮 Sprites ({len(sprites)}):")
+        for sprite in sprites:
+            typer.echo(f"  • {sprite.name}")
+            typer.echo(f"    - Position: ({sprite.x}, {sprite.y})")
+            typer.echo(f"    - Size: {sprite.size}%")
+            typer.echo(f"    - Direction: {sprite.direction}°")
+            typer.echo(f"    - Visible: {sprite.visible}")
+            typer.echo(f"    - Costumes: {len(sprite.costumes)}")
+            typer.echo(f"    - Sounds: {len(sprite.sounds)}")
+            typer.echo(f"    - Blocks: {len(sprite.blocks)}")
+        
+        # Statistics
+        typer.echo(f"\n📈 Statistics:")
+        typer.echo(f"  Total Sprites: {project.count_sprites()}")
+        typer.echo(f"  Total Blocks: {project.count_blocks()}")
+        typer.echo(f"  Total Variables: {len(project.get_all_variables())}")
+        typer.echo(f"  Total Lists: {len(project.get_all_lists())}")
+        
+        # Extensions
+        if project.extensions:
+            typer.echo(f"\n🔌 Extensions:")
+            for ext in project.extensions:
+                typer.echo(f"  • {ext}")
+        
+        # Monitors
+        if project.monitors:
+            typer.echo(f"\n👁️  Monitors ({len(project.monitors)}):")
+            for monitor in project.monitors:
+                typer.echo(f"  • {monitor.params.get('VARIABLE', 'Unknown')} ({monitor.mode})")
+        
+        # Block types used
+        block_types = set()
+        for target in project.targets:
+            for block in target.blocks.values():
+                block_types.add(block.opcode)
+        
+        typer.echo(f"\n🧩 Block Types Used ({len(block_types)}):")
+        # Show first 10 block types
+        for block_type in sorted(block_types)[:10]:
+            typer.echo(f"  • {block_type}")
+        if len(block_types) > 10:
+            typer.echo(f"  ... and {len(block_types) - 10} more")
+        
+        typer.echo("\n" + "=" * 60)
+        typer.secho("✅ Analysis complete!", fg=typer.colors.GREEN)
+        
+    except ValueError as e:
+        typer.secho(f"Error: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 404:
+            typer.secho(f"Error: Project not found (404)", fg=typer.colors.RED, err=True)
+            typer.secho("", err=True)
+            typer.secho("This could mean:", fg=typer.colors.YELLOW, err=True)
+            typer.secho("  • The project ID is incorrect", fg=typer.colors.YELLOW, err=True)
+            typer.secho("  • The project is not shared or is private", fg=typer.colors.YELLOW, err=True)
+            typer.secho("  • The project has been deleted", fg=typer.colors.YELLOW, err=True)
+            typer.secho("", err=True)
+            typer.secho("Note: Only public and shared projects can be accessed.", fg=typer.colors.CYAN, err=True)
+        else:
+            typer.secho(f"Error fetching project: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+    except requests.exceptions.RequestException as e:
+        typer.secho(f"Error: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+    except ValidationError as e:
+        typer.secho(f"Error parsing project data: {e}", fg=typer.colors.RED, err=True)
         raise typer.Exit(1)
     except Exception as e:
         typer.secho(f"Unexpected error: {e}", fg=typer.colors.RED, err=True)

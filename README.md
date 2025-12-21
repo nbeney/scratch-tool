@@ -8,7 +8,9 @@ A command-line tool to download Scratch 3 projects as complete `.sb3` files (ZIP
 
 - Downloads complete Scratch 3 projects with all assets (costumes, sounds, etc.)
 - Creates proper `.sb3` files identical to "File > Save to your computer" in Scratch
-- Supports multiple input formats (URL or project ID)
+- Analyzes project structure and displays detailed statistics
+- Views project metadata with colorized JSON output
+- Supports multiple input formats (URL, project ID, or local file)
 - Deduplicates shared assets across sprites
 - Progress display during download
 
@@ -20,7 +22,7 @@ pip install -e .
 
 ## Usage
 
-The tool provides two main commands: `metadata` and `download`.
+The tool provides three main commands: `metadata`, `download`, and `analyze`.
 
 **Important:** Projects must be public and shared on Scratch. Unshared or private projects cannot be accessed.
 
@@ -84,6 +86,30 @@ By default, the downloaded file is named after the project title (e.g., `"▶️
 - Stage and sprite properties
 - Note: Does not include actual image/sound files
 
+### Analyze Project Structure
+
+Analyze a Scratch project and display detailed statistics. Can analyze from a URL, project ID, or local file:
+
+```bash
+# Analyze from project ID
+python main.py analyze 1252755893
+
+# Analyze from URL
+python main.py analyze https://scratch.mit.edu/projects/1252755893/
+
+# Analyze local project.json file
+python main.py analyze sample-project.json
+```
+
+The analyze command displays comprehensive information including:
+- Project overview (Scratch version, VM version)
+- Stage information (costumes, sounds, variables, blocks)
+- Detailed sprite information (position, size, direction, visibility, assets, blocks)
+- Project statistics (total sprites, blocks, variables, lists)
+- Extensions used
+- Monitors (visible variables)
+- Block types used in the project
+
 ## Options
 
 ### Metadata Command
@@ -94,6 +120,10 @@ By default, the downloaded file is named after the project title (e.g., `"▶️
 - `url_or_id`: (Required) Scratch project URL or ID
 - `--name, -n`: Optional custom output filename (without extension)
 - `--code, -c`: Download only project.json instead of full .sb3
+- `--help`: Show help message
+
+### Analyze Command
+- `source`: (Required) Scratch project URL, ID, or path to project.json file
 - `--help`: Show help message
 
 ## Requirements
@@ -146,7 +176,7 @@ if sprite:
     print(f"Sounds: {[s.name for s in sprite.sounds]}")
 ```
 
-See `example_usage.py` for a complete project analysis script that demonstrates all model features.
+For a complete project analysis, use the `analyze` command which provides comprehensive statistics and insights.
 
 ## Testing
 
