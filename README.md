@@ -108,13 +108,63 @@ By default, the downloaded file is named after the project title (e.g., `"▶️
 - pytest
 - pytest-mock
 
+## Pydantic Models
+
+The tool includes comprehensive Pydantic models for type-safe parsing and validation:
+
+### API Models (`models/metadata.py`)
+- `ProjectMetadata`: Complete project metadata from Scratch API
+- `Author`, `Profile`, `History`, `Stats`: User and project statistics
+- `ErrorResponse`: API error handling
+
+### Project Models (`models/project.py`)
+- `ScratchProject`: Root model for `project.json` files
+- `Target`: Sprites and stage with all properties
+- `Block`: Code blocks with opcodes, inputs, fields
+- `Costume`, `Sound`: Asset definitions
+- `Monitor`, `Comment`, `Meta`: Additional project elements
+
+Example usage:
+
+```python
+from models.project import ScratchProject
+
+# Parse a downloaded project.json
+with open("project.json") as f:
+    project = ScratchProject.model_validate_json(f.read())
+
+# Access project structure
+print(f"Stage: {project.stage.name}")
+print(f"Sprites: {[s.name for s in project.sprites]}")
+print(f"Total blocks: {project.count_blocks()}")
+print(f"Total sprites: {project.count_sprites()}")
+
+# Get specific sprite
+sprite = project.get_sprite("Sprite1")
+if sprite:
+    print(f"Costumes: {[c.name for c in sprite.costumes]}")
+    print(f"Sounds: {[s.name for s in sprite.sounds]}")
+```
+
+See `example_usage.py` for a complete project analysis script that demonstrates all model features.
+
 ## Testing
 
 Run the integration tests with pytest:
 
 ```bash
-pytest test_main.py -v
+# Run all tests
+pytest -v
+
+# Run specific test files
+pytest test_main.py -v           # CLI command tests
+pytest test_project_models.py -v # Pydantic model tests
 ```
+
+Test coverage:
+- 25 CLI integration tests (metadata, download, parsing, sanitization)
+- 11 Pydantic model validation tests
+- Total: 36 tests, all passing
 
 ## How It Works
 
@@ -123,4 +173,6 @@ pytest test_main.py -v
 3. Extracts all asset references (costumes and sounds) from the JSON
 4. Downloads each unique asset from Scratch's CDN
 5. Packages everything into a `.sb3` ZIP archive
+
+The tool uses Pydantic models for robust validation of all API responses and project structures, ensuring type safety and data integrity throughout the download process.
 
