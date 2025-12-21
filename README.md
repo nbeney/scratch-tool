@@ -192,9 +192,9 @@ pytest test_project_models.py -v # Pydantic model tests
 ```
 
 Test coverage:
-- 25 CLI integration tests (metadata, download, parsing, sanitization)
+- 36 CLI integration tests (metadata, download, analyze, parsing, sanitization)
 - 11 Pydantic model validation tests
-- Total: 36 tests, all passing
+- Total: 47 tests, all passing
 
 ## How It Works
 

@@ -303,3 +303,134 @@ class TestPydanticModels:
         
         assert error.code == "NotFound"
         assert error.message == ""
+
+
+class TestAnalyzeCommand:
+    """Tests for the analyze command."""
+
+    @pytest.mark.skipif(
+        not Path("sample-project.json").exists(),
+        reason="Test data file not found"
+    )
+    def test_analyze_local_file(self):
+        """Test analyzing a local project.json file."""
+        result = runner.invoke(app, ["analyze", "sample-project.json"])
+        
+        assert result.exit_code == 0
+        assert "Loading project from file: sample-project.json" in result.stdout
+        assert "📊 Project Overview:" in result.stdout
+        assert "🎭 Stage:" in result.stdout
+        assert "🎮 Sprites" in result.stdout
+        assert "📈 Statistics:" in result.stdout
+        assert "✅ Analysis complete!" in result.stdout
+
+    @pytest.mark.skipif(
+        not Path("sample-project.json").exists(),
+        reason="Test data file not found"
+    )
+    def test_analyze_shows_project_stats(self):
+        """Test that analyze shows correct statistics."""
+        result = runner.invoke(app, ["analyze", "sample-project.json"])
+        
+        assert result.exit_code == 0
+        # Check for specific stats we know from sample-project.json
+        assert "Total Sprites: 4" in result.stdout
+        assert "Total Blocks: 56" in result.stdout
+        assert "Semver: 3.0.0" in result.stdout
+
+    @pytest.mark.skipif(
+        not Path("sample-project.json").exists(),
+        reason="Test data file not found"
+    )
+    def test_analyze_shows_sprite_details(self):
+        """Test that analyze shows sprite details."""
+        result = runner.invoke(app, ["analyze", "sample-project.json"])
+        
+        assert result.exit_code == 0
+        # Check for sprite names
+        assert "Snowman" in result.stdout
+        assert "Arrow" in result.stdout
+        assert "Snowball" in result.stdout
+        assert "Sprite1" in result.stdout
+        # Check for sprite properties
+        assert "Position:" in result.stdout
+        assert "Size:" in result.stdout
+        assert "Direction:" in result.stdout
+
+    @pytest.mark.skipif(
+        not Path("sample-project.json").exists(),
+        reason="Test data file not found"
+    )
+    def test_analyze_shows_monitors(self):
+        """Test that analyze shows monitor information."""
+        result = runner.invoke(app, ["analyze", "sample-project.json"])
+        
+        assert result.exit_code == 0
+        assert "👁️  Monitors" in result.stdout
+        assert "Falling" in result.stdout
+        assert "power" in result.stdout
+        assert "score" in result.stdout
+
+    @pytest.mark.skipif(
+        not Path("sample-project.json").exists(),
+        reason="Test data file not found"
+    )
+    def test_analyze_shows_block_types(self):
+        """Test that analyze shows block types used."""
+        result = runner.invoke(app, ["analyze", "sample-project.json"])
+        
+        assert result.exit_code == 0
+        assert "🧩 Block Types Used" in result.stdout
+        # Should show some common block types
+        assert "control_" in result.stdout or "event_" in result.stdout or "data_" in result.stdout
+
+    def test_analyze_valid_project_by_id(self):
+        """Test analyzing a project by ID from Scratch."""
+        result = runner.invoke(app, ["analyze", "1252755893"])
+        
+        assert result.exit_code == 0
+        assert "Fetching project 1252755893 from Scratch" in result.stdout
+        assert "📊 Project Overview:" in result.stdout
+        assert "✅ Analysis complete!" in result.stdout
+
+    def test_analyze_valid_project_by_url(self):
+        """Test analyzing a project by URL from Scratch."""
+        result = runner.invoke(app, ["analyze", "https://scratch.mit.edu/projects/1252755893/"])
+        
+        assert result.exit_code == 0
+        assert "Fetching project 1252755893 from Scratch" in result.stdout
+        assert "✅ Analysis complete!" in result.stdout
+
+    def test_analyze_invalid_project_id(self):
+        """Test analyzing with an invalid/non-existent project ID."""
+        result = runner.invoke(app, ["analyze", "99999999999999"])
+        
+        assert result.exit_code == 1
+        output = result.stdout + result.stderr
+        assert "Error" in output or "not found" in output.lower()
+
+    def test_analyze_nonexistent_file(self):
+        """Test analyzing a non-existent local file."""
+        result = runner.invoke(app, ["analyze", "nonexistent-file.json"])
+        
+        assert result.exit_code == 1
+        output = result.stdout + result.stderr
+        assert "Error" in output
+
+    def test_analyze_invalid_url_format(self):
+        """Test analyzing with an invalid URL format."""
+        result = runner.invoke(app, ["analyze", "https://example.com/not-a-scratch-project"])
+        
+        assert result.exit_code == 1
+        output = result.stdout + result.stderr
+        assert "Error" in output or "extract" in output.lower()
+
+    def test_analyze_help(self):
+        """Test that analyze command help works."""
+        result = runner.invoke(app, ["analyze", "--help"])
+        
+        assert result.exit_code == 0
+        assert "Analyze a Scratch project" in result.stdout
+        assert "URL" in result.stdout
+        assert "ID" in result.stdout
+        assert "project.json" in result.stdout
