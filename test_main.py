@@ -156,6 +156,50 @@ class TestDownloadCommand:
         finally:
             os.chdir(original_cwd)
 
+    def test_download_code_only(self, tmp_path):
+        """Test that --code flag downloads only project.json."""
+        import os
+        original_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        
+        try:
+            result = runner.invoke(app, ["download", "1252755893", "--code"])
+            
+            if result.exit_code == 0:
+                # Should create JSON file with title-based name
+                expected_file = tmp_path / "Snowball fight.json"
+                assert expected_file.exists()
+                assert expected_file.stat().st_size > 0
+                assert "✓ Successfully downloaded code" in result.stdout
+                assert "Snowball fight.json" in result.stdout
+                
+                # Verify it's valid JSON
+                import json
+                content = json.loads(expected_file.read_text())
+                assert "targets" in content
+                
+                # Should not create .sb3 file
+                sb3_file = tmp_path / "Snowball fight.sb3"
+                assert not sb3_file.exists()
+        finally:
+            os.chdir(original_cwd)
+    
+    def test_download_code_only_custom_name(self, tmp_path):
+        """Test that --code flag works with custom name."""
+        import os
+        original_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        
+        try:
+            result = runner.invoke(app, ["download", "1252755893", "--code", "--name", "my-code"])
+            
+            if result.exit_code == 0:
+                output_file = tmp_path / "my-code.json"
+                assert output_file.exists()
+                assert "my-code.json" in result.stdout
+        finally:
+            os.chdir(original_cwd)
+
 
 class TestExtractProjectId:
     """Tests for project ID extraction."""

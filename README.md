@@ -49,10 +49,10 @@ The metadata command displays colorized, pretty-printed JSON with information in
 
 ### Download Project Files
 
-Download a complete Scratch project as an `.sb3` file:
+Download a complete Scratch project as an `.sb3` file, or just the code as JSON:
 
 ```bash
-# Using project ID - file named after project title
+# Download full project - file named after project title
 python main.py download 1190972813
 
 # Using full project URL
@@ -63,13 +63,26 @@ python main.py download https://scratch.mit.edu/projects/1190972813/editor
 
 # Specify custom output filename (overrides title-based naming)
 python main.py download 1190972813 --name my-project
+
+# Download only project.json (code without assets)
+python main.py download 1190972813 --code
+
+# Download code with custom name
+python main.py download 1190972813 --code --name my-code
 ```
 
-By default, the downloaded file is named after the project title (e.g., `"▶️ Geometry Dash Wave v19.9018.sb3"`). Invalid filename characters are automatically sanitized. Use the `--name` option to specify a custom filename (without the .sb3 extension).
+By default, the downloaded file is named after the project title (e.g., `"▶️ Geometry Dash Wave v19.9018.sb3"`). Invalid filename characters are automatically sanitized. Use the `--name` option to specify a custom filename (without the extension).
 
-The downloaded `.sb3` file is a ZIP archive containing:
+**Full Download (.sb3):** The downloaded `.sb3` file is a ZIP archive containing:
 - `project.json` - The project structure and code
 - All costume and sound assets referenced by the project
+
+**Code Only (--code):** Downloads just the `project.json` file containing:
+- All sprites, costumes, and sounds metadata
+- All code blocks and scripts
+- Variables, lists, and custom blocks
+- Stage and sprite properties
+- Note: Does not include actual image/sound files
 
 ## Options
 
@@ -80,6 +93,7 @@ The downloaded `.sb3` file is a ZIP archive containing:
 ### Download Command
 - `url_or_id`: (Required) Scratch project URL or ID
 - `--name, -n`: Optional custom output filename (without extension)
+- `--code, -c`: Download only project.json instead of full .sb3
 - `--help`: Show help message
 
 ## Requirements

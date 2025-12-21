@@ -148,11 +148,14 @@ def metadata(
 @app.command()
 def download(
     url_or_id: str = typer.Argument(..., help="Scratch project URL or ID"),
-    name: Optional[str] = typer.Option(None, "--name", "-n", help="Output filename (without extension)")
+    name: Optional[str] = typer.Option(None, "--name", "-n", help="Output filename (without extension)"),
+    code: bool = typer.Option(False, "--code", "-c", help="Download only project.json (code) instead of full .sb3")
 ):
     """
     Download a Scratch 3 project given its URL or ID.
     
+    By default, downloads the complete .sb3 file with all assets.
+    Use --code to download only the project.json file.
     By default, the file is named after the project title.
     Use --name to specify a custom filename.
     
@@ -163,6 +166,7 @@ def download(
         scratch-tool download https://scratch.mit.edu/projects/1252755893/editor
         scratch-tool download 1252755893
         scratch-tool download 1252755893 --name my-project
+        scratch-tool download 1252755893 --code
     """
     try:
         # Extract project ID from URL or use ID directly
@@ -199,6 +203,25 @@ def download(
         response = requests.get(download_url, headers=headers, timeout=30)
         response.raise_for_status()
         project_json = response.json()
+        
+        # If --code flag is set, save only project.json and exit
+        if code:
+            # Determine output filename for JSON
+            if name:
+                # User provided custom name
+                filename = f"{name}.json"
+            else:
+                # Use project title, sanitized for filesystem
+                safe_title = sanitize_filename(project_metadata.title)
+                filename = f"{safe_title}.json"
+                typer.echo(f"Using filename: {filename}")
+            
+            # Write JSON file
+            output_path = Path(filename)
+            output_path.write_text(json.dumps(project_json, indent=2))
+            
+            typer.secho(f"✓ Successfully downloaded code to {filename}", fg=typer.colors.GREEN)
+            return
         
         # Extract all asset information from the project
         typer.echo("Collecting asset information...")
