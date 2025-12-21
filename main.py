@@ -8,8 +8,21 @@ from zipfile import ZipFile
 
 import requests
 import typer
+from pygments import highlight
+from pygments.formatters import TerminalFormatter
+from pygments.lexers import JsonLexer
+from pydantic import ValidationError
+
+from models import ErrorResponse, ProjectMetadata
 
 app = typer.Typer()
+
+
+def print_colored_json(data: dict) -> None:
+    """Pretty print JSON with syntax highlighting."""
+    json_str = json.dumps(data, indent=2, sort_keys=True)
+    colored_json = highlight(json_str, JsonLexer(), TerminalFormatter())
+    typer.echo(colored_json)
 
 
 def extract_project_id(url_or_id: str) -> str:
@@ -29,6 +42,82 @@ def extract_project_id(url_or_id: str) -> str:
     
     # If no match found, raise an error
     raise ValueError(f"Could not extract project ID from: {url_or_id}")
+
+
+@app.command()
+def metadata(
+    url_or_id: str = typer.Argument(..., help="Scratch project URL or ID"),
+):
+    """
+    Fetch and display project metadata.
+    
+    Note: Only public and shared projects can be accessed.
+    
+    Examples:
+        scratch-tool metadata https://scratch.mit.edu/projects/1252755893/
+        scratch-tool metadata 1252755893
+    """
+    try:
+        # Extract project ID from URL or use ID directly
+        project_id = extract_project_id(url_or_id)
+        typer.echo(f"Fetching metadata for project {project_id}...")
+        typer.echo()
+        
+        # Fetch the project metadata
+        api_url = f"https://api.scratch.mit.edu/projects/{project_id}"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        response = requests.get(api_url, headers=headers, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+        
+        # Try to parse as ProjectMetadata, otherwise treat as error
+        try:
+            project_meta = ProjectMetadata.model_validate(data)
+            # Convert to dict with aliases for pretty printing
+            output_data = project_meta.model_dump(by_alias=True, mode='json')
+            print_colored_json(output_data)
+            typer.secho("\n✓ Successfully fetched metadata", fg=typer.colors.GREEN)
+        except ValidationError:
+            # Check if it's an error response
+            try:
+                error = ErrorResponse.model_validate(data)
+                typer.secho(f"Error from API: {error.code}", fg=typer.colors.RED, err=True)
+                if error.message:
+                    typer.secho(f"Message: {error.message}", fg=typer.colors.RED, err=True)
+                else:
+                    typer.secho("The project may not exist, be private, or be unshared.", fg=typer.colors.YELLOW, err=True)
+                raise typer.Exit(1)
+            except ValidationError:
+                # Unknown response format
+                typer.secho("Received unexpected response format:", fg=typer.colors.YELLOW, err=True)
+                print_colored_json(data)
+                raise typer.Exit(1)
+                
+    except ValueError as e:
+        typer.secho(f"Error: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 404:
+            typer.secho(f"Error: Project not found (404)", fg=typer.colors.RED, err=True)
+            typer.secho("", err=True)
+            typer.secho("This could mean:", fg=typer.colors.YELLOW, err=True)
+            typer.secho("  • The project ID is incorrect", fg=typer.colors.YELLOW, err=True)
+            typer.secho("  • The project is not shared or is private", fg=typer.colors.YELLOW, err=True)
+            typer.secho("  • The project has been deleted", fg=typer.colors.YELLOW, err=True)
+            typer.secho("", err=True)
+            typer.secho("Note: Only public and shared projects can be accessed.", fg=typer.colors.CYAN, err=True)
+        else:
+            typer.secho(f"Error fetching metadata: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+    except requests.exceptions.RequestException as e:
+        typer.secho(f"Error fetching metadata: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+    except Exception as e:
+        typer.secho(f"Unexpected error: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
 
 
 @app.command()

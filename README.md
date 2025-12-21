@@ -20,9 +20,36 @@ pip install -e .
 
 ## Usage
 
-Download a Scratch project by providing its URL or project ID.
+The tool provides two main commands: `metadata` and `download`.
 
-**Important:** The project must be public and shared on Scratch. Unshared or private projects cannot be downloaded.
+**Important:** Projects must be public and shared on Scratch. Unshared or private projects cannot be accessed.
+
+### Fetch Project Metadata
+
+View detailed information about a Scratch project without downloading it:
+
+```bash
+# Using project ID
+python main.py metadata 1252755893
+
+# Using full project URL
+python main.py metadata https://scratch.mit.edu/projects/1252755893/
+
+# Using editor URL
+python main.py metadata https://scratch.mit.edu/projects/1252755893/editor
+```
+
+The metadata command displays colorized, pretty-printed JSON with information including:
+- Project title, description, and instructions
+- Author information
+- Project statistics (views, loves, favorites, remixes)
+- Creation and modification dates
+- Thumbnail URLs
+- Project token (for downloading)
+
+### Download Project Files
+
+Download a complete Scratch project as an `.sb3` file:
 
 ```bash
 # Using project ID
@@ -46,6 +73,11 @@ The downloaded `.sb3` file is a ZIP archive containing:
 
 ## Options
 
+### Metadata Command
+- `url_or_id`: (Required) Scratch project URL or ID
+- `--help`: Show help message
+
+### Download Command
 - `url_or_id`: (Required) Scratch project URL or ID
 - `--name, -n`: Optional custom output filename (without extension)
 - `--help`: Show help message
@@ -55,6 +87,20 @@ The downloaded `.sb3` file is a ZIP archive containing:
 - Python 3.11+
 - typer
 - requests
+- pydantic
+- pygments
+
+### Development Dependencies
+- pytest
+- pytest-mock
+
+## Testing
+
+Run the integration tests with pytest:
+
+```bash
+pytest test_main.py -v
+```
 
 ## How It Works
 
