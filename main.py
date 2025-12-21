@@ -32,8 +32,8 @@ def extract_project_id(url_or_id: str) -> str:
         return url_or_id
     
     # Try to extract ID from URL patterns
-    # Matches: https://scratch.mit.edu/projects/1190972813/
-    # Matches: https://scratch.mit.edu/projects/1190972813/editor
+    # Matches: https://scratch.mit.edu/projects/1252755893/
+    # Matches: https://scratch.mit.edu/projects/1252755893/editor
     pattern = r'scratch\.mit\.edu/projects/(\d+)'
     match = re.search(pattern, url_or_id)
     
@@ -42,6 +42,31 @@ def extract_project_id(url_or_id: str) -> str:
     
     # If no match found, raise an error
     raise ValueError(f"Could not extract project ID from: {url_or_id}")
+
+
+def sanitize_filename(filename: str) -> str:
+    """Sanitize a string to be safe for use as a filename."""
+    # Replace invalid characters with underscores
+    invalid_chars = '<>:"/\\|?*'
+    for char in invalid_chars:
+        filename = filename.replace(char, '_')
+    
+    # Remove leading/trailing spaces and dots
+    filename = filename.strip('. ')
+    
+    # Replace multiple spaces with single space
+    filename = ' '.join(filename.split())
+    
+    # Limit length to avoid filesystem issues
+    max_length = 200
+    if len(filename) > max_length:
+        filename = filename[:max_length].strip()
+    
+    # If empty after sanitization, use a default
+    if not filename:
+        filename = "untitled"
+    
+    return filename
 
 
 @app.command()
@@ -128,13 +153,16 @@ def download(
     """
     Download a Scratch 3 project given its URL or ID.
     
+    By default, the file is named after the project title.
+    Use --name to specify a custom filename.
+    
     Note: Only public and shared projects can be downloaded.
     
     Examples:
-        scratch-tool download https://scratch.mit.edu/projects/1190972813/
-        scratch-tool download https://scratch.mit.edu/projects/1190972813/editor
-        scratch-tool download 1190972813
-        scratch-tool download 1190972813 --name my-project
+        scratch-tool download https://scratch.mit.edu/projects/1252755893/
+        scratch-tool download https://scratch.mit.edu/projects/1252755893/editor
+        scratch-tool download 1252755893
+        scratch-tool download 1252755893 --name my-project
     """
     try:
         # Extract project ID from URL or use ID directly
@@ -150,15 +178,21 @@ def download(
         typer.echo("Fetching project metadata...")
         metadata_response = requests.get(api_url, headers=headers, timeout=30)
         metadata_response.raise_for_status()
-        metadata = metadata_response.json()
+        metadata_dict = metadata_response.json()
         
-        # Get the project token
-        project_token = metadata.get('project_token')
-        if not project_token:
-            raise ValueError("Could not retrieve project token. The project may be private or unshared. Only public and shared projects can be downloaded.")
+        # Validate and parse metadata using Pydantic model
+        try:
+            project_metadata = ProjectMetadata.model_validate(metadata_dict)
+        except ValidationError as e:
+            # Check if it's an error response
+            try:
+                error = ErrorResponse.model_validate(metadata_dict)
+                raise ValueError(f"API Error: {error.code}. The project may be private, unshared, or deleted.")
+            except ValidationError:
+                raise ValueError("Could not parse project metadata. The project may be invalid or inaccessible.")
         
         # Construct the download URL with token
-        download_url = f"https://projects.scratch.mit.edu/{project_id}?token={project_token}"
+        download_url = f"https://projects.scratch.mit.edu/{project_id}?token={project_metadata.project_token}"
         
         # Download the project.json
         typer.echo("Downloading project.json...")
@@ -199,9 +233,13 @@ def download(
         
         # Determine output filename
         if name:
+            # User provided custom name
             filename = f"{name}.sb3"
         else:
-            filename = f"{project_id}.sb3"
+            # Use project title, sanitized for filesystem
+            safe_title = sanitize_filename(project_metadata.title)
+            filename = f"{safe_title}.sb3"
+            typer.echo(f"Using filename: {filename}")
         
         # Create the .sb3 file as a ZIP archive
         typer.echo(f"Building .sb3 file with {len(assets)} assets...")

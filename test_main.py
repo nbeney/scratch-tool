@@ -24,7 +24,7 @@ class TestMetadataCommand:
         assert "✓ Successfully fetched metadata" in result.stdout
         assert "project_token" in result.stdout
         assert "nicoben2" in result.stdout  # Author username
-        assert "Snowball fight (starter) remix" in result.stdout  # Title
+        assert "Snowball fight" in result.stdout  # Title
 
     def test_metadata_valid_project_by_url(self):
         """Test fetching metadata with a valid project URL."""
@@ -122,19 +122,37 @@ class TestDownloadCommand:
         try:
             # This is a real project - will actually download
             # Use a small project for faster test
-            result = runner.invoke(app, ["download", "1252755893", "--name", "test-project"])
+            result = runner.invoke(app, ["download", "1252755893"])
             
             # Note: This test will fail if the project becomes unavailable
             # or network is down - that's expected for integration tests
             if result.exit_code == 0:
-                output_file = tmp_path / "test-project.sb3"
-                assert output_file.exists()
-                assert output_file.stat().st_size > 0
+                # Should create file with title-based name
+                expected_file = tmp_path / "Snowball fight.sb3"
+                assert expected_file.exists()
+                assert expected_file.stat().st_size > 0
                 assert "✓ Successfully downloaded" in result.stdout
+                assert "Snowball fight.sb3" in result.stdout
             else:
                 # If download fails, at least check error handling works
                 output = result.stdout + result.stderr
                 assert "Error" in output
+        finally:
+            os.chdir(original_cwd)
+    
+    def test_download_with_custom_name(self, tmp_path):
+        """Test that custom name override works."""
+        import os
+        original_cwd = os.getcwd()
+        os.chdir(tmp_path)
+        
+        try:
+            result = runner.invoke(app, ["download", "1252755893", "--name", "my-custom-project"])
+            
+            if result.exit_code == 0:
+                output_file = tmp_path / "my-custom-project.sb3"
+                assert output_file.exists()
+                assert "my-custom-project.sb3" in result.stdout
         finally:
             os.chdir(original_cwd)
 
@@ -166,6 +184,44 @@ class TestExtractProjectId:
             extract_project_id("invalid-format")
 
 
+class TestSanitizeFilename:
+    """Tests for filename sanitization."""
+
+    def test_sanitize_basic(self):
+        """Test basic filename sanitization."""
+        from main import sanitize_filename
+        assert sanitize_filename("My Project") == "My Project"
+
+    def test_sanitize_invalid_chars(self):
+        """Test removal of invalid characters."""
+        from main import sanitize_filename
+        result = sanitize_filename("Project: <Test> | File?")
+        assert result == "Project_ _Test_ _ File_"
+
+    def test_sanitize_leading_trailing_spaces(self):
+        """Test removal of leading/trailing spaces."""
+        from main import sanitize_filename
+        assert sanitize_filename("  Project  ") == "Project"
+
+    def test_sanitize_multiple_spaces(self):
+        """Test collapsing multiple spaces."""
+        from main import sanitize_filename
+        assert sanitize_filename("My    Project    Name") == "My Project Name"
+
+    def test_sanitize_empty_string(self):
+        """Test empty string returns default."""
+        from main import sanitize_filename
+        assert sanitize_filename("") == "untitled"
+        assert sanitize_filename("   ") == "untitled"
+
+    def test_sanitize_long_filename(self):
+        """Test truncation of long filenames."""
+        from main import sanitize_filename
+        long_name = "A" * 250
+        result = sanitize_filename(long_name)
+        assert len(result) <= 200
+
+
 class TestPydanticModels:
     """Tests for Pydantic models."""
 
@@ -183,7 +239,7 @@ class TestPydanticModels:
         metadata = ProjectMetadata.model_validate(data)
         
         assert metadata.id == 1252755893
-        assert metadata.title == "Snowball fight (starter) remix"
+        assert metadata.title == "Snowball fight"
         assert metadata.author.username == "nicoben2"
         assert metadata.public is True
         assert metadata.project_token is not None

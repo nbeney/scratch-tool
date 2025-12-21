@@ -52,20 +52,20 @@ The metadata command displays colorized, pretty-printed JSON with information in
 Download a complete Scratch project as an `.sb3` file:
 
 ```bash
-# Using project ID
-python main.py 1190972813
+# Using project ID - file named after project title
+python main.py download 1190972813
 
 # Using full project URL
-python main.py https://scratch.mit.edu/projects/1190972813/
+python main.py download https://scratch.mit.edu/projects/1190972813/
 
 # Using editor URL
-python main.py https://scratch.mit.edu/projects/1190972813/editor
+python main.py download https://scratch.mit.edu/projects/1190972813/editor
 
-# Specify custom output filename
-python main.py 1190972813 --name my-project
+# Specify custom output filename (overrides title-based naming)
+python main.py download 1190972813 --name my-project
 ```
 
-By default, the project is saved as `{project_id}.sb3`. Use the `--name` option to specify a custom filename (without the .sb3 extension).
+By default, the downloaded file is named after the project title (e.g., `"▶️ Geometry Dash Wave v19.9018.sb3"`). Invalid filename characters are automatically sanitized. Use the `--name` option to specify a custom filename (without the .sb3 extension).
 
 The downloaded `.sb3` file is a ZIP archive containing:
 - `project.json` - The project structure and code
