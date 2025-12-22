@@ -316,6 +316,7 @@ def download(
 @app.command()
 def analyze(
     source: str = typer.Argument(..., help="Scratch project URL, ID, or path to project.json file"),
+    quiet: bool = typer.Option(False, "--quiet", "-q", help="Quiet mode: print nothing if JSON is valid, only show errors"),
 ):
     """
     Analyze a Scratch project and display detailed statistics.
@@ -331,6 +332,7 @@ def analyze(
         scratch-tool analyze https://scratch.mit.edu/projects/1252755893/
         scratch-tool analyze 1252755893
         scratch-tool analyze sample-project.json
+        scratch-tool analyze sample-project.json --quiet  # Validate silently
     """
     try:
         project: ScratchProject
@@ -340,8 +342,9 @@ def analyze(
         file_path = Path(source)
         if file_path.exists() and file_path.is_file():
             # Load from local file
-            typer.echo(f"Loading project from file: {file_path.name}")
-            typer.echo("=" * 60)
+            if not quiet:
+                typer.echo(f"Loading project from file: {file_path.name}")
+                typer.echo("=" * 60)
             
             with open(file_path) as f:
                 project = ScratchProject.model_validate_json(f.read())
@@ -349,8 +352,9 @@ def analyze(
         else:
             # Try to extract project ID and download from Scratch
             project_id = extract_project_id(source)
-            typer.echo(f"Fetching project {project_id} from Scratch...")
-            typer.echo("=" * 60)
+            if not quiet:
+                typer.echo(f"Fetching project {project_id} from Scratch...")
+                typer.echo("=" * 60)
             
             # Get metadata
             api_url = f"https://api.scratch.mit.edu/projects/{project_id}"
@@ -379,6 +383,10 @@ def analyze(
             
             project = ScratchProject.model_validate(response.json())
             source_name = f"{project_metadata.title} (ID: {project_id})"
+        
+        # If quiet mode, just exit successfully (JSON is valid)
+        if quiet:
+            return
         
         # Basic project info
         typer.echo(f"\n📊 Project Overview:")

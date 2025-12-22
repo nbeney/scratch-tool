@@ -99,6 +99,9 @@ python main.py analyze https://scratch.mit.edu/projects/1252755893/
 
 # Analyze local project.json file
 python main.py analyze sample-project.json
+
+# Validate project.json silently (quiet mode - only shows errors)
+python main.py analyze sample-project.json --quiet
 ```
 
 The analyze command displays comprehensive information including:
@@ -108,6 +111,8 @@ The analyze command displays comprehensive information including:
 - Project statistics (total sprites, blocks, variables, lists)
 - Extensions used
 - Monitors (visible variables)
+
+**Quiet mode** (`--quiet` or `-q`) is useful for validation scripts - it produces no output if the JSON is valid and parseable, but shows errors if validation fails.
 - Block types used in the project
 
 ## Options
@@ -124,6 +129,7 @@ The analyze command displays comprehensive information including:
 
 ### Analyze Command
 - `source`: (Required) Scratch project URL, ID, or path to project.json file
+- `--quiet, -q`: Quiet mode - print nothing if JSON is valid, only show errors (useful for validation)
 - `--help`: Show help message
 
 ## Requirements
@@ -192,9 +198,9 @@ pytest test_project_models.py -v # Pydantic model tests
 ```
 
 Test coverage:
-- 36 CLI integration tests (metadata, download, analyze, parsing, sanitization)
+- 40 CLI integration tests (metadata, download, analyze with quiet mode, parsing, sanitization)
 - 11 Pydantic model validation tests
-- Total: 47 tests, all passing
+- Total: 51 tests, all passing
 
 ## How It Works
 

@@ -434,3 +434,40 @@ class TestAnalyzeCommand:
         assert "URL" in result.stdout
         assert "ID" in result.stdout
         assert "project.json" in result.stdout
+
+    @pytest.mark.skipif(
+        not Path("sample-project.json").exists(),
+        reason="Test data file not found"
+    )
+    def test_analyze_quiet_mode_valid_file(self):
+        """Test analyzing with --quiet flag produces no output for valid JSON."""
+        result = runner.invoke(app, ["analyze", "sample-project.json", "--quiet"])
+        
+        assert result.exit_code == 0
+        assert result.stdout == ""  # No output in quiet mode
+    
+    @pytest.mark.skipif(
+        not Path("sample-project.json").exists(),
+        reason="Test data file not found"
+    )
+    def test_analyze_quiet_mode_short_flag(self):
+        """Test analyzing with -q short flag."""
+        result = runner.invoke(app, ["analyze", "sample-project.json", "-q"])
+        
+        assert result.exit_code == 0
+        assert result.stdout == ""  # No output in quiet mode
+    
+    def test_analyze_quiet_mode_invalid_file(self):
+        """Test that errors are still shown in quiet mode."""
+        result = runner.invoke(app, ["analyze", "nonexistent-file.json", "--quiet"])
+        
+        assert result.exit_code == 1
+        output = result.stdout + result.stderr
+        assert "Error" in output  # Error should still be displayed
+    
+    def test_analyze_quiet_mode_valid_remote_project(self):
+        """Test analyzing remote project in quiet mode."""
+        result = runner.invoke(app, ["analyze", "1252755893", "--quiet"])
+        
+        assert result.exit_code == 0
+        assert result.stdout == ""  # No output in quiet mode
