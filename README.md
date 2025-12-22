@@ -148,18 +148,21 @@ The generated documentation includes:
 - Project information (Scratch version, VM version)
 - Statistics (sprite count, block count, variables, lists)
 - Extensions used
-- Stage section with backdrops and sounds
+- Stage section with backdrops, sounds, and **scripts**
 - Detailed sprite information:
   - Position, size, rotation, visibility
   - Costume gallery with thumbnails
   - Sound list with audio players
+  - **Visual script representation** using [scratchblocks](https://scratchblocks.github.io/)
   - Block counts
 
 **Thumbnails:** Image costumes (PNG, JPG, SVG) are automatically converted to 150x150 thumbnails for quick preview.
 
 **Audio Players:** Sound files (WAV, MP3) are embedded with HTML5 audio controls for in-browser playback.
 
-The output HTML is self-contained with embedded CSS and works offline with the assets directory.
+**Script Visualization:** All scripts (code blocks) are rendered using the scratchblocks library, which displays them exactly as they appear in the Scratch editor with proper colors and formatting. Scripts are automatically extracted from the project's block data and converted to scratchblocks notation.
+
+The output HTML is self-contained with embedded CSS and works offline with the assets directory (requires internet connection only for scratchblocks library from CDN).
 
 ## Options
 
@@ -252,9 +255,9 @@ pytest test_project_models.py -v # Pydantic model tests
 
 Test coverage:
 - 40 CLI integration tests (metadata, download, analyze with quiet mode, parsing, sanitization)
-- 8 document command tests (HTML generation, thumbnails, audio players, multiple input formats)
+- 9 document command tests (HTML generation, thumbnails, audio players, scratchblocks scripts, multiple input formats)
 - 11 Pydantic model validation tests
-- Total: 59 tests, all passing
+- Total: 60 tests, all passing
 
 ## How It Works
 

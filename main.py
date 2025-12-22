@@ -11,7 +11,7 @@ import requests
 import typer
 from dominate import document as dom_document
 from dominate.tags import (
-    audio, body, div, h1, h2, h3, head, html, img, meta, source, style, title
+    audio, body, div, h1, h2, h3, head, html, img, link, meta, pre, script, source, style, title
 )
 from PIL import Image
 from pygments import highlight
@@ -21,6 +21,7 @@ from pydantic import ValidationError
 
 from models.metadata import ErrorResponse, ProjectMetadata
 from models.project import ScratchProject
+from scratchblocks_converter import target_to_scratchblocks
 
 app = typer.Typer()
 
@@ -676,6 +677,9 @@ def generate_html_documentation(
         meta(charset='UTF-8')
         meta(name='viewport', content='width=device-width, initial-scale=1.0')
         
+        # Scratchblocks CSS
+        link(rel='stylesheet', href='https://cdn.jsdelivr.net/npm/scratchblocks@3.6.4/build/scratchblocks.min.css')
+        
         # CSS styles
         style("""
         body {
@@ -816,6 +820,23 @@ def generate_html_documentation(
             font-size: 1em;
             opacity: 0.9;
         }
+        .scripts-section {
+            margin-top: 20px;
+        }
+        .script {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #ff6680;
+        }
+        pre.blocks {
+            margin: 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
         """)
     
     with doc:
@@ -905,6 +926,16 @@ def generate_html_documentation(
                                         with audio(controls=True, cls='audio-player'):
                                             source(src=f'{output_name}/{sound.md5ext}', 
                                                   type=f'audio/{sound.dataFormat}')
+                    
+                    # Stage scripts
+                    if stage.blocks:
+                        scripts = target_to_scratchblocks(stage)
+                        if scripts:
+                            h3('Scripts')
+                            with div(cls='scripts-section'):
+                                for i, script_text in enumerate(scripts):
+                                    with div(cls='script'):
+                                        pre(script_text, cls='blocks')
         
         # Sprites Section
         sprites = project.sprites
@@ -960,6 +991,27 @@ def generate_html_documentation(
                                             with audio(controls=True, cls='audio-player'):
                                                 source(src=f'{output_name}/{sound.md5ext}', 
                                                       type=f'audio/{sound.dataFormat}')
+                        
+                        # Sprite scripts
+                        if sprite.blocks:
+                            scripts = target_to_scratchblocks(sprite)
+                            if scripts:
+                                h3('Scripts')
+                                with div(cls='scripts-section'):
+                                    for i, script_text in enumerate(scripts):
+                                        with div(cls='script'):
+                                            pre(script_text, cls='blocks')
+    
+    # Add scratchblocks JavaScript at the end of body
+    with doc:
+        script(src='https://cdn.jsdelivr.net/npm/scratchblocks@3.6.4/build/scratchblocks.min.js')
+        script("""
+        // Render blocks after script loads
+        scratchblocks.renderMatching('pre.blocks', {
+            style: 'scratch3',
+            scale: 0.675
+        });
+        """)
     
     return str(doc)
 

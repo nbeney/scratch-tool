@@ -560,6 +560,21 @@ class TestDocumentCommand:
         assert "Sprites" in html_content
         assert "Statistics" in html_content
         
+    def test_document_includes_scripts(self, tmp_path, monkeypatch):
+        """Test that documentation includes scratchblocks scripts."""
+        monkeypatch.chdir(tmp_path)
+        
+        result = runner.invoke(app, ["document", "1252755893", "--name", "scripts-test"])
+        
+        assert result.exit_code == 0
+        
+        # Check that HTML contains scratchblocks elements
+        html_content = Path("scripts-test.html").read_text()
+        assert "scratchblocks" in html_content  # Library reference
+        assert 'pre class="blocks"' in html_content  # Block containers
+        assert "when green flag clicked" in html_content  # Sample script
+        assert "Scripts" in html_content  # Scripts section header
+        
     def test_document_invalid_project_id(self, tmp_path, monkeypatch):
         """Test error handling for invalid project ID."""
         monkeypatch.chdir(tmp_path)

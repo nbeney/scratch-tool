@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratchblocks Demo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scratchblocks@3.6.4/build/scratchblocks.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        .description {
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        .block-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #666;
+            margin-top: 0;
+        }
+        code {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐱 Scratchblocks Demo</h1>
+    
+    <p class="description">
+        This page demonstrates the scratchblocks library, which renders 
+        Scratch-style code blocks in HTML.
+    </p>
+
+    <div class="block-container">
+        <h2>Block Example:</h2>
+        <pre class="blocks">
+when green flag clicked
+say [Hello, World!] for (2) secs
+repeat ((10) + (count) :: operators)
+  move (10) steps
+  turn cw (15) degrees
+  move (10) steps
+  turn ccw (15) degrees
+end
+</pre>
+    </div>
+
+    <div class="block-container">
+        <h2>Inline Example:</h2>
+        <p>
+            You can also use inline blocks like 
+            <code>move (10) steps</code> 
+            within regular text!
+        </p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/scratchblocks@3.6.4/build/scratchblocks.min.js"></script>
+    <script>
+        // Render blocks after script loads
+        scratchblocks.renderMatching('pre.blocks', {
+            style: 'scratch3',
+            scale: 0.7
+        });
+        scratchblocks.renderMatching('code', {
+            style: 'scratch3',
+            scale: 0.5
+        });
+    </script>
+</body>
+</html>
