@@ -2,12 +2,14 @@
 
 import json
 import re
+import shutil
 from pathlib import Path
 from typing import Optional
 from zipfile import ZipFile
 
 import requests
 import typer
+from PIL import Image
 from pygments import highlight
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import JsonLexer
@@ -477,6 +479,539 @@ def analyze(
     except Exception as e:
         typer.secho(f"Unexpected error: {e}", fg=typer.colors.RED, err=True)
         raise typer.Exit(1)
+
+
+@app.command()
+def document(
+    source: str = typer.Argument(..., help="Scratch project URL, ID, .sb3 file, .zip file, or directory with project.json"),
+    name: Optional[str] = typer.Option(None, "--name", "-n", help="Output filename (without .html extension) and directory name"),
+):
+    """
+    Generate HTML documentation for a Scratch project.
+    
+    Creates an HTML file with project information, sprites, blocks, and assets.
+    Also creates a directory with extracted costume images (thumbnails) and sound files.
+    
+    Supported inputs:
+    - Project URL (e.g., https://scratch.mit.edu/projects/1252755893/)
+    - Project ID (e.g., 1252755893)
+    - .sb3 file (e.g., my-project.sb3)
+    - .zip file (same format as .sb3)
+    - Directory containing project.json and assets
+    
+    Examples:
+        scratch-tool document https://scratch.mit.edu/projects/1252755893/
+        scratch-tool document 1252755893
+        scratch-tool document my-project.sb3
+        scratch-tool document project-directory/
+        scratch-tool document my-project.sb3 --name my-docs
+    """
+    try:
+        project: ScratchProject
+        project_json: dict
+        assets_data: dict = {}  # md5ext -> bytes
+        output_name: str
+        
+        # Determine source type and load project
+        source_path = Path(source)
+        
+        if source_path.is_dir():
+            # Load from directory
+            typer.echo(f"Loading project from directory: {source}")
+            project_json_path = source_path / "project.json"
+            if not project_json_path.exists():
+                raise ValueError(f"No project.json found in directory: {source}")
+            
+            with open(project_json_path) as f:
+                project_json = json.load(f)
+            project = ScratchProject.model_validate(project_json)
+            
+            # Load assets from directory
+            for file_path in source_path.iterdir():
+                if file_path.is_file() and file_path.name != "project.json":
+                    assets_data[file_path.name] = file_path.read_bytes()
+            
+            output_name = name if name else source_path.name
+            
+        elif source_path.is_file() and source_path.suffix in ['.sb3', '.zip']:
+            # Load from .sb3 or .zip file
+            typer.echo(f"Loading project from file: {source}")
+            
+            with ZipFile(source_path, 'r') as zf:
+                # Read project.json
+                project_json = json.loads(zf.read('project.json'))
+                project = ScratchProject.model_validate(project_json)
+                
+                # Read all assets
+                for name_in_zip in zf.namelist():
+                    if name_in_zip != 'project.json':
+                        assets_data[name_in_zip] = zf.read(name_in_zip)
+            
+            output_name = name if name else source_path.stem
+            
+        else:
+            # Try as URL or project ID
+            project_id = extract_project_id(source)
+            typer.echo(f"Downloading project {project_id} from Scratch...")
+            
+            # Get metadata for title
+            api_url = f"https://api.scratch.mit.edu/projects/{project_id}"
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+            
+            metadata_response = requests.get(api_url, headers=headers, timeout=30)
+            metadata_response.raise_for_status()
+            metadata_dict = metadata_response.json()
+            
+            try:
+                project_metadata = ProjectMetadata.model_validate(metadata_dict)
+            except ValidationError:
+                raise ValueError("Could not parse project metadata.")
+            
+            # Download project.json
+            download_url = f"https://projects.scratch.mit.edu/{project_id}?token={project_metadata.project_token}"
+            response = requests.get(download_url, headers=headers, timeout=30)
+            response.raise_for_status()
+            
+            project_json = response.json()
+            project = ScratchProject.model_validate(project_json)
+            
+            # Download all assets
+            typer.echo("Downloading assets...")
+            asset_md5s = set()
+            for target in project.targets:
+                for costume in target.costumes:
+                    asset_md5s.add(costume.md5ext)
+                for sound in target.sounds:
+                    asset_md5s.add(sound.md5ext)
+            
+            for i, md5ext in enumerate(asset_md5s, 1):
+                typer.echo(f"  Downloading {i}/{len(asset_md5s)}: {md5ext}")
+                asset_url = f"https://assets.scratch.mit.edu/internalapi/asset/{md5ext}/get/"
+                try:
+                    asset_response = requests.get(asset_url, headers=headers, timeout=30)
+                    asset_response.raise_for_status()
+                    assets_data[md5ext] = asset_response.content
+                except Exception as e:
+                    typer.secho(f"  Warning: Failed to download {md5ext}: {e}", fg=typer.colors.YELLOW)
+            
+            output_name = name if name else sanitize_filename(project_metadata.title)
+        
+        # Create output directory for assets
+        assets_dir = Path(output_name)
+        assets_dir.mkdir(exist_ok=True)
+        
+        typer.echo(f"Creating documentation in {output_name}.html and {output_name}/...")
+        
+        # Save assets and create thumbnails
+        costume_thumbnails = {}
+        sound_files = {}
+        
+        for md5ext, data in assets_data.items():
+            asset_path = assets_dir / md5ext
+            asset_path.write_bytes(data)
+            
+            # Create thumbnails for images
+            if md5ext.endswith(('.png', '.jpg', '.jpeg', '.svg')):
+                if md5ext.endswith('.svg'):
+                    # SVGs can be used directly
+                    costume_thumbnails[md5ext] = md5ext
+                else:
+                    # Create thumbnail for bitmap images
+                    try:
+                        img = Image.open(asset_path)
+                        # Create thumbnail (max 150x150)
+                        img.thumbnail((150, 150), Image.Resampling.LANCZOS)
+                        thumb_name = f"thumb_{md5ext}"
+                        thumb_path = assets_dir / thumb_name
+                        img.save(thumb_path)
+                        costume_thumbnails[md5ext] = thumb_name
+                    except Exception as e:
+                        typer.secho(f"  Warning: Could not create thumbnail for {md5ext}: {e}", fg=typer.colors.YELLOW)
+                        costume_thumbnails[md5ext] = md5ext
+            
+            # Track sound files
+            if md5ext.endswith(('.wav', '.mp3')):
+                sound_files[md5ext] = md5ext
+        
+        # Generate HTML documentation
+        html_content = generate_html_documentation(project, project_json, costume_thumbnails, sound_files, output_name)
+        
+        # Write HTML file
+        html_path = Path(f"{output_name}.html")
+        html_path.write_text(html_content, encoding='utf-8')
+        
+        typer.secho(f"✓ Documentation generated successfully!", fg=typer.colors.GREEN)
+        typer.echo(f"  HTML: {html_path}")
+        typer.echo(f"  Assets: {assets_dir}/")
+        
+    except ValueError as e:
+        typer.secho(f"Error: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+    except requests.exceptions.RequestException as e:
+        typer.secho(f"Error: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+    except Exception as e:
+        typer.secho(f"Unexpected error: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+
+
+def generate_html_documentation(
+    project: ScratchProject,
+    project_json: dict,
+    costume_thumbnails: dict,
+    sound_files: dict,
+    output_name: str
+) -> str:
+    """Generate HTML documentation for a Scratch project."""
+    
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratch Project Documentation</title>
+    <style>
+        body {{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }}
+        h1, h2, h3 {{
+            color: #ff6680;
+        }}
+        .section {{
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }}
+        .metadata {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }}
+        .metadata-item {{
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }}
+        .metadata-label {{
+            font-weight: bold;
+            color: #666;
+            font-size: 0.9em;
+        }}
+        .sprite {{
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            background: #fafafa;
+        }}
+        .sprite-header {{
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }}
+        .sprite-name {{
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #4a90e2;
+        }}
+        .sprite-props {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }}
+        .prop {{
+            background: white;
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 3px solid #4a90e2;
+        }}
+        .prop-label {{
+            font-size: 0.85em;
+            color: #666;
+        }}
+        .prop-value {{
+            font-weight: bold;
+            color: #333;
+        }}
+        .assets {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }}
+        .asset {{
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }}
+        .asset img {{
+            max-width: 150px;
+            max-height: 150px;
+            display: block;
+            margin: 0 auto 10px;
+            border: 1px solid #eee;
+        }}
+        .asset-name {{
+            font-size: 0.9em;
+            color: #333;
+            word-break: break-word;
+        }}
+        .audio-player {{
+            margin-top: 10px;
+        }}
+        .blocks-count {{
+            background: #e8f4fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #4a90e2;
+        }}
+        .extensions {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }}
+        .extension {{
+            background: #fef3cd;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 1px solid #f5c842;
+        }}
+        .statistics {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }}
+        .stat-card {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }}
+        .stat-value {{
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }}
+        .stat-label {{
+            font-size: 1em;
+            opacity: 0.9;
+        }}
+    </style>
+</head>
+<body>
+    <h1>🎨 Scratch Project Documentation</h1>
+    
+    <div class="section">
+        <h2>Project Information</h2>
+        <div class="metadata">
+            <div class="metadata-item">
+                <div class="metadata-label">Scratch Version</div>
+                <div>{project.meta.semver}</div>
+            </div>
+            <div class="metadata-item">
+                <div class="metadata-label">VM Version</div>
+                <div>{project.meta.vm}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Statistics</h2>
+        <div class="statistics">
+            <div class="stat-card">
+                <div class="stat-label">Sprites</div>
+                <div class="stat-value">{project.count_sprites()}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Blocks</div>
+                <div class="stat-value">{project.count_blocks()}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Variables</div>
+                <div class="stat-value">{len(project.get_all_variables())}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Lists</div>
+                <div class="stat-value">{len(project.get_all_lists())}</div>
+            </div>
+        </div>
+    </div>
+"""
+    
+    # Extensions
+    if project.extensions:
+        html += """
+    <div class="section">
+        <h2>Extensions Used</h2>
+        <div class="extensions">
+"""
+        for ext in project.extensions:
+            html += f'            <div class="extension">🔌 {ext}</div>\n'
+        html += """        </div>
+    </div>
+"""
+    
+    # Stage
+    stage = project.stage
+    if stage:
+        html += f"""
+    <div class="section">
+        <h2>🎭 Stage</h2>
+        <div class="sprite">
+            <div class="sprite-header">
+                <div class="sprite-name">{stage.name}</div>
+            </div>
+            <div class="sprite-props">
+                <div class="prop">
+                    <div class="prop-label">Costumes</div>
+                    <div class="prop-value">{len(stage.costumes)}</div>
+                </div>
+                <div class="prop">
+                    <div class="prop-label">Sounds</div>
+                    <div class="prop-value">{len(stage.sounds)}</div>
+                </div>
+                <div class="prop">
+                    <div class="prop-label">Variables</div>
+                    <div class="prop-value">{len(stage.variables)}</div>
+                </div>
+                <div class="prop">
+                    <div class="prop-label">Lists</div>
+                    <div class="prop-value">{len(stage.lists)}</div>
+                </div>
+                <div class="prop">
+                    <div class="prop-label">Blocks</div>
+                    <div class="prop-value">{len(stage.blocks)}</div>
+                </div>
+            </div>
+"""
+        
+        # Stage costumes
+        if stage.costumes:
+            html += '            <h3>Backdrops</h3>\n'
+            html += '            <div class="assets">\n'
+            for costume in stage.costumes:
+                thumb = costume_thumbnails.get(costume.md5ext, '')
+                if thumb:
+                    html += f"""                <div class="asset">
+                    <img src="{output_name}/{thumb}" alt="{costume.name}">
+                    <div class="asset-name">{costume.name}</div>
+                </div>
+"""
+            html += '            </div>\n'
+        
+        # Stage sounds
+        if stage.sounds:
+            html += '            <h3>Sounds</h3>\n'
+            html += '            <div class="assets">\n'
+            for sound in stage.sounds:
+                if sound.md5ext in sound_files:
+                    html += f"""                <div class="asset">
+                    <div class="asset-name">🔊 {sound.name}</div>
+                    <audio controls class="audio-player">
+                        <source src="{output_name}/{sound.md5ext}" type="audio/{sound.dataFormat}">
+                    </audio>
+                </div>
+"""
+            html += '            </div>\n'
+        
+        html += '        </div>\n'
+        html += '    </div>\n'
+    
+    # Sprites
+    sprites = project.sprites
+    if sprites:
+        html += """
+    <div class="section">
+        <h2>🎮 Sprites</h2>
+"""
+        for sprite in sprites:
+            html += f"""        <div class="sprite">
+            <div class="sprite-header">
+                <div class="sprite-name">{sprite.name}</div>
+            </div>
+            <div class="sprite-props">
+                <div class="prop">
+                    <div class="prop-label">Position</div>
+                    <div class="prop-value">({sprite.x}, {sprite.y})</div>
+                </div>
+                <div class="prop">
+                    <div class="prop-label">Size</div>
+                    <div class="prop-value">{sprite.size}%</div>
+                </div>
+                <div class="prop">
+                    <div class="prop-label">Direction</div>
+                    <div class="prop-value">{sprite.direction}°</div>
+                </div>
+                <div class="prop">
+                    <div class="prop-label">Visible</div>
+                    <div class="prop-value">{"Yes" if sprite.visible else "No"}</div>
+                </div>
+                <div class="prop">
+                    <div class="prop-label">Rotation Style</div>
+                    <div class="prop-value">{sprite.rotationStyle or "all around"}</div>
+                </div>
+            </div>
+            <div class="blocks-count">
+                📦 <strong>{len(sprite.blocks)}</strong> blocks | 
+                🎨 <strong>{len(sprite.costumes)}</strong> costumes | 
+                🔊 <strong>{len(sprite.sounds)}</strong> sounds
+            </div>
+"""
+            
+            # Sprite costumes
+            if sprite.costumes:
+                html += '            <h3>Costumes</h3>\n'
+                html += '            <div class="assets">\n'
+                for costume in sprite.costumes:
+                    thumb = costume_thumbnails.get(costume.md5ext, '')
+                    if thumb:
+                        html += f"""                <div class="asset">
+                    <img src="{output_name}/{thumb}" alt="{costume.name}">
+                    <div class="asset-name">{costume.name}</div>
+                </div>
+"""
+                html += '            </div>\n'
+            
+            # Sprite sounds
+            if sprite.sounds:
+                html += '            <h3>Sounds</h3>\n'
+                html += '            <div class="assets">\n'
+                for sound in sprite.sounds:
+                    if sound.md5ext in sound_files:
+                        html += f"""                <div class="asset">
+                    <div class="asset-name">🔊 {sound.name}</div>
+                    <audio controls class="audio-player">
+                        <source src="{output_name}/{sound.md5ext}" type="audio/{sound.dataFormat}">
+                    </audio>
+                </div>
+"""
+                html += '            </div>\n'
+            
+            html += '        </div>\n'
+        
+        html += '    </div>\n'
+    
+    html += """
+</body>
+</html>
+"""
+    
+    return html
 
 
 if __name__ == "__main__":

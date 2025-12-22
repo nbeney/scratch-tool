@@ -8,6 +8,7 @@ A command-line tool to download Scratch 3 projects as complete `.sb3` files (ZIP
 
 - Downloads complete Scratch 3 projects with all assets (costumes, sounds, etc.)
 - Creates proper `.sb3` files identical to "File > Save to your computer" in Scratch
+- Generates HTML documentation with thumbnails and audio players
 - Analyzes project structure and displays detailed statistics
 - Views project metadata with colorized JSON output
 - Supports multiple input formats (URL, project ID, or local file)
@@ -22,7 +23,7 @@ pip install -e .
 
 ## Usage
 
-The tool provides three main commands: `metadata`, `download`, and `analyze`.
+The tool provides four main commands: `metadata`, `download`, `analyze`, and `document`.
 
 **Important:** Projects must be public and shared on Scratch. Unshared or private projects cannot be accessed.
 
@@ -115,6 +116,51 @@ The analyze command displays comprehensive information including:
 **Quiet mode** (`--quiet` or `-q`) is useful for validation scripts - it produces no output if the JSON is valid and parseable, but shows errors if validation fails.
 - Block types used in the project
 
+### Generate HTML Documentation
+
+Generate comprehensive HTML documentation for a Scratch project with thumbnails and audio players:
+
+```bash
+# From project ID
+python main.py document 1252755893
+
+# From URL
+python main.py document https://scratch.mit.edu/projects/1252755893/
+
+# From local .sb3 file
+python main.py document project.sb3
+
+# From local .zip file
+python main.py document project.zip
+
+# From directory containing project.json and assets
+python main.py document project-directory/
+
+# Specify custom output name (default uses project title or input name)
+python main.py document 1252755893 --name custom-doc
+```
+
+The document command generates:
+- **HTML file** (`<name>.html`) with styled, responsive documentation
+- **Assets directory** (`<name>/`) containing all images and sounds
+
+The generated documentation includes:
+- Project information (Scratch version, VM version)
+- Statistics (sprite count, block count, variables, lists)
+- Extensions used
+- Stage section with backdrops and sounds
+- Detailed sprite information:
+  - Position, size, rotation, visibility
+  - Costume gallery with thumbnails
+  - Sound list with audio players
+  - Block counts
+
+**Thumbnails:** Image costumes (PNG, JPG, SVG) are automatically converted to 150x150 thumbnails for quick preview.
+
+**Audio Players:** Sound files (WAV, MP3) are embedded with HTML5 audio controls for in-browser playback.
+
+The output HTML is self-contained with embedded CSS and works offline with the assets directory.
+
 ## Options
 
 ### Metadata Command
@@ -132,6 +178,11 @@ The analyze command displays comprehensive information including:
 - `--quiet, -q`: Quiet mode - print nothing if JSON is valid, only show errors (useful for validation)
 - `--help`: Show help message
 
+### Document Command
+- `source`: (Required) Scratch project URL, ID, .sb3 file, .zip file, or directory
+- `--name, -n`: Optional custom output filename and directory name (without extension)
+- `--help`: Show help message
+
 ## Requirements
 
 - Python 3.11+
@@ -139,6 +190,7 @@ The analyze command displays comprehensive information including:
 - requests
 - pydantic
 - pygments
+- pillow (for thumbnail generation)
 
 ### Development Dependencies
 - pytest
@@ -199,8 +251,9 @@ pytest test_project_models.py -v # Pydantic model tests
 
 Test coverage:
 - 40 CLI integration tests (metadata, download, analyze with quiet mode, parsing, sanitization)
+- 8 document command tests (HTML generation, thumbnails, audio players, multiple input formats)
 - 11 Pydantic model validation tests
-- Total: 51 tests, all passing
+- Total: 59 tests, all passing
 
 ## How It Works
 

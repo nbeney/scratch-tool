@@ -471,3 +471,108 @@ class TestAnalyzeCommand:
         
         assert result.exit_code == 0
         assert result.stdout == ""  # No output in quiet mode
+
+
+class TestDocumentCommand:
+    """Tests for the document command."""
+
+    def test_document_from_project_id(self, tmp_path, monkeypatch):
+        """Test generating documentation from a project ID."""
+        monkeypatch.chdir(tmp_path)
+        
+        result = runner.invoke(app, ["document", "1252755893"])
+        
+        assert result.exit_code == 0
+        assert "Downloading project 1252755893" in result.stdout
+        assert "✓ Documentation generated successfully!" in result.stdout
+        assert Path("Snowball fight.html").exists()
+        assert Path("Snowball fight").is_dir()
+        
+    def test_document_with_custom_name(self, tmp_path, monkeypatch):
+        """Test generating documentation with --name option."""
+        monkeypatch.chdir(tmp_path)
+        
+        result = runner.invoke(app, ["document", "1252755893", "--name", "custom-doc"])
+        
+        assert result.exit_code == 0
+        assert "✓ Documentation generated successfully!" in result.stdout
+        assert Path("custom-doc.html").exists()
+        assert Path("custom-doc").is_dir()
+        
+    def test_document_from_sb3_file(self, tmp_path, monkeypatch):
+        """Test generating documentation from a .sb3 file."""
+        monkeypatch.chdir(tmp_path)
+        
+        # First download the project
+        result = runner.invoke(app, ["download", "1252755893", "--name", "test"])
+        assert result.exit_code == 0
+        
+        # Then generate documentation
+        result = runner.invoke(app, ["document", "test.sb3"])
+        
+        assert result.exit_code == 0
+        assert "Loading project from file: test.sb3" in result.stdout
+        assert "✓ Documentation generated successfully!" in result.stdout
+        assert Path("test.html").exists()
+        assert Path("test").is_dir()
+        
+    def test_document_creates_thumbnails(self, tmp_path, monkeypatch):
+        """Test that documentation creates thumbnails for costumes."""
+        monkeypatch.chdir(tmp_path)
+        
+        result = runner.invoke(app, ["document", "1252755893", "--name", "thumb-test"])
+        
+        assert result.exit_code == 0
+        
+        # Check that thumbnails were created (project has at least one PNG costume)
+        thumb_dir = Path("thumb-test")
+        thumb_files = list(thumb_dir.glob("thumb_*.png"))
+        # Snowball fight project has 1 PNG backdrop
+        assert len(thumb_files) >= 1
+        
+    def test_document_includes_audio_players(self, tmp_path, monkeypatch):
+        """Test that documentation includes audio players for sounds."""
+        monkeypatch.chdir(tmp_path)
+        
+        result = runner.invoke(app, ["document", "1252755893", "--name", "audio-test"])
+        
+        assert result.exit_code == 0
+        
+        # Check that HTML contains audio elements
+        html_content = Path("audio-test.html").read_text()
+        assert "<audio" in html_content
+        assert "controls" in html_content
+        assert ".wav" in html_content
+        
+    def test_document_includes_project_info(self, tmp_path, monkeypatch):
+        """Test that documentation includes project information."""
+        monkeypatch.chdir(tmp_path)
+        
+        result = runner.invoke(app, ["document", "1252755893", "--name", "info-test"])
+        
+        assert result.exit_code == 0
+        
+        # Check that HTML contains project info
+        html_content = Path("info-test.html").read_text()
+        assert "Scratch Project Documentation" in html_content  # Page title
+        assert "Project Information" in html_content
+        assert "Stage" in html_content
+        assert "Sprites" in html_content
+        assert "Statistics" in html_content
+        
+    def test_document_invalid_project_id(self, tmp_path, monkeypatch):
+        """Test error handling for invalid project ID."""
+        monkeypatch.chdir(tmp_path)
+        
+        result = runner.invoke(app, ["document", "99999999999999"])
+        
+        assert result.exit_code == 1
+        
+    def test_document_nonexistent_file(self, tmp_path, monkeypatch):
+        """Test error handling for nonexistent file."""
+        monkeypatch.chdir(tmp_path)
+        
+        result = runner.invoke(app, ["document", "nonexistent.sb3"])
+        
+        assert result.exit_code == 1
+        assert "Error" in (result.stdout + result.stderr)
