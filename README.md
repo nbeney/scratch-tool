@@ -191,6 +191,7 @@ The output HTML is self-contained with embedded CSS and works offline with the a
 - pydantic
 - pygments
 - pillow (for thumbnail generation)
+- dominate (for HTML generation)
 
 ### Development Dependencies
 - pytest

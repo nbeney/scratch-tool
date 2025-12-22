@@ -9,6 +9,10 @@ from zipfile import ZipFile
 
 import requests
 import typer
+from dominate import document as dom_document
+from dominate.tags import (
+    audio, body, div, h1, h2, h3, head, html, img, meta, source, style, title
+)
 from PIL import Image
 from pygments import highlight
 from pygments.formatters import TerminalFormatter
@@ -664,354 +668,300 @@ def generate_html_documentation(
     sound_files: dict,
     output_name: str
 ) -> str:
-    """Generate HTML documentation for a Scratch project."""
+    """Generate HTML documentation for a Scratch project using dominate."""
     
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scratch Project Documentation</title>
-    <style>
-        body {{
+    doc = dom_document(title='Scratch Project Documentation')
+    
+    with doc.head:
+        meta(charset='UTF-8')
+        meta(name='viewport', content='width=device-width, initial-scale=1.0')
+        
+        # CSS styles
+        style("""
+        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
-        }}
-        h1, h2, h3 {{
+        }
+        h1, h2, h3 {
             color: #ff6680;
-        }}
-        .section {{
+        }
+        .section {
             background: white;
             padding: 20px;
             margin: 20px 0;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }}
-        .metadata {{
+        }
+        .metadata {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
-        }}
-        .metadata-item {{
+        }
+        .metadata-item {
             padding: 10px;
             background: #f8f9fa;
             border-radius: 4px;
-        }}
-        .metadata-label {{
+        }
+        .metadata-label {
             font-weight: bold;
             color: #666;
             font-size: 0.9em;
-        }}
-        .sprite {{
+        }
+        .sprite {
             border: 2px solid #ddd;
             padding: 15px;
             margin: 15px 0;
             border-radius: 8px;
             background: #fafafa;
-        }}
-        .sprite-header {{
+        }
+        .sprite-header {
             display: flex;
             align-items: center;
             gap: 15px;
             margin-bottom: 15px;
-        }}
-        .sprite-name {{
+        }
+        .sprite-name {
             font-size: 1.3em;
             font-weight: bold;
             color: #4a90e2;
-        }}
-        .sprite-props {{
+        }
+        .sprite-props {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 10px;
             margin: 10px 0;
-        }}
-        .prop {{
+        }
+        .prop {
             background: white;
             padding: 8px;
             border-radius: 4px;
             border-left: 3px solid #4a90e2;
-        }}
-        .prop-label {{
+        }
+        .prop-label {
             font-size: 0.85em;
             color: #666;
-        }}
-        .prop-value {{
+        }
+        .prop-value {
             font-weight: bold;
             color: #333;
-        }}
-        .assets {{
+        }
+        .assets {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
             margin: 15px 0;
-        }}
-        .asset {{
+        }
+        .asset {
             text-align: center;
             padding: 10px;
             background: white;
             border-radius: 4px;
             border: 1px solid #ddd;
-        }}
-        .asset img {{
+        }
+        .asset img {
             max-width: 150px;
             max-height: 150px;
             display: block;
             margin: 0 auto 10px;
             border: 1px solid #eee;
-        }}
-        .asset-name {{
+        }
+        .asset-name {
             font-size: 0.9em;
             color: #333;
             word-break: break-word;
-        }}
-        .audio-player {{
+        }
+        .audio-player {
             margin-top: 10px;
-        }}
-        .blocks-count {{
+        }
+        .blocks-count {
             background: #e8f4fd;
             padding: 10px;
             border-radius: 4px;
             margin: 10px 0;
             border-left: 4px solid #4a90e2;
-        }}
-        .extensions {{
+        }
+        .extensions {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-        }}
-        .extension {{
+        }
+        .extension {
             background: #fef3cd;
             padding: 8px 15px;
             border-radius: 20px;
             font-size: 0.9em;
             border: 1px solid #f5c842;
-        }}
-        .statistics {{
+        }
+        .statistics {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
-        }}
-        .stat-card {{
+        }
+        .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 20px;
             border-radius: 8px;
             text-align: center;
-        }}
-        .stat-value {{
+        }
+        .stat-value {
             font-size: 2.5em;
             font-weight: bold;
             margin: 10px 0;
-        }}
-        .stat-label {{
+        }
+        .stat-label {
             font-size: 1em;
             opacity: 0.9;
-        }}
-    </style>
-</head>
-<body>
-    <h1>🎨 Scratch Project Documentation</h1>
+        }
+        """)
     
-    <div class="section">
-        <h2>Project Information</h2>
-        <div class="metadata">
-            <div class="metadata-item">
-                <div class="metadata-label">Scratch Version</div>
-                <div>{project.meta.semver}</div>
-            </div>
-            <div class="metadata-item">
-                <div class="metadata-label">VM Version</div>
-                <div>{project.meta.vm}</div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="section">
-        <h2>Statistics</h2>
-        <div class="statistics">
-            <div class="stat-card">
-                <div class="stat-label">Sprites</div>
-                <div class="stat-value">{project.count_sprites()}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Total Blocks</div>
-                <div class="stat-value">{project.count_blocks()}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Variables</div>
-                <div class="stat-value">{len(project.get_all_variables())}</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Lists</div>
-                <div class="stat-value">{len(project.get_all_lists())}</div>
-            </div>
-        </div>
-    </div>
-"""
-    
-    # Extensions
-    if project.extensions:
-        html += """
-    <div class="section">
-        <h2>Extensions Used</h2>
-        <div class="extensions">
-"""
-        for ext in project.extensions:
-            html += f'            <div class="extension">🔌 {ext}</div>\n'
-        html += """        </div>
-    </div>
-"""
-    
-    # Stage
-    stage = project.stage
-    if stage:
-        html += f"""
-    <div class="section">
-        <h2>🎭 Stage</h2>
-        <div class="sprite">
-            <div class="sprite-header">
-                <div class="sprite-name">{stage.name}</div>
-            </div>
-            <div class="sprite-props">
-                <div class="prop">
-                    <div class="prop-label">Costumes</div>
-                    <div class="prop-value">{len(stage.costumes)}</div>
-                </div>
-                <div class="prop">
-                    <div class="prop-label">Sounds</div>
-                    <div class="prop-value">{len(stage.sounds)}</div>
-                </div>
-                <div class="prop">
-                    <div class="prop-label">Variables</div>
-                    <div class="prop-value">{len(stage.variables)}</div>
-                </div>
-                <div class="prop">
-                    <div class="prop-label">Lists</div>
-                    <div class="prop-value">{len(stage.lists)}</div>
-                </div>
-                <div class="prop">
-                    <div class="prop-label">Blocks</div>
-                    <div class="prop-value">{len(stage.blocks)}</div>
-                </div>
-            </div>
-"""
+    with doc:
+        h1('🎨 Scratch Project Documentation')
         
-        # Stage costumes
-        if stage.costumes:
-            html += '            <h3>Backdrops</h3>\n'
-            html += '            <div class="assets">\n'
-            for costume in stage.costumes:
-                thumb = costume_thumbnails.get(costume.md5ext, '')
-                if thumb:
-                    html += f"""                <div class="asset">
-                    <img src="{output_name}/{thumb}" alt="{costume.name}">
-                    <div class="asset-name">{costume.name}</div>
-                </div>
-"""
-            html += '            </div>\n'
+        # Project Information Section
+        with div(cls='section'):
+            h2('Project Information')
+            with div(cls='metadata'):
+                with div(cls='metadata-item'):
+                    div('Scratch Version', cls='metadata-label')
+                    div(project.meta.semver)
+                with div(cls='metadata-item'):
+                    div('VM Version', cls='metadata-label')
+                    div(project.meta.vm)
         
-        # Stage sounds
-        if stage.sounds:
-            html += '            <h3>Sounds</h3>\n'
-            html += '            <div class="assets">\n'
-            for sound in stage.sounds:
-                if sound.md5ext in sound_files:
-                    html += f"""                <div class="asset">
-                    <div class="asset-name">🔊 {sound.name}</div>
-                    <audio controls class="audio-player">
-                        <source src="{output_name}/{sound.md5ext}" type="audio/{sound.dataFormat}">
-                    </audio>
-                </div>
-"""
-            html += '            </div>\n'
+        # Statistics Section
+        with div(cls='section'):
+            h2('Statistics')
+            with div(cls='statistics'):
+                with div(cls='stat-card'):
+                    div('Sprites', cls='stat-label')
+                    div(str(project.count_sprites()), cls='stat-value')
+                with div(cls='stat-card'):
+                    div('Total Blocks', cls='stat-label')
+                    div(str(project.count_blocks()), cls='stat-value')
+                with div(cls='stat-card'):
+                    div('Variables', cls='stat-label')
+                    div(str(len(project.get_all_variables())), cls='stat-value')
+                with div(cls='stat-card'):
+                    div('Lists', cls='stat-label')
+                    div(str(len(project.get_all_lists())), cls='stat-value')
         
-        html += '        </div>\n'
-        html += '    </div>\n'
-    
-    # Sprites
-    sprites = project.sprites
-    if sprites:
-        html += """
-    <div class="section">
-        <h2>🎮 Sprites</h2>
-"""
-        for sprite in sprites:
-            html += f"""        <div class="sprite">
-            <div class="sprite-header">
-                <div class="sprite-name">{sprite.name}</div>
-            </div>
-            <div class="sprite-props">
-                <div class="prop">
-                    <div class="prop-label">Position</div>
-                    <div class="prop-value">({sprite.x}, {sprite.y})</div>
-                </div>
-                <div class="prop">
-                    <div class="prop-label">Size</div>
-                    <div class="prop-value">{sprite.size}%</div>
-                </div>
-                <div class="prop">
-                    <div class="prop-label">Direction</div>
-                    <div class="prop-value">{sprite.direction}°</div>
-                </div>
-                <div class="prop">
-                    <div class="prop-label">Visible</div>
-                    <div class="prop-value">{"Yes" if sprite.visible else "No"}</div>
-                </div>
-                <div class="prop">
-                    <div class="prop-label">Rotation Style</div>
-                    <div class="prop-value">{sprite.rotationStyle or "all around"}</div>
-                </div>
-            </div>
-            <div class="blocks-count">
-                📦 <strong>{len(sprite.blocks)}</strong> blocks | 
-                🎨 <strong>{len(sprite.costumes)}</strong> costumes | 
-                🔊 <strong>{len(sprite.sounds)}</strong> sounds
-            </div>
-"""
-            
-            # Sprite costumes
-            if sprite.costumes:
-                html += '            <h3>Costumes</h3>\n'
-                html += '            <div class="assets">\n'
-                for costume in sprite.costumes:
-                    thumb = costume_thumbnails.get(costume.md5ext, '')
-                    if thumb:
-                        html += f"""                <div class="asset">
-                    <img src="{output_name}/{thumb}" alt="{costume.name}">
-                    <div class="asset-name">{costume.name}</div>
-                </div>
-"""
-                html += '            </div>\n'
-            
-            # Sprite sounds
-            if sprite.sounds:
-                html += '            <h3>Sounds</h3>\n'
-                html += '            <div class="assets">\n'
-                for sound in sprite.sounds:
-                    if sound.md5ext in sound_files:
-                        html += f"""                <div class="asset">
-                    <div class="asset-name">🔊 {sound.name}</div>
-                    <audio controls class="audio-player">
-                        <source src="{output_name}/{sound.md5ext}" type="audio/{sound.dataFormat}">
-                    </audio>
-                </div>
-"""
-                html += '            </div>\n'
-            
-            html += '        </div>\n'
+        # Extensions Section
+        if project.extensions:
+            with div(cls='section'):
+                h2('Extensions Used')
+                with div(cls='extensions'):
+                    for ext in project.extensions:
+                        div(f'🔌 {ext}', cls='extension')
         
-        html += '    </div>\n'
+        # Stage Section
+        stage = project.stage
+        if stage:
+            with div(cls='section'):
+                h2('🎭 Stage')
+                with div(cls='sprite'):
+                    with div(cls='sprite-header'):
+                        div(stage.name, cls='sprite-name')
+                    
+                    with div(cls='sprite-props'):
+                        with div(cls='prop'):
+                            div('Costumes', cls='prop-label')
+                            div(str(len(stage.costumes)), cls='prop-value')
+                        with div(cls='prop'):
+                            div('Sounds', cls='prop-label')
+                            div(str(len(stage.sounds)), cls='prop-value')
+                        with div(cls='prop'):
+                            div('Variables', cls='prop-label')
+                            div(str(len(stage.variables)), cls='prop-value')
+                        with div(cls='prop'):
+                            div('Lists', cls='prop-label')
+                            div(str(len(stage.lists)), cls='prop-value')
+                        with div(cls='prop'):
+                            div('Blocks', cls='prop-label')
+                            div(str(len(stage.blocks)), cls='prop-value')
+                    
+                    # Stage costumes (backdrops)
+                    if stage.costumes:
+                        h3('Backdrops')
+                        with div(cls='assets'):
+                            for costume in stage.costumes:
+                                thumb = costume_thumbnails.get(costume.md5ext, '')
+                                if thumb:
+                                    with div(cls='asset'):
+                                        img(src=f'{output_name}/{thumb}', alt=costume.name)
+                                        div(costume.name, cls='asset-name')
+                    
+                    # Stage sounds
+                    if stage.sounds:
+                        h3('Sounds')
+                        with div(cls='assets'):
+                            for sound in stage.sounds:
+                                if sound.md5ext in sound_files:
+                                    with div(cls='asset'):
+                                        div(f'🔊 {sound.name}', cls='asset-name')
+                                        with audio(controls=True, cls='audio-player'):
+                                            source(src=f'{output_name}/{sound.md5ext}', 
+                                                  type=f'audio/{sound.dataFormat}')
+        
+        # Sprites Section
+        sprites = project.sprites
+        if sprites:
+            with div(cls='section'):
+                h2('🎮 Sprites')
+                for sprite in sprites:
+                    with div(cls='sprite'):
+                        with div(cls='sprite-header'):
+                            div(sprite.name, cls='sprite-name')
+                        
+                        with div(cls='sprite-props'):
+                            with div(cls='prop'):
+                                div('Position', cls='prop-label')
+                                div(f'({sprite.x}, {sprite.y})', cls='prop-value')
+                            with div(cls='prop'):
+                                div('Size', cls='prop-label')
+                                div(f'{sprite.size}%', cls='prop-value')
+                            with div(cls='prop'):
+                                div('Direction', cls='prop-label')
+                                div(f'{sprite.direction}°', cls='prop-value')
+                            with div(cls='prop'):
+                                div('Visible', cls='prop-label')
+                                div('Yes' if sprite.visible else 'No', cls='prop-value')
+                            with div(cls='prop'):
+                                div('Rotation Style', cls='prop-label')
+                                div(sprite.rotationStyle or 'all around', cls='prop-value')
+                        
+                        with div(cls='blocks-count'):
+                            div(f'📦 {len(sprite.blocks)} blocks | '
+                                f'🎨 {len(sprite.costumes)} costumes | '
+                                f'🔊 {len(sprite.sounds)} sounds', escape=False)
+                        
+                        # Sprite costumes
+                        if sprite.costumes:
+                            h3('Costumes')
+                            with div(cls='assets'):
+                                for costume in sprite.costumes:
+                                    thumb = costume_thumbnails.get(costume.md5ext, '')
+                                    if thumb:
+                                        with div(cls='asset'):
+                                            img(src=f'{output_name}/{thumb}', alt=costume.name)
+                                            div(costume.name, cls='asset-name')
+                        
+                        # Sprite sounds
+                        if sprite.sounds:
+                            h3('Sounds')
+                            with div(cls='assets'):
+                                for sound in sprite.sounds:
+                                    if sound.md5ext in sound_files:
+                                        with div(cls='asset'):
+                                            div(f'🔊 {sound.name}', cls='asset-name')
+                                            with audio(controls=True, cls='audio-player'):
+                                                source(src=f'{output_name}/{sound.md5ext}', 
+                                                      type=f'audio/{sound.dataFormat}')
     
-    html += """
-</body>
-</html>
-"""
-    
-    return html
+    return str(doc)
 
 
 if __name__ == "__main__":
