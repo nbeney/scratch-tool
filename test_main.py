@@ -486,7 +486,9 @@ class TestDocumentCommand:
         assert "Downloading project 1252755893" in result.stdout
         assert "✓ Documentation generated successfully!" in result.stdout
         assert Path("Snowball fight.html").exists()
-        assert Path("Snowball fight").is_dir()
+        # Standalone mode by default - no directory created
+        assert "Standalone" in result.stdout
+        assert not Path("Snowball fight").exists()
         
     def test_document_with_custom_name(self, tmp_path, monkeypatch):
         """Test generating documentation with --name option."""
@@ -497,7 +499,8 @@ class TestDocumentCommand:
         assert result.exit_code == 0
         assert "✓ Documentation generated successfully!" in result.stdout
         assert Path("custom-doc.html").exists()
-        assert Path("custom-doc").is_dir()
+        # Standalone mode by default
+        assert not Path("custom-doc").exists()
         
     def test_document_from_sb3_file(self, tmp_path, monkeypatch):
         """Test generating documentation from a .sb3 file."""
@@ -514,13 +517,14 @@ class TestDocumentCommand:
         assert "Loading project from file: test.sb3" in result.stdout
         assert "✓ Documentation generated successfully!" in result.stdout
         assert Path("test.html").exists()
-        assert Path("test").is_dir()
+        # Standalone mode by default
+        assert not Path("test").exists()
         
     def test_document_creates_thumbnails(self, tmp_path, monkeypatch):
-        """Test that documentation creates thumbnails for costumes."""
+        """Test that documentation creates thumbnails for costumes when using local mode."""
         monkeypatch.chdir(tmp_path)
         
-        result = runner.invoke(app, ["document", "1252755893", "--name", "thumb-test"])
+        result = runner.invoke(app, ["document", "1252755893", "--name", "thumb-test", "--no-standalone"])
         
         assert result.exit_code == 0
         

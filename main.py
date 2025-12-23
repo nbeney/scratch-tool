@@ -489,13 +489,15 @@ def analyze(
 @app.command()
 def document(
     source: str = typer.Argument(..., help="Scratch project URL, ID, .sb3 file, .zip file, or directory with project.json"),
-    name: Optional[str] = typer.Option(None, "--name", "-n", help="Output filename (without .html extension) and directory name"),
+    name: Optional[str] = typer.Option(None, "--name", "-n", help="Output filename (without .html extension)"),
+    standalone: bool = typer.Option(True, "--standalone/--no-standalone", help="Generate single HTML file using Scratch CDN (default: True)"),
 ):
     """
     Generate HTML documentation for a Scratch project.
     
     Creates an HTML file with project information, sprites, blocks, and assets.
-    Also creates a directory with extracted costume images (thumbnails) and sound files.
+    By default, creates a standalone HTML file linking to Scratch's CDN for assets.
+    Use --no-standalone to extract assets locally.
     
     Supported inputs:
     - Project URL (e.g., https://scratch.mit.edu/projects/1252755893/)
@@ -507,9 +509,8 @@ def document(
     Examples:
         scratch-tool document https://scratch.mit.edu/projects/1252755893/
         scratch-tool document 1252755893
-        scratch-tool document my-project.sb3
-        scratch-tool document project-directory/
         scratch-tool document my-project.sb3 --name my-docs
+        scratch-tool document my-project.sb3 --no-standalone  # Extract assets locally
     """
     try:
         project: ScratchProject
@@ -582,66 +583,93 @@ def document(
             project_json = response.json()
             project = ScratchProject.model_validate(project_json)
             
-            # Download all assets
-            typer.echo("Downloading assets...")
-            asset_md5s = set()
-            for target in project.targets:
-                for costume in target.costumes:
-                    asset_md5s.add(costume.md5ext)
-                for sound in target.sounds:
-                    asset_md5s.add(sound.md5ext)
-            
-            for i, md5ext in enumerate(asset_md5s, 1):
-                typer.echo(f"  Downloading {i}/{len(asset_md5s)}: {md5ext}")
-                asset_url = f"https://assets.scratch.mit.edu/internalapi/asset/{md5ext}/get/"
-                try:
-                    asset_response = requests.get(asset_url, headers=headers, timeout=30)
-                    asset_response.raise_for_status()
-                    assets_data[md5ext] = asset_response.content
-                except Exception as e:
-                    typer.secho(f"  Warning: Failed to download {md5ext}: {e}", fg=typer.colors.YELLOW)
+            # Only download assets if not in standalone mode
+            if not standalone:
+                # Collect asset MD5s
+                asset_md5s_to_download = set()
+                for target in project.targets:
+                    for costume in target.costumes:
+                        asset_md5s_to_download.add(costume.md5ext)
+                    for sound in target.sounds:
+                        asset_md5s_to_download.add(sound.md5ext)
+                
+                typer.echo("Downloading assets...")
+                for i, md5ext in enumerate(asset_md5s_to_download, 1):
+                    typer.echo(f"  Downloading {i}/{len(asset_md5s_to_download)}: {md5ext}")
+                    asset_url = f"https://assets.scratch.mit.edu/internalapi/asset/{md5ext}/get/"
+                    try:
+                        asset_response = requests.get(asset_url, headers=headers, timeout=30)
+                        asset_response.raise_for_status()
+                        assets_data[md5ext] = asset_response.content
+                    except Exception as e:
+                        typer.secho(f"  Warning: Failed to download {md5ext}: {e}", fg=typer.colors.YELLOW)
             
             output_name = name if name else sanitize_filename(project_metadata.title)
         
-        # Create output directory for assets
-        assets_dir = Path(output_name)
-        assets_dir.mkdir(exist_ok=True)
+        # Collect asset MD5s from project (needed for standalone mode)
+        asset_md5s = set()
+        for target in project.targets:
+            for costume in target.costumes:
+                asset_md5s.add(costume.md5ext)
+            for sound in target.sounds:
+                asset_md5s.add(sound.md5ext)
         
-        typer.echo(f"Creating documentation in {output_name}.html and {output_name}/...")
-        
-        # Save assets and create thumbnails
+        # Prepare asset URLs and thumbnails based on mode
         costume_thumbnails = {}
         sound_files = {}
+        assets_dir = None
         
-        for md5ext, data in assets_data.items():
-            asset_path = assets_dir / md5ext
-            asset_path.write_bytes(data)
+        if standalone:
+            # Use Scratch CDN for all assets
+            typer.echo(f"Creating standalone documentation in {output_name}.html...")
             
-            # Create thumbnails for images
-            if md5ext.endswith(('.png', '.jpg', '.jpeg', '.svg')):
-                if md5ext.endswith('.svg'):
-                    # SVGs can be used directly
-                    costume_thumbnails[md5ext] = md5ext
-                else:
-                    # Create thumbnail for bitmap images
-                    try:
-                        img = Image.open(asset_path)
-                        # Create thumbnail (max 150x150)
-                        img.thumbnail((150, 150), Image.Resampling.LANCZOS)
-                        thumb_name = f"thumb_{md5ext}"
-                        thumb_path = assets_dir / thumb_name
-                        img.save(thumb_path)
-                        costume_thumbnails[md5ext] = thumb_name
-                    except Exception as e:
-                        typer.secho(f"  Warning: Could not create thumbnail for {md5ext}: {e}", fg=typer.colors.YELLOW)
+            for md5ext in asset_md5s:
+                # Link directly to Scratch CDN
+                if md5ext.endswith(('.png', '.jpg', '.jpeg', '.svg')):
+                    costume_thumbnails[md5ext] = f"https://assets.scratch.mit.edu/internalapi/asset/{md5ext}/get/"
+                
+                if md5ext.endswith(('.wav', '.mp3')):
+                    sound_files[md5ext] = f"https://assets.scratch.mit.edu/internalapi/asset/{md5ext}/get/"
+        else:
+            # Create output directory for local assets
+            assets_dir = Path(output_name)
+            assets_dir.mkdir(exist_ok=True)
+            
+            typer.echo(f"Creating documentation in {output_name}.html and {output_name}/...")
+            
+            # Save assets and create thumbnails locally
+            for md5ext, data in assets_data.items():
+                asset_path = assets_dir / md5ext
+                asset_path.write_bytes(data)
+            
+                
+                # Create thumbnails for images
+                if md5ext.endswith(('.png', '.jpg', '.jpeg', '.svg')):
+                    if md5ext.endswith('.svg'):
+                        # SVGs can be used directly
                         costume_thumbnails[md5ext] = md5ext
-            
-            # Track sound files
-            if md5ext.endswith(('.wav', '.mp3')):
-                sound_files[md5ext] = md5ext
+                    else:
+                        # Create thumbnail for bitmap images
+                        try:
+                            img = Image.open(asset_path)
+                            # Create thumbnail (max 150x150)
+                            img.thumbnail((150, 150), Image.Resampling.LANCZOS)
+                            thumb_name = f"thumb_{md5ext}"
+                            thumb_path = assets_dir / thumb_name
+                            img.save(thumb_path)
+                            costume_thumbnails[md5ext] = thumb_name
+                        except Exception as e:
+                            typer.secho(f"  Warning: Could not create thumbnail for {md5ext}: {e}", fg=typer.colors.YELLOW)
+                            costume_thumbnails[md5ext] = md5ext
+                
+                # Track sound files
+                if md5ext.endswith(('.wav', '.mp3')):
+                    sound_files[md5ext] = md5ext
         
         # Generate HTML documentation
-        html_content = generate_html_documentation(project, project_json, costume_thumbnails, sound_files, output_name)
+        html_content = generate_html_documentation(
+            project, project_json, costume_thumbnails, sound_files, output_name, standalone
+        )
         
         # Write HTML file
         html_path = Path(f"{output_name}.html")
@@ -649,7 +677,10 @@ def document(
         
         typer.secho(f"✓ Documentation generated successfully!", fg=typer.colors.GREEN)
         typer.echo(f"  HTML: {html_path}")
-        typer.echo(f"  Assets: {assets_dir}/")
+        if not standalone and assets_dir:
+            typer.echo(f"  Assets: {assets_dir}/")
+        elif standalone:
+            typer.echo(f"  Mode: Standalone (assets from Scratch CDN)")
         
     except ValueError as e:
         typer.secho(f"Error: {e}", fg=typer.colors.RED, err=True)
@@ -667,9 +698,19 @@ def generate_html_documentation(
     project_json: dict,
     costume_thumbnails: dict,
     sound_files: dict,
-    output_name: str
+    output_name: str,
+    standalone: bool = True
 ) -> str:
-    """Generate HTML documentation for a Scratch project using dominate."""
+    """Generate HTML documentation for a Scratch project using dominate.
+    
+    Args:
+        project: Parsed Scratch project
+        project_json: Raw project JSON
+        costume_thumbnails: Dict mapping md5ext to thumbnail path/URL
+        sound_files: Dict mapping md5ext to sound file path/URL
+        output_name: Base name for output files
+        standalone: If True, URLs are CDN links; if False, local paths
+    """
     
     doc = dom_document(title='Scratch Project Documentation')
     
@@ -912,7 +953,9 @@ def generate_html_documentation(
                                 thumb = costume_thumbnails.get(costume.md5ext, '')
                                 if thumb:
                                     with div(cls='asset'):
-                                        img(src=f'{output_name}/{thumb}', alt=costume.name)
+                                        # Use CDN URL if standalone, else local path
+                                        src_url = thumb if standalone else f'{output_name}/{thumb}'
+                                        img(src=src_url, alt=costume.name)
                                         div(costume.name, cls='asset-name')
                     
                     # Stage sounds
@@ -924,8 +967,9 @@ def generate_html_documentation(
                                     with div(cls='asset'):
                                         div(f'🔊 {sound.name}', cls='asset-name')
                                         with audio(controls=True, cls='audio-player'):
-                                            source(src=f'{output_name}/{sound.md5ext}', 
-                                                  type=f'audio/{sound.dataFormat}')
+                                            # Use CDN URL if standalone, else local path
+                                            src_url = sound_files[sound.md5ext] if standalone else f'{output_name}/{sound.md5ext}'
+                                            source(src=src_url, type=f'audio/{sound.dataFormat}')
                     
                     # Stage scripts
                     if stage.blocks:
@@ -977,7 +1021,9 @@ def generate_html_documentation(
                                     thumb = costume_thumbnails.get(costume.md5ext, '')
                                     if thumb:
                                         with div(cls='asset'):
-                                            img(src=f'{output_name}/{thumb}', alt=costume.name)
+                                            # Use CDN URL if standalone, else local path
+                                            src_url = thumb if standalone else f'{output_name}/{thumb}'
+                                            img(src=src_url, alt=costume.name)
                                             div(costume.name, cls='asset-name')
                         
                         # Sprite sounds
@@ -989,8 +1035,9 @@ def generate_html_documentation(
                                         with div(cls='asset'):
                                             div(f'🔊 {sound.name}', cls='asset-name')
                                             with audio(controls=True, cls='audio-player'):
-                                                source(src=f'{output_name}/{sound.md5ext}', 
-                                                      type=f'audio/{sound.dataFormat}')
+                                                # Use CDN URL if standalone, else local path
+                                                src_url = sound_files[sound.md5ext] if standalone else f'{output_name}/{sound.md5ext}'
+                                                source(src=src_url, type=f'audio/{sound.dataFormat}')
                         
                         # Sprite scripts
                         if sprite.blocks:

@@ -121,7 +121,7 @@ The analyze command displays comprehensive information including:
 Generate comprehensive HTML documentation for a Scratch project with thumbnails and audio players:
 
 ```bash
-# From project ID
+# From project ID (standalone mode - single HTML file)
 python main.py document 1252755893
 
 # From URL
@@ -138,11 +138,26 @@ python main.py document project-directory/
 
 # Specify custom output name (default uses project title or input name)
 python main.py document 1252755893 --name custom-doc
+
+# Generate with local assets directory (instead of using CDN)
+python main.py document 1252755893 --no-standalone
 ```
 
-The document command generates:
-- **HTML file** (`<name>.html`) with styled, responsive documentation
-- **Assets directory** (`<name>/`) containing all images and sounds
+#### Output Modes
+
+**Standalone Mode (default):** Generates a single, portable HTML file that links to assets from the Scratch CDN:
+- **HTML file** (`<name>.html`) - single file with all documentation
+- **No assets directory** - images and sounds are linked from `https://assets.scratch.mit.edu/`
+- **Smaller output** - no local copies of assets
+- **Requires internet** - assets load from CDN when viewing HTML
+- **Easy sharing** - just one file to distribute
+
+**Local Mode (`--no-standalone`):** Generates HTML with a local assets directory:
+- **HTML file** (`<name>.html`) - documentation with local asset references
+- **Assets directory** (`<name>/`) - contains all images and sounds
+- **Larger output** - local copies of all assets
+- **Works offline** - all assets bundled locally (still needs CDN for scratchblocks library)
+- **Thumbnails** - PNG/JPG costumes get 150x150 thumbnail previews
 
 The generated documentation includes:
 - Project information (Scratch version, VM version)
@@ -151,18 +166,14 @@ The generated documentation includes:
 - Stage section with backdrops, sounds, and **scripts**
 - Detailed sprite information:
   - Position, size, rotation, visibility
-  - Costume gallery with thumbnails
+  - Costume gallery with thumbnails (standalone: full images; local: 150x150 thumbnails)
   - Sound list with audio players
   - **Visual script representation** using [scratchblocks](https://scratchblocks.github.io/)
   - Block counts
 
-**Thumbnails:** Image costumes (PNG, JPG, SVG) are automatically converted to 150x150 thumbnails for quick preview.
-
-**Audio Players:** Sound files (WAV, MP3) are embedded with HTML5 audio controls for in-browser playback.
-
 **Script Visualization:** All scripts (code blocks) are rendered using the scratchblocks library, which displays them exactly as they appear in the Scratch editor with proper colors and formatting. Scripts are automatically extracted from the project's block data and converted to scratchblocks notation.
 
-The output HTML is self-contained with embedded CSS and works offline with the assets directory (requires internet connection only for scratchblocks library from CDN).
+The output HTML is self-contained with embedded CSS. In standalone mode, requires internet for both assets and scratchblocks. In local mode, only scratchblocks requires internet.
 
 ## Options
 
@@ -184,6 +195,7 @@ The output HTML is self-contained with embedded CSS and works offline with the a
 ### Document Command
 - `source`: (Required) Scratch project URL, ID, .sb3 file, .zip file, or directory
 - `--name, -n`: Optional custom output filename and directory name (without extension)
+- `--standalone/--no-standalone`: Generate standalone HTML with CDN links (default: `--standalone`) or local HTML with assets directory (`--no-standalone`)
 - `--help`: Show help message
 
 ## Requirements
