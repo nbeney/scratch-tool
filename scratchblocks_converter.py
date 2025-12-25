@@ -309,15 +309,15 @@ OPCODE_MAP = {
     "videoSensing_menu_VIDEO_STATE": "{VIDEO_STATE}",
     
     # Face Sensing extension blocks
-    "faceSensing_whenFaceDetected": "when face is detected::#00ff00",
-    "faceSensing_whenTilted": "when head tilted [{DIRECTION} v]::#00ff00",
-    "faceSensing_whenSpriteTouchesPart": "when this sprite touches [{PART} v]::#00ff00",
-    "faceSensing_goToPart": "go to [{PART} v]::#00ff00",
-    "faceSensing_pointInFaceTiltDirection": "point in face tilt direction::#00ff00",
-    "faceSensing_setSizeToFaceSize": "set size to face size::#00ff00",
-    "faceSensing_faceIsDetected": "<face is detected?::#00ff00>",
-    "faceSensing_faceTilt": "(face tilt::#00ff00)",
-    "faceSensing_faceSize": "(face size::#00ff00)",
+    "faceSensing_whenFaceDetected": "when face is detected::#00aa00",
+    "faceSensing_whenTilted": "when head tilted [{DIRECTION} v]::#00aa00",
+    "faceSensing_whenSpriteTouchesPart": "when this sprite touches [{PART} v]::#00aa00",
+    "faceSensing_goToPart": "go to [{PART} v]::#00aa00",
+    "faceSensing_pointInFaceTiltDirection": "point in face tilt direction::#00aa00",
+    "faceSensing_setSizeToFaceSize": "set size to face size::#00aa00",
+    "faceSensing_faceIsDetected": "<face is detected?::#00aa00>",
+    "faceSensing_faceTilt": "(face tilt::#00aa00)",
+    "faceSensing_faceSize": "(face size::#00aa00)",
     
     # Text to Speech extension blocks
     "text2speech_speakAndWait": "speak ({WORDS})",
