@@ -243,6 +243,17 @@ OPCODE_MAP = {
     
     # Pen menu blocks
     "pen_menu_colorParam": "{colorParam}",
+    
+    # Video Sensing extension blocks
+    "videoSensing_whenMotionGreaterThan": "when video motion > ({REFERENCE})",
+    "videoSensing_videoOn": "(video [{ATTRIBUTE} v] on [{SUBJECT} v])",
+    "videoSensing_videoToggle": "turn video [{VIDEO_STATE} v]",
+    "videoSensing_setVideoTransparency": "set video transparency to ({TRANSPARENCY})%",
+    
+    # Video Sensing menu blocks
+    "videoSensing_menu_ATTRIBUTE": "{ATTRIBUTE}",
+    "videoSensing_menu_SUBJECT": "{SUBJECT}",
+    "videoSensing_menu_VIDEO_STATE": "{VIDEO_STATE}",
 }
 
 def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> str:
