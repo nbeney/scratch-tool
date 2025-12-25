@@ -977,9 +977,10 @@ def generate_html_documentation(
                         if scripts:
                             h3('Scripts')
                             with div(cls='scripts-section'):
-                                for i, script_text in enumerate(scripts):
-                                    with div(cls='script'):
-                                        pre(script_text, cls='blocks')
+                                # Combine all scripts into a single pre.blocks element
+                                # Scripts are separated by blank lines
+                                combined_scripts = '\n\n'.join(scripts)
+                                pre(combined_scripts, cls='blocks')
         
         # Sprites Section
         sprites = project.sprites
@@ -1045,9 +1046,10 @@ def generate_html_documentation(
                             if scripts:
                                 h3('Scripts')
                                 with div(cls='scripts-section'):
-                                    for i, script_text in enumerate(scripts):
-                                        with div(cls='script'):
-                                            pre(script_text, cls='blocks')
+                                    # Combine all scripts into a single pre.blocks element
+                                    # Scripts are separated by blank lines
+                                    combined_scripts = '\n\n'.join(scripts)
+                                    pre(combined_scripts, cls='blocks')
     
     # Add scratchblocks JavaScript at the end of body
     with doc:
