@@ -51,6 +51,14 @@ INSTRUMENT_NAMES = {
     "21": "Synth Pad (21)",
 }
 
+# Pen color parameter mapping for pen extension
+PEN_COLOR_PARAM_NAMES = {
+    "color": "color",
+    "saturation": "saturation",
+    "brightness": "brightness",
+    "transparency": "transparency",
+}
+
 # Opcode to scratchblocks notation mapping (based on scratch-opcodes-list.html)
 OPCODE_MAP = {
     # Motion blocks
@@ -221,6 +229,20 @@ OPCODE_MAP = {
     "music_menu_DRUM": "({DRUM})",
     "music_menu_INSTRUMENT": "({INSTRUMENT})",
     "note": "({NOTE})",
+    
+    # Pen extension blocks
+    "pen_clear": "erase all",
+    "pen_stamp": "stamp",
+    "pen_penDown": "pen down",
+    "pen_penUp": "pen up",
+    "pen_setPenColorToColor": "set pen color to ({COLOR})",
+    "pen_changePenColorParamBy": "change pen [{COLOR_PARAM} v] by ({VALUE})",
+    "pen_setPenColorParamTo": "set pen [{COLOR_PARAM} v] to ({VALUE})",
+    "pen_changePenSizeBy": "change pen size by ({SIZE})",
+    "pen_setPenSizeTo": "set pen size to ({SIZE})",
+    
+    # Pen menu blocks
+    "pen_menu_colorParam": "{colorParam}",
 }
 
 def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> str:
@@ -256,12 +278,18 @@ def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> 
         
         # Type 4-8 are primitives (number, positive number, angle, color, text, broadcast, variable, list)
         if primitive_type in [4, 5, 6, 7, 8, 9, 10, 11, 12, 13]:
+            # Special handling for pen color parameter field menus
+            if input_name == "colorParam" and str(primitive_value) in PEN_COLOR_PARAM_NAMES:
+                return PEN_COLOR_PARAM_NAMES[str(primitive_value)]
             return str(primitive_value)
     
     # For obscured shadows, try the third element
     if len(input_data) >= 3 and isinstance(input_data[2], list):
         shadow = input_data[2]
         if len(shadow) >= 2:
+            # Special handling for pen color parameter in obscured shadows
+            if input_name == "colorParam" and str(shadow[1]) in PEN_COLOR_PARAM_NAMES:
+                return PEN_COLOR_PARAM_NAMES[str(shadow[1])]
             return str(shadow[1])
     
     return "?"
@@ -282,6 +310,10 @@ def get_field_value(block: Block, field_name: str) -> str:
     # Convert instrument numbers to names for music extension
     if field_name == "INSTRUMENT" and value in INSTRUMENT_NAMES:
         return INSTRUMENT_NAMES[value]
+    
+    # Convert pen color parameter names for pen extension (lowercase field name)
+    if field_name == "colorParam" and value in PEN_COLOR_PARAM_NAMES:
+        return PEN_COLOR_PARAM_NAMES[value]
     
     return value
 
@@ -315,9 +347,9 @@ def block_to_scratchblocks(block: Block, blocks: Dict[str, Block], indent: int =
                 value = get_field_value(block, field_name)
                 result = result.replace(placeholder, value)
     
-    # Clean up any remaining placeholders
+    # Clean up any remaining placeholders (both UPPERCASE and camelCase)
     import re
-    result = re.sub(r'\{[A-Z_]+\}', '?', result)
+    result = re.sub(r'\{[A-Za-z_]+\}', '?', result)
     
     return f"{' ' * indent}{result}"
 

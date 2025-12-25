@@ -5551,7 +5551,7 @@
       "blocks": {
         "$K[f=:sL9p%#Qcp6xlek": {
           "opcode": "music_playDrumForBeats",
-          "next": "T{987fSM~lxsiAgDkB{)",
+          "next": "V|(ql4w;L5E`D?zX#a`C",
           "parent": null,
           "inputs": {
             "DRUM": [
@@ -5589,7 +5589,7 @@
         "V|(ql4w;L5E`D?zX#a`C": {
           "opcode": "music_restForBeats",
           "next": ")gb+O}HZe8A3}#hGFwhF",
-          "parent": "t8|U5D,]~$Pr;(CXiX?M",
+          "parent": "$K[f=:sL9p%#Qcp6xlek",
           "inputs": {
             "BEATS": [
               1,
@@ -5726,76 +5726,6 @@
           "fields": {},
           "shadow": false,
           "topLevel": false
-        },
-        "T{987fSM~lxsiAgDkB{)": {
-          "opcode": "music_playDrumForBeats",
-          "next": "t8|U5D,]~$Pr;(CXiX?M",
-          "parent": "$K[f=:sL9p%#Qcp6xlek",
-          "inputs": {
-            "DRUM": [
-              1,
-              "18fu/{G|.zs#+D)7dl=S"
-            ],
-            "BEATS": [
-              1,
-              [
-                4,
-                "0.25"
-              ]
-            ]
-          },
-          "fields": {},
-          "shadow": false,
-          "topLevel": false
-        },
-        "18fu/{G|.zs#+D)7dl=S": {
-          "opcode": "music_menu_DRUM",
-          "next": null,
-          "parent": "T{987fSM~lxsiAgDkB{)",
-          "inputs": {},
-          "fields": {
-            "DRUM": [
-              "2",
-              null
-            ]
-          },
-          "shadow": true,
-          "topLevel": false
-        },
-        "t8|U5D,]~$Pr;(CXiX?M": {
-          "opcode": "music_playDrumForBeats",
-          "next": "V|(ql4w;L5E`D?zX#a`C",
-          "parent": "T{987fSM~lxsiAgDkB{)",
-          "inputs": {
-            "DRUM": [
-              1,
-              "HiB+M;+4VtdP#`V@;`Iu"
-            ],
-            "BEATS": [
-              1,
-              [
-                4,
-                "0.25"
-              ]
-            ]
-          },
-          "fields": {},
-          "shadow": false,
-          "topLevel": false
-        },
-        "HiB+M;+4VtdP#`V@;`Iu": {
-          "opcode": "music_menu_DRUM",
-          "next": null,
-          "parent": "t8|U5D,]~$Pr;(CXiX?M",
-          "inputs": {},
-          "fields": {
-            "DRUM": [
-              "3",
-              null
-            ]
-          },
-          "shadow": true,
-          "topLevel": false
         }
       },
       "comments": {},
@@ -5847,8 +5777,8 @@
           "fields": {},
           "shadow": false,
           "topLevel": true,
-          "x": -19,
-          "y": 61
+          "x": -18,
+          "y": 60
         },
         "R{ulehodxS?v.xTuppVj": {
           "opcode": "pen_stamp",
