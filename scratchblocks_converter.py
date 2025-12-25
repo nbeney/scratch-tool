@@ -253,6 +253,8 @@ OPCODE_MAP = {
     # My Blocks (custom)
     "procedures_definition": "define {PROCCODE}",
     "procedures_call": "{PROCCODE}",
+    "argument_reporter_string_number": "({VALUE})",
+    "argument_reporter_boolean": "<{VALUE}>",
     
     # Menu blocks (internal reporters)
     "sensing_touchingobjectmenu": "({TOUCHINGOBJECTMENU})",
@@ -431,6 +433,59 @@ def block_to_scratchblocks(block: Block, blocks: Dict[str, Block], indent: int =
         return f"{' ' * indent}// Unknown block: {block.opcode}"
     
     template = OPCODE_MAP[block.opcode]
+    
+    # Special handling for procedures_definition (custom blocks)
+    if block.opcode == "procedures_definition":
+        # Get the prototype block referenced by custom_block input
+        if block.inputs and "custom_block" in block.inputs:
+            custom_block_input = block.inputs["custom_block"]
+            if isinstance(custom_block_input, list) and len(custom_block_input) >= 2:
+                prototype_id = custom_block_input[1]
+                if isinstance(prototype_id, str) and prototype_id in blocks:
+                    prototype_block = blocks[prototype_id]
+                    # Extract proccode from mutation
+                    if hasattr(prototype_block, 'mutation') and prototype_block.mutation:
+                        proccode = prototype_block.mutation.get('proccode', '?')
+                        # Convert %s and %b to scratchblocks format
+                        # %s (string/number) -> (param)
+                        # %b (boolean) -> <param>
+                        import json
+                        argumentnames = json.loads(prototype_block.mutation.get('argumentnames', '[]'))
+                        
+                        # Replace %s with (name) and %b with <name>
+                        result = proccode
+                        for arg_name in argumentnames:
+                            # Try %s first (string/number parameter)
+                            if '%s' in result:
+                                result = result.replace('%s', f'({arg_name})', 1)
+                            # Try %b (boolean parameter)
+                            elif '%b' in result:
+                                result = result.replace('%b', f'<{arg_name}>', 1)
+                        
+                        return f"{' ' * indent}define {result}"
+        return f"{' ' * indent}define ?"
+    
+    # Special handling for procedures_call (calling custom blocks)
+    if block.opcode == "procedures_call":
+        if hasattr(block, 'mutation') and block.mutation:
+            import json
+            proccode = block.mutation.get('proccode', '?')
+            argumentids = json.loads(block.mutation.get('argumentids', '[]'))
+            
+            # Replace %s and %b with actual input values
+            result = proccode
+            for arg_id in argumentids:
+                if block.inputs and arg_id in block.inputs:
+                    value = get_input_value(block, arg_id, blocks)
+                    # Try %s first (string/number parameter)
+                    if '%s' in result:
+                        result = result.replace('%s', value, 1)
+                    # Try %b (boolean parameter)
+                    elif '%b' in result:
+                        result = result.replace('%b', value, 1)
+            
+            return f"{' ' * indent}{result}"
+        return f"{' ' * indent}?"
     
     # Replace placeholders with actual values
     result = template
