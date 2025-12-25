@@ -59,6 +59,24 @@ PEN_COLOR_PARAM_NAMES = {
     "transparency": "transparency",
 }
 
+# Face sensing part mapping for face sensing extension
+FACE_PART_NAMES = {
+    "0": "nose (0)",
+    "1": "eyes (1)",
+    "2": "mouth (2)",
+    "3": "left eye (3)",
+    "4": "right eye (4)",
+    "5": "left ear (5)",
+    "6": "right ear (6)",
+    "7": "chin (7)",
+}
+
+# Face sensing direction mapping for face sensing extension
+FACE_DIRECTION_NAMES = {
+    "left": "left",
+    "right": "right",
+}
+
 # Opcode to scratchblocks notation mapping (based on scratch-opcodes-list.html)
 OPCODE_MAP = {
     # Motion blocks
@@ -254,6 +272,17 @@ OPCODE_MAP = {
     "videoSensing_menu_ATTRIBUTE": "{ATTRIBUTE}",
     "videoSensing_menu_SUBJECT": "{SUBJECT}",
     "videoSensing_menu_VIDEO_STATE": "{VIDEO_STATE}",
+    
+    # Face Sensing extension blocks
+    "faceSensing_whenFaceDetected": "when face is detected::#00ff00",
+    "faceSensing_whenTilted": "when head tilted [{DIRECTION} v]::#00ff00",
+    "faceSensing_whenSpriteTouchesPart": "when this sprite touches [{PART} v]::#00ff00",
+    "faceSensing_goToPart": "go to [{PART} v]::#00ff00",
+    "faceSensing_pointInFaceTiltDirection": "point in face tilt direction::#00ff00",
+    "faceSensing_setSizeToFaceSize": "set size to face size::#00ff00",
+    "faceSensing_faceIsDetected": "<face is detected?::#00ff00>",
+    "faceSensing_faceTilt": "(face tilt::#00ff00)",
+    "faceSensing_faceSize": "(face size::#00ff00)",
 }
 
 def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> str:
@@ -325,6 +354,14 @@ def get_field_value(block: Block, field_name: str) -> str:
     # Convert pen color parameter names for pen extension (lowercase field name)
     if field_name == "colorParam" and value in PEN_COLOR_PARAM_NAMES:
         return PEN_COLOR_PARAM_NAMES[value]
+    
+    # Convert face part numbers to names for face sensing extension
+    if field_name == "PART" and value in FACE_PART_NAMES:
+        return FACE_PART_NAMES[value]
+    
+    # Convert face direction for face sensing extension
+    if field_name == "DIRECTION" and value in FACE_DIRECTION_NAMES:
+        return FACE_DIRECTION_NAMES[value]
     
     return value
 
