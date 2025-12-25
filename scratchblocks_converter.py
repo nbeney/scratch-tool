@@ -77,6 +77,41 @@ FACE_DIRECTION_NAMES = {
     "right": "right",
 }
 
+# Text to speech voice mapping for text to speech extension
+TEXT2SPEECH_VOICES = {
+    "ALTO": "alto",
+    "TENOR": "tenor",
+    "SQUEAK": "squeak",
+    "GIANT": "giant",
+    "KITTEN": "kitten",
+}
+
+# Text to speech language mapping for text to speech extension
+# Using common language codes that Scratch supports
+TEXT2SPEECH_LANGUAGES = {
+    "en": "English",
+    "es": "Spanish",
+    "fr": "French",
+    "zh-cn": "Chinese (Mandarin)",
+    "pt-br": "Portuguese (Brazilian)",
+    "ja": "Japanese",
+    "de": "German",
+    "hi": "Hindi",
+    "it": "Italian",
+    "ko": "Korean",
+    "nl": "Dutch",
+    "pl": "Polish",
+    "pt": "Portuguese (European)",
+    "ru": "Russian",
+    "tr": "Turkish",
+    "ar": "Arabic",
+    "is": "Icelandic",
+    "nb": "Norwegian",
+    "ro": "Romanian",
+    "sv": "Swedish",
+    "cy": "Welsh",
+}
+
 # Opcode to scratchblocks notation mapping (based on scratch-opcodes-list.html)
 OPCODE_MAP = {
     # Motion blocks
@@ -283,6 +318,15 @@ OPCODE_MAP = {
     "faceSensing_faceIsDetected": "<face is detected?::#00ff00>",
     "faceSensing_faceTilt": "(face tilt::#00ff00)",
     "faceSensing_faceSize": "(face size::#00ff00)",
+    
+    # Text to Speech extension blocks
+    "text2speech_speakAndWait": "speak ({WORDS})",
+    "text2speech_setVoice": "set voice to [{VOICE} v]",
+    "text2speech_setLanguage": "set language to [{LANGUAGE} v]",
+    
+    # Text to Speech menu blocks
+    "text2speech_menu_voices": "{voices}",
+    "text2speech_menu_languages": "{languages}",
 }
 
 def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> str:
@@ -362,6 +406,14 @@ def get_field_value(block: Block, field_name: str) -> str:
     # Convert face direction for face sensing extension
     if field_name == "DIRECTION" and value in FACE_DIRECTION_NAMES:
         return FACE_DIRECTION_NAMES[value]
+    
+    # Convert voice names for text to speech extension
+    if field_name == "voices" and value in TEXT2SPEECH_VOICES:
+        return TEXT2SPEECH_VOICES[value]
+    
+    # Convert language codes for text to speech extension
+    if field_name == "languages" and value in TEXT2SPEECH_LANGUAGES:
+        return TEXT2SPEECH_LANGUAGES[value]
     
     return value
 
