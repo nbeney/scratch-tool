@@ -327,6 +327,13 @@ OPCODE_MAP = {
     # Text to Speech menu blocks
     "text2speech_menu_voices": "{voices}",
     "text2speech_menu_languages": "{languages}",
+    
+    # Translate extension blocks
+    "translate_getTranslate": "(translate ({WORDS}) to [{LANGUAGE} v])",
+    "translate_getViewerLanguage": "(language)",
+    
+    # Translate menu blocks
+    "translate_menu_languages": "{languages}",
 }
 
 def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> str:
