@@ -4,6 +4,53 @@ from typing import Any, Dict, List, Optional
 from models.project import Block, Target
 
 
+# Drum number to name mapping for music extension
+DRUM_NAMES = {
+    "1": "Snare Drum (1)",
+    "2": "Bass Drum (2)",
+    "3": "Side Stick (3)",
+    "4": "Crash Cymbal (4)",
+    "5": "Open Hi-Hat (5)",
+    "6": "Closed Hi-Hat (6)",
+    "7": "Tambourine (7)",
+    "8": "Hand Clap (8)",
+    "9": "Claves (9)",
+    "10": "Wood Block (10)",
+    "11": "Cowbell (11)",
+    "12": "Triangle (12)",
+    "13": "Bongo (13)",
+    "14": "Conga (14)",
+    "15": "Cabasa (15)",
+    "16": "Guiro (16)",
+    "17": "Vibraslap (17)",
+    "18": "Cuica (18)",
+}
+
+# Instrument number to name mapping for music extension
+INSTRUMENT_NAMES = {
+    "1": "Piano (1)",
+    "2": "Electric Piano (2)",
+    "3": "Organ (3)",
+    "4": "Guitar (4)",
+    "5": "Electric Guitar (5)",
+    "6": "Bass (6)",
+    "7": "Pizzicato (7)",
+    "8": "Cello (8)",
+    "9": "Trombone (9)",
+    "10": "Clarinet (10)",
+    "11": "Saxophone (11)",
+    "12": "Flute (12)",
+    "13": "Wooden Flute (13)",
+    "14": "Bassoon (14)",
+    "15": "Choir (15)",
+    "16": "Vibraphone (16)",
+    "17": "Music Box (17)",
+    "18": "Steel Drum (18)",
+    "19": "Marimba (19)",
+    "20": "Synth Lead (20)",
+    "21": "Synth Pad (21)",
+}
+
 # Opcode to scratchblocks notation mapping (based on scratch-opcodes-list.html)
 OPCODE_MAP = {
     # Motion blocks
@@ -160,6 +207,20 @@ OPCODE_MAP = {
     "sensing_distancetomenu": "({DISTANCETOMENU})",
     "sensing_keyoptions": "({KEY_OPTION})",
     "sensing_touchingcolor": "({COLOR})",
+    
+    # Music extension blocks
+    "music_playDrumForBeats": "play drum ({DRUM} v) for ({BEATS}) beats",
+    "music_restForBeats": "rest for ({BEATS}) beats",
+    "music_playNoteForBeats": "play note ({NOTE}) for ({BEATS}) beats",
+    "music_setInstrument": "set instrument to ({INSTRUMENT} v)",
+    "music_setTempo": "set tempo to ({TEMPO})",
+    "music_changeTempo": "change tempo by ({TEMPO})",
+    "music_getTempo": "(tempo)",
+    
+    # Music menu blocks
+    "music_menu_DRUM": "({DRUM})",
+    "music_menu_INSTRUMENT": "({INSTRUMENT})",
+    "note": "({NOTE})",
 }
 
 def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> str:
@@ -212,9 +273,17 @@ def get_field_value(block: Block, field_name: str) -> str:
         return "?"
     
     field_data = block.fields[field_name]
-    if isinstance(field_data, list) and len(field_data) > 0:
-        return str(field_data[0])
-    return str(field_data)
+    value = str(field_data[0]) if isinstance(field_data, list) and len(field_data) > 0 else str(field_data)
+    
+    # Convert drum numbers to names for music extension
+    if field_name == "DRUM" and value in DRUM_NAMES:
+        return DRUM_NAMES[value]
+    
+    # Convert instrument numbers to names for music extension
+    if field_name == "INSTRUMENT" and value in INSTRUMENT_NAMES:
+        return INSTRUMENT_NAMES[value]
+    
+    return value
 
 
 def block_to_scratchblocks(block: Block, blocks: Dict[str, Block], indent: int = 0) -> str:
