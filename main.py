@@ -518,6 +518,7 @@ def document(
         project_json: dict
         assets_data: dict = {}  # md5ext -> bytes
         output_name: str
+        project_id: Optional[str] = None  # Track project ID when available
         
         # Determine source type and load project
         source_path = Path(source)
@@ -669,7 +670,7 @@ def document(
         
         # Generate HTML documentation
         html_content = generate_html_documentation(
-            project, project_json, costume_thumbnails, sound_files, output_name, standalone
+            project, project_json, costume_thumbnails, sound_files, output_name, standalone, project_id
         )
         
         # Write HTML file
@@ -700,7 +701,8 @@ def generate_html_documentation(
     costume_thumbnails: dict,
     sound_files: dict,
     output_name: str,
-    standalone: bool = True
+    standalone: bool = True,
+    project_id: Optional[str] = None
 ) -> str:
     """Generate HTML documentation for a Scratch project using dominate.
     
@@ -711,6 +713,7 @@ def generate_html_documentation(
         sound_files: Dict mapping md5ext to sound file path/URL
         output_name: Base name for output files
         standalone: If True, URLs are CDN links; if False, local paths
+        project_id: Optional Scratch project ID
     """
     
     doc = dom_document(title='Scratch Project Documentation')
@@ -994,6 +997,9 @@ def generate_html_documentation(
             with div(cls='section', id='info'):
                 h2('Project Information')
                 with div(cls='metadata'):
+                    with div(cls='metadata-item'):
+                        div('Project ID', cls='metadata-label')
+                        div(project_id if project_id else '-')
                     with div(cls='metadata-item'):
                         div('Scratch Version', cls='metadata-label')
                         div(project.meta.semver)
