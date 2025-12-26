@@ -860,23 +860,24 @@ def generate_html_documentation(
         }
         .sprite-props {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+            gap: 8px;
             margin: 10px 0;
         }
         .prop {
             background: white;
-            padding: 8px;
+            padding: 6px;
             border-radius: 4px;
             border-left: 3px solid #4a90e2;
         }
         .prop-label {
-            font-size: 0.85em;
+            font-size: 0.75em;
             color: #666;
         }
         .prop-value {
             font-weight: bold;
             color: #333;
+            font-size: 0.9em;
         }
         .assets {
             display: flex;
