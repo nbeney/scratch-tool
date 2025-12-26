@@ -557,6 +557,17 @@ def document(
             
             output_name = name if name else source_path.stem
             
+        elif source_path.is_file() and source_path.suffix == '.json':
+            # Load from .json file (project.json)
+            typer.echo(f"Loading project from file: {source}")
+            
+            with open(source_path) as f:
+                project_json = json.load(f)
+            project = ScratchProject.model_validate(project_json)
+            
+            # No assets in standalone JSON file
+            output_name = name if name else source_path.stem
+            
         else:
             # Try as URL or project ID
             project_id = extract_project_id(source)
@@ -907,6 +918,84 @@ def generate_html_documentation(
         .audio-player {
             margin-top: 10px;
         }
+        .variables-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .variable {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #ff8c1a;
+        }
+        .variable-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .variable-value {
+            color: #666;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85em;
+            word-break: break-word;
+        }
+        .lists-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .list {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #cc5b22;
+        }
+        .list-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        .list-values {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85em;
+        }
+        .list-item {
+            padding: 3px 0;
+            color: #555;
+        }
+        .list-more {
+            padding: 5px 0;
+            color: #888;
+            font-style: italic;
+        }
+        .messages-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .message {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #ffab19;
+        }
+        .message-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
         .blocks-count {
             background: #e8f4fd;
             padding: 10px;
@@ -1100,6 +1189,43 @@ def generate_html_documentation(
                                                 src_url = sound_files[sound.md5ext] if standalone else f'{output_name}/{sound.md5ext}'
                                                 source(src=src_url, type=f'audio/{sound.dataFormat}')
                         
+                        # Stage variables
+                        if stage.variables:
+                            h3('Variables')
+                            with div(cls='variables-section'):
+                                for var_id, var_data in stage.variables.items():
+                                    var_name = var_data[0]
+                                    var_value = var_data[1]
+                                    is_cloud = len(var_data) == 3 and var_data[2] == True
+                                    with div(cls='variable'):
+                                        cloud_icon = '☁️ ' if is_cloud else ''
+                                        div(f'{cloud_icon}{var_name}', cls='variable-name', escape=False)
+                                        div(str(var_value), cls='variable-value')
+                        
+                        # Stage lists
+                        if stage.lists:
+                            h3('Lists')
+                            with div(cls='lists-section'):
+                                for list_id, list_data in stage.lists.items():
+                                    list_name = list_data[0]
+                                    list_values = list_data[1] if len(list_data) > 1 else []
+                                    with div(cls='list'):
+                                        div(f'{list_name} ({len(list_values)} items)', cls='list-name')
+                                        if list_values:
+                                            with div(cls='list-values'):
+                                                for i, value in enumerate(list_values[:10], 1):  # Show first 10 items
+                                                    div(f'{i}. {value}', cls='list-item')
+                                                if len(list_values) > 10:
+                                                    div(f'... and {len(list_values) - 10} more', cls='list-more')
+                        
+                        # Stage messages (broadcasts)
+                        if stage.broadcasts:
+                            h3('Messages')
+                            with div(cls='messages-section'):
+                                for broadcast_id, message_name in stage.broadcasts.items():
+                                    with div(cls='message'):
+                                        div('📢 ' + message_name, cls='message-name', escape=False)
+                        
                         # Stage scripts
                         if stage.blocks:
                             scripts = target_to_scratchblocks(stage)
@@ -1173,6 +1299,41 @@ def generate_html_documentation(
                                                     # Use CDN URL if standalone, else local path
                                                     src_url = sound_files[sound.md5ext] if standalone else f'{output_name}/{sound.md5ext}'
                                                     source(src=src_url, type=f'audio/{sound.dataFormat}')
+                            
+                            # Sprite variables
+                            if sprite.variables:
+                                h3('Variables')
+                                with div(cls='variables-section'):
+                                    for var_id, var_data in sprite.variables.items():
+                                        var_name = var_data[0]
+                                        var_value = var_data[1]
+                                        with div(cls='variable'):
+                                            div(var_name, cls='variable-name')
+                                            div(str(var_value), cls='variable-value')
+                            
+                            # Sprite lists
+                            if sprite.lists:
+                                h3('Lists')
+                                with div(cls='lists-section'):
+                                    for list_id, list_data in sprite.lists.items():
+                                        list_name = list_data[0]
+                                        list_values = list_data[1] if len(list_data) > 1 else []
+                                        with div(cls='list'):
+                                            div(f'{list_name} ({len(list_values)} items)', cls='list-name')
+                                            if list_values:
+                                                with div(cls='list-values'):
+                                                    for i, value in enumerate(list_values[:10], 1):  # Show first 10 items
+                                                        div(f'{i}. {value}', cls='list-item')
+                                                    if len(list_values) > 10:
+                                                        div(f'... and {len(list_values) - 10} more', cls='list-more')
+                            
+                            # Sprite messages (broadcasts)
+                            if sprite.broadcasts:
+                                h3('Messages')
+                                with div(cls='messages-section'):
+                                    for broadcast_id, message_name in sprite.broadcasts.items():
+                                        with div(cls='message'):
+                                            div('📢 ' + message_name, cls='message-name', escape=False)
                             
                             # Sprite scripts
                             if sprite.blocks:
