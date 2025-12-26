@@ -150,7 +150,6 @@ MENU_BLOCKS = {
     "sensing_of_object_menu",
     "sensing_distancetomenu",
     "sensing_keyoptions",
-    "sensing_touchingcolor",
     "music_menu_DRUM",
     "music_menu_INSTRUMENT",
     "note",
@@ -332,7 +331,6 @@ OPCODE_MAP = {
     "sensing_of_object_menu": "{OBJECT}",
     "sensing_distancetomenu": "{DISTANCETOMENU}",
     "sensing_keyoptions": "{KEY_OPTION}",
-    "sensing_touchingcolor": "{COLOR}",
     
     # Music extension blocks
     "music_playDrumForBeats": "play drum {DRUM} for {BEATS} beats",
