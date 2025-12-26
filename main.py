@@ -1196,9 +1196,9 @@ def generate_html_documentation(
             scale: 0.675
         });
         
-        // Sidebar navigation highlighting with Intersection Observer
+        // Sidebar navigation highlighting with scroll tracking
         document.addEventListener('DOMContentLoaded', function() {
-            const sections = document.querySelectorAll('.section, .sprite[id]');
+            const sections = document.querySelectorAll('.section[id], .sprite[id]');
             const navLinks = document.querySelectorAll('.sidebar-nav a');
             
             // Create a map of section IDs to nav links
@@ -1211,57 +1211,33 @@ def generate_html_documentation(
                 }
             });
             
-            // Intersection Observer options
-            const observerOptions = {
-                root: null,
-                rootMargin: '-100px 0px -66%',
-                threshold: 0
-            };
-            
-            // Track currently visible sections
-            let visibleSections = new Set();
-            
-            // Intersection Observer callback
-            const observerCallback = (entries) => {
-                entries.forEach(entry => {
-                    const id = entry.target.id;
-                    
-                    if (entry.isIntersecting) {
-                        visibleSections.add(id);
-                    } else {
-                        visibleSections.delete(id);
-                    }
-                });
-                
-                // Update active links based on visible sections
-                updateActiveLinks();
-            };
-            
             function updateActiveLinks() {
                 // Remove all active classes
                 navLinks.forEach(link => link.classList.remove('active'));
                 
-                if (visibleSections.size === 0) return;
+                // Find which section is currently at the top of the viewport
+                // We check from top to bottom and highlight the last section whose top is above viewport top + 150px
+                let currentSection = null;
+                const scrollOffset = 150; // pixels from top of viewport
                 
-                // Find the topmost visible section
-                let topSection = null;
                 sections.forEach(section => {
-                    if (visibleSections.has(section.id)) {
-                        if (!topSection || section.getBoundingClientRect().top < topSection.getBoundingClientRect().top) {
-                            topSection = section;
-                        }
+                    const rect = section.getBoundingClientRect();
+                    // If the section's top is above our scroll offset, it could be the current section
+                    if (rect.top <= scrollOffset) {
+                        currentSection = section;
                     }
                 });
                 
-                if (topSection) {
-                    const id = topSection.id;
+                if (currentSection) {
+                    const id = currentSection.id;
                     
                     // Handle sprite sub-items (sprite-xxx)
                     if (id.startsWith('sprite-')) {
-                        // Activate both the sprite link and the main Sprites link
+                        // Activate the individual sprite link
                         if (linkMap[id]) {
                             linkMap[id].classList.add('active');
                         }
+                        // Also activate the main Sprites link
                         if (linkMap['sprites']) {
                             linkMap['sprites'].classList.add('active');
                         }
@@ -1276,19 +1252,31 @@ def generate_html_documentation(
                         if (linkMap[id]) {
                             linkMap[id].classList.add('active');
                         }
+                        
+                        // If it's the sprites section, expand the subnav
+                        if (id === 'sprites') {
+                            const spriteSubnav = document.getElementById('sprite-subnav');
+                            if (spriteSubnav) {
+                                spriteSubnav.classList.add('expanded');
+                            }
+                        }
                     }
                 }
             }
             
-            // Create observer
-            const observer = new IntersectionObserver(observerCallback, observerOptions);
-            
-            // Observe all sections
-            sections.forEach(section => {
-                if (section.id) {
-                    observer.observe(section);
+            // Update on scroll with throttling
+            let scrollTimeout;
+            window.addEventListener('scroll', function() {
+                if (scrollTimeout) {
+                    window.cancelAnimationFrame(scrollTimeout);
                 }
+                scrollTimeout = window.requestAnimationFrame(updateActiveLinks);
             });
+            
+            // Initial update
+            updateActiveLinks();
+            // Initial update
+            updateActiveLinks();
             
             // Smooth scroll for anchor links
             navLinks.forEach(link => {
