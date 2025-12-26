@@ -170,7 +170,7 @@ DROPDOWN_FIELDS = {
     "KEY_OPTION", "WHENGREATERTHANMENU", "BROADCAST_OPTION", "BROADCAST_INPUT",
     "STOP_OPTION", "CLONE_OPTION", "TOUCHINGOBJECTMENU", "DISTANCETOMENU",
     "DRAG_MODE", "PROPERTY", "OBJECT", "CURRENTMENU", "OPERATOR",
-    "VARIABLE", "LIST", "DRUM", "INSTRUMENT", "COLOR_PARAM",
+    "VARIABLE", "LIST", "DRUM", "INSTRUMENT",
     "ATTRIBUTE", "SUBJECT", "VIDEO_STATE", "PART", "DIRECTION",
     "VOICE", "LANGUAGE", "voices", "languages",
 }
@@ -346,7 +346,7 @@ OPCODE_MAP = {
     # Music menu blocks - these should just return the value without wrappers
     "music_menu_DRUM": "{DRUM}",
     "music_menu_INSTRUMENT": "{INSTRUMENT}",
-    "note": "{NOTE}",
+    "note": "[{NOTE}]",
     
     # Pen extension blocks
     "pen_clear": "erase all",
@@ -503,6 +503,8 @@ def get_field_value(block: Block, field_name: str) -> str:
     # Convert pen color parameter names for pen extension (lowercase field name)
     if field_name == "colorParam" and value in PEN_COLOR_PARAM_NAMES:
         value = PEN_COLOR_PARAM_NAMES[value]
+        # Use dropdown format [... v] for all pen color parameters
+        return f"[{value} v]"
     
     # Convert face part numbers to names for face sensing extension
     if field_name == "PART" and value in FACE_PART_NAMES:
