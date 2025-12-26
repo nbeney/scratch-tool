@@ -11,8 +11,9 @@ import requests
 import typer
 from dominate import document as dom_document
 from dominate.tags import (
-    audio, body, div, h1, h2, h3, head, html, img, link, meta, pre, script, source, style, title
+    a, audio, body, div, h1, h2, h3, head, html, img, li, link, meta, pre, script, source, style, title, ul
 )
+from dominate.util import raw, text
 from PIL import Image
 from pygments import highlight
 from pygments.formatters import TerminalFormatter
@@ -723,12 +724,93 @@ def generate_html_documentation(
         
         # CSS styles
         style("""
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+        }
+        .sidebar {
+            width: 280px;
+            background: white;
+            padding: 20px;
+            border-right: 2px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ff6680;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff6680;
+        }
+        .sidebar-nav {
+            list-style: none;
+        }
+        .sidebar-nav > li {
+            margin-bottom: 5px;
+        }
+        .sidebar-nav a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .sidebar-nav a:hover {
+            background: #f0f0f0;
+            color: #ff6680;
+            transform: translateX(5px);
+        }
+        .sidebar-nav a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        .sidebar-nav .sprite-subnav {
+            list-style: none;
+            margin-top: 5px;
+            margin-left: 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .sidebar-nav .sprite-subnav.expanded {
+            max-height: 2000px;
+        }
+        .sidebar-nav .sprite-subnav li {
+            margin-bottom: 3px;
+        }
+        .sidebar-nav .sprite-subnav a {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            font-weight: 400;
+            color: #666;
+        }
+        .sidebar-nav .sprite-subnav a:hover {
+            color: #4a90e2;
+            background: #e8f4fd;
+        }
+        .sidebar-nav .sprite-subnav a.active {
+            background: #4a90e2;
+            color: white;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
         }
         h1, h2, h3 {
             color: #ff6680;
@@ -881,144 +963,100 @@ def generate_html_documentation(
         """)
     
     with doc:
-        h1('🎨 Scratch Project Documentation')
+        # Sidebar
+        with div(cls='sidebar'):
+            div('🎨 Navigation', cls='sidebar-title')
+            with ul(cls='sidebar-nav'):
+                with li():
+                    a('📋 Info', href='#info')
+                with li():
+                    a('📊 Statistics', href='#statistics')
+                if project.extensions:
+                    with li():
+                        a('🔌 Extensions', href='#extensions')
+                with li():
+                    a('🎭 Stage', href='#stage')
+                with li():
+                    a('🎮 Sprites', href='#sprites', cls='sprites-toggle')
+                    # Sprite subnav - will be populated with sprite links
+                    with ul(cls='sprite-subnav expanded', id='sprite-subnav'):
+                        for sprite in project.sprites:
+                            # Create valid ID from sprite name
+                            sprite_id = f"sprite-{sprite.name.lower().replace(' ', '-')}"
+                            with li():
+                                a(sprite.name, href=f'#{sprite_id}')
         
-        # Project Information Section
-        with div(cls='section'):
-            h2('Project Information')
-            with div(cls='metadata'):
-                with div(cls='metadata-item'):
-                    div('Scratch Version', cls='metadata-label')
-                    div(project.meta.semver)
-                with div(cls='metadata-item'):
-                    div('VM Version', cls='metadata-label')
-                    div(project.meta.vm)
-        
-        # Statistics Section
-        with div(cls='section'):
-            h2('Statistics')
-            with div(cls='statistics'):
-                with div(cls='stat-card'):
-                    div('Sprites', cls='stat-label')
-                    div(str(project.count_sprites()), cls='stat-value')
-                with div(cls='stat-card'):
-                    div('Total Blocks', cls='stat-label')
-                    div(str(project.count_blocks()), cls='stat-value')
-                with div(cls='stat-card'):
-                    div('Variables', cls='stat-label')
-                    div(str(len(project.get_all_variables())), cls='stat-value')
-                with div(cls='stat-card'):
-                    div('Lists', cls='stat-label')
-                    div(str(len(project.get_all_lists())), cls='stat-value')
-        
-        # Extensions Section
-        if project.extensions:
-            with div(cls='section'):
-                h2('Extensions Used')
-                with div(cls='extensions'):
-                    for ext in project.extensions:
-                        div(f'🔌 {ext}', cls='extension')
-        
-        # Stage Section
-        stage = project.stage
-        if stage:
-            with div(cls='section'):
-                h2('🎭 Stage')
-                with div(cls='sprite'):
-                    with div(cls='sprite-header'):
-                        div(stage.name, cls='sprite-name')
-                    
-                    with div(cls='sprite-props'):
-                        with div(cls='prop'):
-                            div('Costumes', cls='prop-label')
-                            div(str(len(stage.costumes)), cls='prop-value')
-                        with div(cls='prop'):
-                            div('Sounds', cls='prop-label')
-                            div(str(len(stage.sounds)), cls='prop-value')
-                        with div(cls='prop'):
-                            div('Variables', cls='prop-label')
-                            div(str(len(stage.variables)), cls='prop-value')
-                        with div(cls='prop'):
-                            div('Lists', cls='prop-label')
-                            div(str(len(stage.lists)), cls='prop-value')
-                        with div(cls='prop'):
-                            div('Blocks', cls='prop-label')
-                            div(str(len(stage.blocks)), cls='prop-value')
-                    
-                    # Stage costumes (backdrops)
-                    if stage.costumes:
-                        h3('Backdrops')
-                        with div(cls='assets'):
-                            for costume in stage.costumes:
-                                thumb = costume_thumbnails.get(costume.md5ext, '')
-                                if thumb:
-                                    with div(cls='asset'):
-                                        # Use CDN URL if standalone, else local path
-                                        src_url = thumb if standalone else f'{output_name}/{thumb}'
-                                        img(src=src_url, alt=costume.name)
-                                        div(costume.name, cls='asset-name')
-                    
-                    # Stage sounds
-                    if stage.sounds:
-                        h3('Sounds')
-                        with div(cls='assets'):
-                            for sound in stage.sounds:
-                                if sound.md5ext in sound_files:
-                                    with div(cls='asset'):
-                                        div(f'🔊 {sound.name}', cls='asset-name')
-                                        with audio(controls=True, cls='audio-player'):
-                                            # Use CDN URL if standalone, else local path
-                                            src_url = sound_files[sound.md5ext] if standalone else f'{output_name}/{sound.md5ext}'
-                                            source(src=src_url, type=f'audio/{sound.dataFormat}')
-                    
-                    # Stage scripts
-                    if stage.blocks:
-                        scripts = target_to_scratchblocks(stage)
-                        if scripts:
-                            h3('Scripts')
-                            with div(cls='scripts-section'):
-                                # Combine all scripts into a single pre.blocks element
-                                # Scripts are separated by blank lines
-                                combined_scripts = '\n\n'.join(scripts)
-                                pre(combined_scripts, cls='blocks')
-        
-        # Sprites Section
-        sprites = project.sprites
-        if sprites:
-            with div(cls='section'):
-                h2('🎮 Sprites')
-                for sprite in sprites:
+        # Main content area
+        with div(cls='main-content'):
+            h1('🎨 Scratch Project Documentation')
+            
+            # Project Information Section
+            with div(cls='section', id='info'):
+                h2('Project Information')
+                with div(cls='metadata'):
+                    with div(cls='metadata-item'):
+                        div('Scratch Version', cls='metadata-label')
+                        div(project.meta.semver)
+                    with div(cls='metadata-item'):
+                        div('VM Version', cls='metadata-label')
+                        div(project.meta.vm)
+            
+            # Statistics Section
+            with div(cls='section', id='statistics'):
+                h2('Statistics')
+                with div(cls='statistics'):
+                    with div(cls='stat-card'):
+                        div('Sprites', cls='stat-label')
+                        div(str(project.count_sprites()), cls='stat-value')
+                    with div(cls='stat-card'):
+                        div('Total Blocks', cls='stat-label')
+                        div(str(project.count_blocks()), cls='stat-value')
+                    with div(cls='stat-card'):
+                        div('Variables', cls='stat-label')
+                        div(str(len(project.get_all_variables())), cls='stat-value')
+                    with div(cls='stat-card'):
+                        div('Lists', cls='stat-label')
+                        div(str(len(project.get_all_lists())), cls='stat-value')
+            
+            # Extensions Section
+            if project.extensions:
+                with div(cls='section', id='extensions'):
+                    h2('Extensions Used')
+                    with div(cls='extensions'):
+                        for ext in project.extensions:
+                            div(f'🔌 {ext}', cls='extension')
+            
+            # Stage Section
+            stage = project.stage
+            if stage:
+                with div(cls='section', id='stage'):
+                    h2('🎭 Stage')
                     with div(cls='sprite'):
                         with div(cls='sprite-header'):
-                            div(sprite.name, cls='sprite-name')
+                            div(stage.name, cls='sprite-name')
                         
                         with div(cls='sprite-props'):
                             with div(cls='prop'):
-                                div('Position', cls='prop-label')
-                                div(f'({sprite.x}, {sprite.y})', cls='prop-value')
+                                div('Costumes', cls='prop-label')
+                                div(str(len(stage.costumes)), cls='prop-value')
                             with div(cls='prop'):
-                                div('Size', cls='prop-label')
-                                div(f'{sprite.size}%', cls='prop-value')
+                                div('Sounds', cls='prop-label')
+                                div(str(len(stage.sounds)), cls='prop-value')
                             with div(cls='prop'):
-                                div('Direction', cls='prop-label')
-                                div(f'{sprite.direction}°', cls='prop-value')
+                                div('Variables', cls='prop-label')
+                                div(str(len(stage.variables)), cls='prop-value')
                             with div(cls='prop'):
-                                div('Visible', cls='prop-label')
-                                div('Yes' if sprite.visible else 'No', cls='prop-value')
+                                div('Lists', cls='prop-label')
+                                div(str(len(stage.lists)), cls='prop-value')
                             with div(cls='prop'):
-                                div('Rotation Style', cls='prop-label')
-                                div(sprite.rotationStyle or 'all around', cls='prop-value')
+                                div('Blocks', cls='prop-label')
+                                div(str(len(stage.blocks)), cls='prop-value')
                         
-                        with div(cls='blocks-count'):
-                            div(f'📦 {len(sprite.blocks)} blocks | '
-                                f'🎨 {len(sprite.costumes)} costumes | '
-                                f'🔊 {len(sprite.sounds)} sounds', escape=False)
-                        
-                        # Sprite costumes
-                        if sprite.costumes:
-                            h3('Costumes')
+                        # Stage costumes (backdrops)
+                        if stage.costumes:
+                            h3('Backdrops')
                             with div(cls='assets'):
-                                for costume in sprite.costumes:
+                                for costume in stage.costumes:
                                     thumb = costume_thumbnails.get(costume.md5ext, '')
                                     if thumb:
                                         with div(cls='asset'):
@@ -1027,11 +1065,11 @@ def generate_html_documentation(
                                             img(src=src_url, alt=costume.name)
                                             div(costume.name, cls='asset-name')
                         
-                        # Sprite sounds
-                        if sprite.sounds:
+                        # Stage sounds
+                        if stage.sounds:
                             h3('Sounds')
                             with div(cls='assets'):
-                                for sound in sprite.sounds:
+                                for sound in stage.sounds:
                                     if sound.md5ext in sound_files:
                                         with div(cls='asset'):
                                             div(f'🔊 {sound.name}', cls='asset-name')
@@ -1040,9 +1078,9 @@ def generate_html_documentation(
                                                 src_url = sound_files[sound.md5ext] if standalone else f'{output_name}/{sound.md5ext}'
                                                 source(src=src_url, type=f'audio/{sound.dataFormat}')
                         
-                        # Sprite scripts
-                        if sprite.blocks:
-                            scripts = target_to_scratchblocks(sprite)
+                        # Stage scripts
+                        if stage.blocks:
+                            scripts = target_to_scratchblocks(stage)
                             if scripts:
                                 h3('Scripts')
                                 with div(cls='scripts-section'):
@@ -1050,15 +1088,196 @@ def generate_html_documentation(
                                     # Scripts are separated by blank lines
                                     combined_scripts = '\n\n'.join(scripts)
                                     pre(combined_scripts, cls='blocks')
+            
+            # Sprites Section
+            sprites = project.sprites
+            if sprites:
+                with div(cls='section', id='sprites'):
+                    h2('🎮 Sprites')
+                    for sprite in sprites:
+                        # Create valid ID from sprite name
+                        sprite_id = f"sprite-{sprite.name.lower().replace(' ', '-')}"
+                        with div(cls='sprite', id=sprite_id):
+                            with div(cls='sprite-header'):
+                                div(sprite.name, cls='sprite-name')
+                            
+                            with div(cls='sprite-props'):
+                                with div(cls='prop'):
+                                    div('Position', cls='prop-label')
+                                    div(f'({sprite.x}, {sprite.y})', cls='prop-value')
+                                with div(cls='prop'):
+                                    div('Size', cls='prop-label')
+                                    div(f'{sprite.size}%', cls='prop-value')
+                                with div(cls='prop'):
+                                    div('Direction', cls='prop-label')
+                                    div(f'{sprite.direction}°', cls='prop-value')
+                                with div(cls='prop'):
+                                    div('Visible', cls='prop-label')
+                                    div('Yes' if sprite.visible else 'No', cls='prop-value')
+                                with div(cls='prop'):
+                                    div('Rotation Style', cls='prop-label')
+                                    div(sprite.rotationStyle or 'all around', cls='prop-value')
+                            
+                            with div(cls='blocks-count'):
+                                div(f'📦 {len(sprite.blocks)} blocks | '
+                                    f'🎨 {len(sprite.costumes)} costumes | '
+                                    f'🔊 {len(sprite.sounds)} sounds', escape=False)
+                            
+                            # Sprite costumes
+                            if sprite.costumes:
+                                h3('Costumes')
+                                with div(cls='assets'):
+                                    for costume in sprite.costumes:
+                                        thumb = costume_thumbnails.get(costume.md5ext, '')
+                                        if thumb:
+                                            with div(cls='asset'):
+                                                # Use CDN URL if standalone, else local path
+                                                src_url = thumb if standalone else f'{output_name}/{thumb}'
+                                                img(src=src_url, alt=costume.name)
+                                                div(costume.name, cls='asset-name')
+                            
+                            # Sprite sounds
+                            if sprite.sounds:
+                                h3('Sounds')
+                                with div(cls='assets'):
+                                    for sound in sprite.sounds:
+                                        if sound.md5ext in sound_files:
+                                            with div(cls='asset'):
+                                                div(f'🔊 {sound.name}', cls='asset-name')
+                                                with audio(controls=True, cls='audio-player'):
+                                                    # Use CDN URL if standalone, else local path
+                                                    src_url = sound_files[sound.md5ext] if standalone else f'{output_name}/{sound.md5ext}'
+                                                    source(src=src_url, type=f'audio/{sound.dataFormat}')
+                            
+                            # Sprite scripts
+                            if sprite.blocks:
+                                scripts = target_to_scratchblocks(sprite)
+                                if scripts:
+                                    h3('Scripts')
+                                    with div(cls='scripts-section'):
+                                        # Combine all scripts into a single pre.blocks element
+                                        # Scripts are separated by blank lines
+                                        combined_scripts = '\n\n'.join(scripts)
+                                        pre(combined_scripts, cls='blocks')
     
     # Add scratchblocks JavaScript at the end of body
     with doc:
         script(src='https://cdn.jsdelivr.net/npm/scratchblocks@3.6.4/build/scratchblocks.min.js')
-        script("""
-        // Render blocks after script loads
+        with script():
+            raw("""
+        // Render blocks immediately - script tag is at end of body so DOM is ready
         scratchblocks.renderMatching('pre.blocks', {
             style: 'scratch3',
             scale: 0.675
+        });
+        
+        // Sidebar navigation highlighting with Intersection Observer
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section, .sprite[id]');
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            
+            // Create a map of section IDs to nav links
+            const linkMap = {};
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    const id = href.substring(1);
+                    linkMap[id] = link;
+                }
+            });
+            
+            // Intersection Observer options
+            const observerOptions = {
+                root: null,
+                rootMargin: '-100px 0px -66%',
+                threshold: 0
+            };
+            
+            // Track currently visible sections
+            let visibleSections = new Set();
+            
+            // Intersection Observer callback
+            const observerCallback = (entries) => {
+                entries.forEach(entry => {
+                    const id = entry.target.id;
+                    
+                    if (entry.isIntersecting) {
+                        visibleSections.add(id);
+                    } else {
+                        visibleSections.delete(id);
+                    }
+                });
+                
+                // Update active links based on visible sections
+                updateActiveLinks();
+            };
+            
+            function updateActiveLinks() {
+                // Remove all active classes
+                navLinks.forEach(link => link.classList.remove('active'));
+                
+                if (visibleSections.size === 0) return;
+                
+                // Find the topmost visible section
+                let topSection = null;
+                sections.forEach(section => {
+                    if (visibleSections.has(section.id)) {
+                        if (!topSection || section.getBoundingClientRect().top < topSection.getBoundingClientRect().top) {
+                            topSection = section;
+                        }
+                    }
+                });
+                
+                if (topSection) {
+                    const id = topSection.id;
+                    
+                    // Handle sprite sub-items (sprite-xxx)
+                    if (id.startsWith('sprite-')) {
+                        // Activate both the sprite link and the main Sprites link
+                        if (linkMap[id]) {
+                            linkMap[id].classList.add('active');
+                        }
+                        if (linkMap['sprites']) {
+                            linkMap['sprites'].classList.add('active');
+                        }
+                        
+                        // Ensure sprite subnav is expanded
+                        const spriteSubnav = document.getElementById('sprite-subnav');
+                        if (spriteSubnav) {
+                            spriteSubnav.classList.add('expanded');
+                        }
+                    } else {
+                        // Activate the section link
+                        if (linkMap[id]) {
+                            linkMap[id].classList.add('active');
+                        }
+                    }
+                }
+            }
+            
+            // Create observer
+            const observer = new IntersectionObserver(observerCallback, observerOptions);
+            
+            // Observe all sections
+            sections.forEach(section => {
+                if (section.id) {
+                    observer.observe(section);
+                }
+            });
+            
+            // Smooth scroll for anchor links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && href.startsWith('#')) {
+                        e.preventDefault();
+                        const target = document.querySelector(href);
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                });
+            });
         });
         """)
     
