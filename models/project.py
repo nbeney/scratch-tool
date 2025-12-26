@@ -206,6 +206,60 @@ class ScratchProject(BaseModel):
         """Count number of sprites (excluding stage)."""
         return len(self.sprites)
     
+    def count_broadcasts(self) -> int:
+        """Count total number of unique broadcasts in the project."""
+        all_broadcasts = set()
+        for target in self.targets:
+            all_broadcasts.update(target.broadcasts.keys())
+        return len(all_broadcasts)
+    
+    def count_custom_blocks(self) -> int:
+        """Count total number of custom block definitions (procedures_definition) in the project."""
+        count = 0
+        for target in self.targets:
+            for block in target.blocks.values():
+                if block.opcode == 'procedures_definition':
+                    count += 1
+        return count
+    
+    def count_clones(self) -> int:
+        """Count total number of create clone blocks (control_create_clone_of) in the project."""
+        count = 0
+        for target in self.targets:
+            for block in target.blocks.values():
+                if block.opcode == 'control_create_clone_of':
+                    count += 1
+        return count
+    
+    def count_cloud_variables(self) -> int:
+        """Count total number of cloud variables in the project."""
+        count = 0
+        for target in self.targets:
+            for var_data in target.variables.values():
+                # Cloud variables have 3 elements: [name, value, true]
+                if len(var_data) >= 3 and var_data[2] is True:
+                    count += 1
+        return count
+    
+    def count_global_variables(self) -> int:
+        """Count total number of global variables (stage variables, excluding cloud variables)."""
+        if not self.stage:
+            return 0
+        count = 0
+        for var_data in self.stage.variables.values():
+            # Regular global variables have 2 elements, or 3 elements with False
+            # Cloud variables have [name, value, true], so exclude those
+            if len(var_data) == 2 or (len(var_data) >= 3 and var_data[2] is not True):
+                count += 1
+        return count
+    
+    def count_sprite_variables(self) -> int:
+        """Count total number of sprite-local variables (across all sprites)."""
+        count = 0
+        for sprite in self.sprites:
+            count += len(sprite.variables)
+        return count
+    
     def get_used_extensions(self) -> List[str]:
         """Get list of extension IDs used in the project."""
         return self.extensions

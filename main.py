@@ -927,23 +927,23 @@ def generate_html_documentation(
         }
         .statistics {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
         }
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             text-align: center;
         }
         .stat-value {
-            font-size: 2.5em;
+            font-size: 1.8em;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 8px 0;
         }
         .stat-label {
-            font-size: 1em;
+            font-size: 0.85em;
             opacity: 0.9;
         }
         .scripts-section {
@@ -1018,11 +1018,26 @@ def generate_html_documentation(
                         div('Total Blocks', cls='stat-label')
                         div(str(project.count_blocks()), cls='stat-value')
                     with div(cls='stat-card'):
-                        div('Variables', cls='stat-label')
-                        div(str(len(project.get_all_variables())), cls='stat-value')
+                        div('Cloud Variables', cls='stat-label')
+                        div(str(project.count_cloud_variables()), cls='stat-value')
+                    with div(cls='stat-card'):
+                        div('Global Variables', cls='stat-label')
+                        div(str(project.count_global_variables()), cls='stat-value')
+                    with div(cls='stat-card'):
+                        div('Sprite Variables', cls='stat-label')
+                        div(str(project.count_sprite_variables()), cls='stat-value')
                     with div(cls='stat-card'):
                         div('Lists', cls='stat-label')
                         div(str(len(project.get_all_lists())), cls='stat-value')
+                    with div(cls='stat-card'):
+                        div('Broadcasts', cls='stat-label')
+                        div(str(project.count_broadcasts()), cls='stat-value')
+                    with div(cls='stat-card'):
+                        div('Custom Blocks', cls='stat-label')
+                        div(str(project.count_custom_blocks()), cls='stat-value')
+                    with div(cls='stat-card'):
+                        div('Clones', cls='stat-label')
+                        div(str(project.count_clones()), cls='stat-value')
             
             # Extensions Section
             if project.extensions:
