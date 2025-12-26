@@ -409,16 +409,29 @@ def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> 
     - Menu blocks return unwrapped values (will be wrapped with [v] in templates)
     """
     if not block.inputs or input_name not in block.inputs:
+        # Use <> for CONDITION inputs (boolean conditions)
+        if input_name == "CONDITION":
+            return "<?>"
         return "[?]"
     
     input_data = block.inputs[input_name]
     
     # Input format: [input_type, value, ...] or [input_type, value]
     if not isinstance(input_data, list) or len(input_data) < 2:
+        # Use <> for CONDITION inputs (boolean conditions)
+        if input_name == "CONDITION":
+            return "<?>"
         return "[?]"
     
     input_type = input_data[0]
     value = input_data[1]
+    
+    # Check for None or empty value
+    if value is None:
+        # Use <> for CONDITION inputs (boolean conditions)
+        if input_name == "CONDITION":
+            return "<?>"
+        return "[?]"
     
     # Type 1: Shadow (dropdown/primitive) - [type, [shadow_type, value]]
     # Type 2: No shadow (block reference or primitive) - [type, value]  
@@ -479,6 +492,9 @@ def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> 
             # Shadow values are literals, use []
             return f"[{shadow[1]}]"
     
+    # Use <> for CONDITION inputs (boolean conditions)
+    if input_name == "CONDITION":
+        return "<?>"
     return "[?]"
 
 
@@ -623,7 +639,10 @@ def block_to_scratchblocks(block: Block, blocks: Dict[str, Block], indent: int =
                 result = result.replace(placeholder, value)
     
     # Clean up any remaining placeholders (both UPPERCASE and camelCase)
+    # Special handling for CONDITION placeholders - use <?>
     import re
+    result = re.sub(r'\{CONDITION\}', '<?>', result)
+    # Replace other placeholders with ?
     result = re.sub(r'\{[A-Za-z_]+\}', '?', result)
     
     return f"{' ' * indent}{result}"
