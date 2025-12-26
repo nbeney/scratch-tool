@@ -424,6 +424,15 @@ def get_field_value(block: Block, field_name: str) -> str:
     if field_name == "languages" and value in TEXT2SPEECH_LANGUAGES:
         return TEXT2SPEECH_LANGUAGES[value]
     
+    # Convert specific uppercase field values to lowercase for scratchblocks
+    uppercase_to_lowercase = [
+        "BRIGHTNESS", "COLOR", "DATE", "DAYOFWEEK", "FISHEYE", "GHOST", 
+        "HOUR", "LOUDNESS", "MINUTE", "MONTH", "MOSAIC", "PAN", 
+        "PITCH", "PIXELATE", "SECOND", "TIMER", "WHIRL", "YEAR"
+    ]
+    if value in uppercase_to_lowercase:
+        return value.lower()
+    
     return value
 
 
