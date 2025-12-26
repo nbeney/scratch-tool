@@ -1228,14 +1228,17 @@ def generate_html_documentation(
                     }
                 });
                 
+                let activeLinkToScroll = null;
+                
                 if (currentSection) {
                     const id = currentSection.id;
                     
                     // Handle sprite sub-items (sprite-xxx)
                     if (id.startsWith('sprite-')) {
-                        // Activate the individual sprite link
+                        // Activate the individual sprite link (priority for scrolling)
                         if (linkMap[id]) {
                             linkMap[id].classList.add('active');
+                            activeLinkToScroll = linkMap[id];
                         }
                         // Also activate the main Sprites link
                         if (linkMap['sprites']) {
@@ -1251,6 +1254,7 @@ def generate_html_documentation(
                         // Activate the section link
                         if (linkMap[id]) {
                             linkMap[id].classList.add('active');
+                            activeLinkToScroll = linkMap[id];
                         }
                         
                         // If it's the sprites section, expand the subnav
@@ -1259,6 +1263,23 @@ def generate_html_documentation(
                             if (spriteSubnav) {
                                 spriteSubnav.classList.add('expanded');
                             }
+                        }
+                    }
+                }
+                
+                // Scroll the active link into view in the sidebar
+                if (activeLinkToScroll) {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) {
+                        const linkRect = activeLinkToScroll.getBoundingClientRect();
+                        const sidebarRect = sidebar.getBoundingClientRect();
+                        
+                        // Check if link is outside the visible sidebar area
+                        if (linkRect.top < sidebarRect.top || linkRect.bottom > sidebarRect.bottom) {
+                            activeLinkToScroll.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
                         }
                     }
                 }
