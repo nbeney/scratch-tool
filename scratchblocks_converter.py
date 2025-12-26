@@ -677,11 +677,53 @@ def script_to_scratchblocks(start_block_id: str, blocks: Dict[str, Block], inden
         
         block = blocks[current_id]
         block_text = block_to_scratchblocks(block, blocks, indent)
-        lines.append(block_text)
         
-        # Handle C-blocks (control structures with substacks)
-        if block.opcode in ["control_repeat", "control_forever", "control_if", 
-                            "control_if_else", "control_repeat_until"]:
+        # Special handling for if-else to insert substacks in correct positions
+        if block.opcode == "control_if_else":
+            # Split block_text into "if ... then" and "else" lines
+            block_lines = block_text.split('\n')
+            if len(block_lines) >= 2:
+                # Add "if ... then" line
+                lines.append(block_lines[0])
+                
+                # Add SUBSTACK (then branch)
+                if block.inputs and "SUBSTACK" in block.inputs:
+                    substack_input = block.inputs["SUBSTACK"]
+                    substack_id = None
+                    if isinstance(substack_input, list) and len(substack_input) >= 2:
+                        if isinstance(substack_input[1], str):
+                            substack_id = substack_input[1]
+                    
+                    if substack_id and substack_id in blocks:
+                        substack_text = script_to_scratchblocks(substack_id, blocks, indent + 2)
+                        lines.append(substack_text)
+                
+                # Add "else" line
+                lines.append(block_lines[1])
+                
+                # Add SUBSTACK2 (else branch)
+                if block.inputs and "SUBSTACK2" in block.inputs:
+                    substack2_input = block.inputs["SUBSTACK2"]
+                    substack2_id = None
+                    if isinstance(substack2_input, list) and len(substack2_input) >= 2:
+                        if isinstance(substack2_input[1], str):
+                            substack2_id = substack2_input[1]
+                    
+                    if substack2_id and substack2_id in blocks:
+                        substack2_text = script_to_scratchblocks(substack2_id, blocks, indent + 2)
+                        lines.append(substack2_text)
+                
+                # Add "end"
+                lines.append(f"{' ' * indent}end")
+            else:
+                # Fallback if split didn't work as expected
+                lines.append(block_text)
+                lines.append(f"{' ' * indent}end")
+        # Handle other C-blocks (control structures with substacks)
+        elif block.opcode in ["control_repeat", "control_forever", "control_if", 
+                              "control_repeat_until"]:
+            lines.append(block_text)
+            
             # Get substack block ID directly from inputs
             if block.inputs and "SUBSTACK" in block.inputs:
                 substack_input = block.inputs["SUBSTACK"]
@@ -694,20 +736,11 @@ def script_to_scratchblocks(start_block_id: str, blocks: Dict[str, Block], inden
                     substack_text = script_to_scratchblocks(substack_id, blocks, indent + 2)
                     lines.append(substack_text)
             
-            # Handle else branch for if-else
-            if block.opcode == "control_if_else" and block.inputs and "SUBSTACK2" in block.inputs:
-                substack2_input = block.inputs["SUBSTACK2"]
-                substack2_id = None
-                if isinstance(substack2_input, list) and len(substack2_input) >= 2:
-                    if isinstance(substack2_input[1], str):
-                        substack2_id = substack2_input[1]
-                
-                if substack2_id and substack2_id in blocks:
-                    substack2_text = script_to_scratchblocks(substack2_id, blocks, indent + 2)
-                    lines.append(substack2_text)
-            
             # Add "end" for C-blocks
             lines.append(f"{' ' * indent}end")
+        else:
+            # Regular block (not a C-block)
+            lines.append(block_text)
         
         current_id = block.next
     
