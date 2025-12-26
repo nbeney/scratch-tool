@@ -1126,7 +1126,7 @@ def generate_html_documentation(
                             with div(cls='sprite-props'):
                                 with div(cls='prop'):
                                     div('Position', cls='prop-label')
-                                    div(f'({sprite.x}, {sprite.y})', cls='prop-value')
+                                    div(f'({round(sprite.x)}, {round(sprite.y)})', cls='prop-value')
                                 with div(cls='prop'):
                                     div('Size', cls='prop-label')
                                     div(f'{sprite.size}%', cls='prop-value')
@@ -1139,6 +1139,9 @@ def generate_html_documentation(
                                 with div(cls='prop'):
                                     div('Rotation Style', cls='prop-label')
                                     div(sprite.rotationStyle or 'all around', cls='prop-value')
+                                with div(cls='prop'):
+                                    div('Draggable', cls='prop-label')
+                                    div('Yes' if sprite.draggable else 'No', cls='prop-value')
                             
                             with div(cls='blocks-count'):
                                 div(f'📦 {len(sprite.blocks)} blocks | '
