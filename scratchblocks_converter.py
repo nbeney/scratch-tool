@@ -112,143 +112,206 @@ TEXT2SPEECH_LANGUAGES = {
     "cy": "Welsh",
 }
 
+# Block shape categorization for dynamic bracket handling
+# Boolean blocks use <> brackets when used as inputs
+BOOLEAN_BLOCKS = {
+    "sensing_touchingobject",
+    "sensing_touchingcolor",
+    "sensing_coloristouchingcolor",
+    "sensing_keypressed",
+    "sensing_mousedown",
+    "operator_gt",
+    "operator_lt",
+    "operator_equals",
+    "operator_and",
+    "operator_or",
+    "operator_not",
+    "operator_contains",
+    "data_listcontainsitem",
+    "faceSensing_faceIsDetected",
+}
+
+# Reporter blocks use () brackets when used as inputs
+# This includes all blocks that return values but aren't booleans
+# Most blocks with () in their template are reporters
+
+# Menu blocks are internal and should not have brackets added
+# They are placeholders for dropdown values
+MENU_BLOCKS = {
+    "sensing_touchingobjectmenu",
+    "motion_pointtowards_menu",
+    "motion_goto_menu",
+    "motion_glideto_menu",
+    "looks_costume",
+    "looks_backdrops",
+    "sound_sounds_menu",
+    "event_broadcast_menu",
+    "control_create_clone_of_menu",
+    "sensing_of_object_menu",
+    "sensing_distancetomenu",
+    "sensing_keyoptions",
+    "sensing_touchingcolor",
+    "music_menu_DRUM",
+    "music_menu_INSTRUMENT",
+    "note",
+    "pen_menu_colorParam",
+    "videoSensing_menu_ATTRIBUTE",
+    "videoSensing_menu_SUBJECT",
+    "videoSensing_menu_VIDEO_STATE",
+    "text2speech_menu_voices",
+    "text2speech_menu_languages",
+    "translate_menu_languages",
+}
+
+# Field names that are dropdown menus and need [value v] format
+DROPDOWN_FIELDS = {
+    "TO", "TOWARDS", "STYLE", "COSTUME", "BACKDROP", "EFFECT",
+    "FRONT_BACK", "FORWARD_BACKWARD", "NUMBER_NAME", "SOUND_MENU",
+    "KEY_OPTION", "WHENGREATERTHANMENU", "BROADCAST_OPTION", "BROADCAST_INPUT",
+    "STOP_OPTION", "CLONE_OPTION", "TOUCHINGOBJECTMENU", "DISTANCETOMENU",
+    "DRAG_MODE", "PROPERTY", "OBJECT", "CURRENTMENU", "OPERATOR",
+    "VARIABLE", "LIST", "DRUM", "INSTRUMENT", "COLOR_PARAM",
+    "ATTRIBUTE", "SUBJECT", "VIDEO_STATE", "PART", "DIRECTION",
+    "VOICE", "LANGUAGE", "voices", "languages",
+}
+
 # Opcode to scratchblocks notation mapping (based on scratch-opcodes-list.html)
 OPCODE_MAP = {
     # Motion blocks
-    "motion_movesteps": "move [{STEPS}] steps",
-    "motion_turnright": "turn cw [{DEGREES}] degrees",
-    "motion_turnleft": "turn ccw [{DEGREES}] degrees",
-    "motion_goto": "go to [{TO} v]",
-    "motion_gotoxy": "go to x: [{X}] y: [{Y}]",
-    "motion_glideto": "glide [{SECS}] secs to [{TO} v]",
-    "motion_glidesecstoxy": "glide [{SECS}] secs to x: [{X}] y: [{Y}]",
-    "motion_pointindirection": "point in direction [{DIRECTION}]",
-    "motion_pointtowards": "point towards [{TOWARDS} v]",
-    "motion_changexby": "change x by [{DX}]",
-    "motion_setx": "set x to [{X}]",
-    "motion_changeyby": "change y by [{DY}]",
-    "motion_sety": "set y to [{Y}]",
+    "motion_movesteps": "move {STEPS} steps",
+    "motion_turnright": "turn cw {DEGREES} degrees",
+    "motion_turnleft": "turn ccw {DEGREES} degrees",
+    "motion_goto": "go to {TO}",
+    "motion_gotoxy": "go to x: {X} y: {Y}",
+    "motion_glideto": "glide {SECS} secs to {TO}",
+    "motion_glidesecstoxy": "glide {SECS} secs to x: {X} y: {Y}",
+    "motion_pointindirection": "point in direction {DIRECTION}",
+    "motion_pointtowards": "point towards {TOWARDS}",
+    "motion_changexby": "change x by {DX}",
+    "motion_setx": "set x to {X}",
+    "motion_changeyby": "change y by {DY}",
+    "motion_sety": "set y to {Y}",
     "motion_ifonedgebounce": "if on edge, bounce",
-    "motion_setrotationstyle": "set rotation style [{STYLE} v]",
+    "motion_setrotationstyle": "set rotation style {STYLE}",
     "motion_xposition": "(x position)",
     "motion_yposition": "(y position)",
     "motion_direction": "(direction)",
     
     # Looks blocks
-    "looks_sayforsecs": "say [{MESSAGE}] for [{SECS}] seconds",
-    "looks_say": "say [{MESSAGE}]",
-    "looks_thinkforsecs": "think [{MESSAGE}] for [{SECS}] seconds",
-    "looks_think": "think [{MESSAGE}]",
-    "looks_switchcostumeto": "switch costume to [{COSTUME} v]",
+    "looks_sayforsecs": "say {MESSAGE} for {SECS} seconds",
+    "looks_say": "say {MESSAGE}",
+    "looks_thinkforsecs": "think {MESSAGE} for {SECS} seconds",
+    "looks_think": "think {MESSAGE}",
+    "looks_switchcostumeto": "switch costume to {COSTUME}",
     "looks_nextcostume": "next costume",
-    "looks_switchbackdropto": "switch backdrop to [{BACKDROP} v]",
+    "looks_switchbackdropto": "switch backdrop to {BACKDROP}",
     "looks_nextbackdrop": "next backdrop",
-    "looks_changesizeby": "change size by [{CHANGE}]",
-    "looks_setsizeto": "set size to [{SIZE}]%",
-    "looks_changeeffectby": "change [{EFFECT} v] effect by [{CHANGE}]",
-    "looks_seteffectto": "set [{EFFECT} v] effect to [{VALUE}]",
+    "looks_changesizeby": "change size by {CHANGE}",
+    "looks_setsizeto": "set size to {SIZE}%",
+    "looks_changeeffectby": "change {EFFECT} effect by {CHANGE}",
+    "looks_seteffectto": "set {EFFECT} effect to {VALUE}",
     "looks_cleargraphiceffects": "clear graphic effects",
     "looks_show": "show",
     "looks_hide": "hide",
-    "looks_gotofrontback": "go to [{FRONT_BACK} v] layer",
-    "looks_goforwardbackwardlayers": "go [{FORWARD_BACKWARD} v] [{NUM}] layers",
-    "looks_costumenumbername": "(costume [{NUMBER_NAME} v])",
-    "looks_backdropnumbername": "(backdrop [{NUMBER_NAME} v])",
+    "looks_gotofrontback": "go to {FRONT_BACK} layer",
+    "looks_goforwardbackwardlayers": "go {FORWARD_BACKWARD} {NUM} layers",
+    "looks_costumenumbername": "(costume {NUMBER_NAME})",
+    "looks_backdropnumbername": "(backdrop {NUMBER_NAME})",
     "looks_size": "(size)",
     
     # Sound blocks
-    "sound_playuntildone": "play sound [{SOUND_MENU} v] until done",
-    "sound_play": "start sound [{SOUND_MENU} v]",
+    "sound_playuntildone": "play sound {SOUND_MENU} until done",
+    "sound_play": "start sound {SOUND_MENU}",
     "sound_stopallsounds": "stop all sounds",
-    "sound_changeeffectby": "change [{EFFECT} v] effect by [{VALUE}] :: sound",
-    "sound_seteffectto": "set [{EFFECT} v] effect to [{VALUE}] :: sound",
+    "sound_changeeffectby": "change {EFFECT} effect by {VALUE} :: sound",
+    "sound_seteffectto": "set {EFFECT} effect to {VALUE} :: sound",
     "sound_cleareffects": "clear sound effects",
-    "sound_changevolumeby": "change volume by [{VOLUME}]",
-    "sound_setvolumeto": "set volume to [{VOLUME}]%",
+    "sound_changevolumeby": "change volume by {VOLUME}",
+    "sound_setvolumeto": "set volume to {VOLUME}%",
     "sound_volume": "(volume)",
     
     # Events blocks
     "event_whenflagclicked": "when green flag clicked",
-    "event_whenkeypressed": "when [{KEY_OPTION} v] key pressed",
+    "event_whenkeypressed": "when {KEY_OPTION} key pressed",
     "event_whenthisspriteclicked": "when this sprite clicked",
     "event_whenstageclicked": "when stage clicked",
-    "event_whenbackdropswitchesto": "when backdrop switches to [{BACKDROP} v]",
-    "event_whengreaterthan": "when [{WHENGREATERTHANMENU} v] > [{VALUE}]",
-    "event_whenbroadcastreceived": "when I receive [{BROADCAST_OPTION} v]",
-    "event_broadcast": "broadcast [{BROADCAST_INPUT} v]",
-    "event_broadcastandwait": "broadcast [{BROADCAST_INPUT} v] and wait",
+    "event_whenbackdropswitchesto": "when backdrop switches to {BACKDROP}",
+    "event_whengreaterthan": "when {WHENGREATERTHANMENU} > {VALUE}",
+    "event_whenbroadcastreceived": "when I receive {BROADCAST_OPTION}",
+    "event_broadcast": "broadcast {BROADCAST_INPUT}",
+    "event_broadcastandwait": "broadcast {BROADCAST_INPUT} and wait",
     
     # Control blocks
-    "control_wait": "wait [{DURATION}] seconds",
-    "control_repeat": "repeat [{TIMES}]",
+    "control_wait": "wait {DURATION} seconds",
+    "control_repeat": "repeat {TIMES}",
     "control_forever": "forever",
-    "control_if": "if <{CONDITION}> then",
-    "control_if_else": "if <{CONDITION}> then\nelse",
-    "control_wait_until": "wait until <{CONDITION}>",
-    "control_repeat_until": "repeat until <{CONDITION}>",
-    "control_stop": "stop [{STOP_OPTION} v]",
+    "control_if": "if {CONDITION} then",
+    "control_if_else": "if {CONDITION} then\nelse",
+    "control_wait_until": "wait until {CONDITION}",
+    "control_repeat_until": "repeat until {CONDITION}",
+    "control_stop": "stop {STOP_OPTION}",
     "control_start_as_clone": "when I start as a clone",
-    "control_create_clone_of": "create clone of [{CLONE_OPTION} v]",
+    "control_create_clone_of": "create clone of {CLONE_OPTION}",
     "control_delete_this_clone": "delete this clone",
     
     # Sensing blocks
-    "sensing_touchingobject": "<touching [{TOUCHINGOBJECTMENU} v]?> ",
-    "sensing_touchingcolor": "<touching color [{COLOR}]?> ",
-    "sensing_coloristouchingcolor": "<color [{COLOR}] is touching [{COLOR2}]?>",
-    "sensing_distanceto": "(distance to [{DISTANCETOMENU} v])",
-    "sensing_askandwait": "ask [{QUESTION}] and wait",
+    "sensing_touchingobject": "<touching {TOUCHINGOBJECTMENU}?> ",
+    "sensing_touchingcolor": "<touching color {COLOR}?> ",
+    "sensing_coloristouchingcolor": "<color {COLOR} is touching {COLOR2}?>",
+    "sensing_distanceto": "(distance to {DISTANCETOMENU})",
+    "sensing_askandwait": "ask {QUESTION} and wait",
     "sensing_answer": "(answer)",
-    "sensing_keypressed": "<key [{KEY_OPTION} v] pressed?>",
+    "sensing_keypressed": "<key {KEY_OPTION} pressed?>",
     "sensing_mousedown": "<mouse down?>",
     "sensing_mousex": "(mouse x)",
     "sensing_mousey": "(mouse y)",
-    "sensing_setdragmode": "set drag mode [{DRAG_MODE} v]",
+    "sensing_setdragmode": "set drag mode {DRAG_MODE}",
     "sensing_loudness": "(loudness)",
     "sensing_timer": "(timer)",
     "sensing_resettimer": "reset timer",
-    "sensing_of": "([{PROPERTY} v] of [{OBJECT} v])",
-    "sensing_current": "(current [{CURRENTMENU} v])",
+    "sensing_of": "({PROPERTY} of {OBJECT})",
+    "sensing_current": "(current {CURRENTMENU})",
     "sensing_dayssince2000": "(days since 2000)",
     "sensing_username": "(username)",
     
     # Operators blocks
-    "operator_add": "(({NUM1}) + ({NUM2}))",
-    "operator_subtract": "(({NUM1}) - ({NUM2}))",
-    "operator_multiply": "(({NUM1}) * ({NUM2}))",
-    "operator_divide": "(({NUM1}) / ({NUM2}))",
-    "operator_random": "(pick random [{FROM}] to [{TO}])",
-    "operator_gt": "<({OPERAND1}) > ({OPERAND2})>",
-    "operator_lt": "<({OPERAND1}) < ({OPERAND2})>",
-    "operator_equals": "<({OPERAND1}) = ({OPERAND2})>",
-    "operator_and": "<<{OPERAND1}> and <{OPERAND2}>>",
-    "operator_or": "<<{OPERAND1}> or <{OPERAND2}>>",
-    "operator_not": "<not <{OPERAND}>>",
-    "operator_join": "(join [{STRING1}] [{STRING2}])",
-    "operator_letter_of": "(letter [{LETTER}] of [{STRING}])",
-    "operator_length": "(length of [{STRING}])",
-    "operator_contains": "<[{STRING1}] contains [{STRING2}]?>",
-    "operator_mod": "(({NUM1}) mod ({NUM2}))",
-    "operator_round": "(round ({NUM}))",
-    "operator_mathop": "([{OPERATOR} v] of ({NUM}) :: operators)",
+    "operator_add": "({NUM1} + {NUM2})",
+    "operator_subtract": "({NUM1} - {NUM2})",
+    "operator_multiply": "({NUM1} * {NUM2})",
+    "operator_divide": "({NUM1} / {NUM2})",
+    "operator_random": "(pick random {FROM} to {TO})",
+    "operator_gt": "<{OPERAND1} > {OPERAND2}>",
+    "operator_lt": "<{OPERAND1} < {OPERAND2}>",
+    "operator_equals": "<{OPERAND1} = {OPERAND2}>",
+    "operator_and": "<{OPERAND1} and {OPERAND2}>",
+    "operator_or": "<{OPERAND1} or {OPERAND2}>",
+    "operator_not": "<not {OPERAND}>",
+    "operator_join": "(join {STRING1} {STRING2})",
+    "operator_letter_of": "(letter {LETTER} of {STRING})",
+    "operator_length": "(length of {STRING})",
+    "operator_contains": "<{STRING1} contains {STRING2}?>",
+    "operator_mod": "({NUM1} mod {NUM2})",
+    "operator_round": "(round {NUM})",
+    "operator_mathop": "({OPERATOR} of {NUM} :: operators)",
     
     # Variables blocks
-    "data_setvariableto": "set [{VARIABLE} v] to [{VALUE}]",
-    "data_changevariableby": "change [{VARIABLE} v] by [{VALUE}]",
-    "data_showvariable": "show variable [{VARIABLE} v]",
-    "data_hidevariable": "hide variable [{VARIABLE} v]",
+    "data_setvariableto": "set {VARIABLE} to {VALUE}",
+    "data_changevariableby": "change {VARIABLE} by {VALUE}",
+    "data_showvariable": "show variable {VARIABLE}",
+    "data_hidevariable": "hide variable {VARIABLE}",
     
     # List blocks
-    "data_addtolist": "add [{ITEM}] to [{LIST} v]",
-    "data_deleteoflist": "delete [{INDEX}] of [{LIST} v]",
-    "data_deletealloflist": "delete all of [{LIST} v]",
-    "data_insertatlist": "insert [{ITEM}] at [{INDEX}] of [{LIST} v]",
-    "data_replaceitemoflist": "replace item [{INDEX}] of [{LIST} v] with [{ITEM}]",
-    "data_itemoflist": "(item [{INDEX}] of [{LIST} v])",
-    "data_itemnumoflist": "(item # of [{ITEM}] in [{LIST} v])",
-    "data_lengthoflist": "(length of [{LIST} v])",
-    "data_listcontainsitem": "<[{LIST} v] contains [{ITEM}]?>",
-    "data_showlist": "show list [{LIST} v]",
-    "data_hidelist": "hide list [{LIST} v]",
+    "data_addtolist": "add {ITEM} to {LIST}",
+    "data_deleteoflist": "delete {INDEX} of {LIST}",
+    "data_deletealloflist": "delete all of {LIST}",
+    "data_insertatlist": "insert {ITEM} at {INDEX} of {LIST}",
+    "data_replaceitemoflist": "replace item {INDEX} of {LIST} with {ITEM}",
+    "data_itemoflist": "(item {INDEX} of {LIST})",
+    "data_itemnumoflist": "(item # of {ITEM} in {LIST})",
+    "data_lengthoflist": "(length of {LIST})",
+    "data_listcontainsitem": "<{LIST} contains {ITEM}?>",
+    "data_showlist": "show list {LIST}",
+    "data_hidelist": "hide list {LIST}",
     
     # My Blocks (custom)
     "procedures_definition": "define {PROCCODE}",
@@ -272,12 +335,12 @@ OPCODE_MAP = {
     "sensing_touchingcolor": "{COLOR}",
     
     # Music extension blocks
-    "music_playDrumForBeats": "play drum [{DRUM} v] for [{BEATS}] beats",
-    "music_restForBeats": "rest for [{BEATS}] beats",
-    "music_playNoteForBeats": "play note [{NOTE}] for [{BEATS}] beats",
-    "music_setInstrument": "set instrument to [{INSTRUMENT} v]",
-    "music_setTempo": "set tempo to [{TEMPO}]",
-    "music_changeTempo": "change tempo by [{TEMPO}]",
+    "music_playDrumForBeats": "play drum {DRUM} for {BEATS} beats",
+    "music_restForBeats": "rest for {BEATS} beats",
+    "music_playNoteForBeats": "play note {NOTE} for {BEATS} beats",
+    "music_setInstrument": "set instrument to {INSTRUMENT}",
+    "music_setTempo": "set tempo to {TEMPO}",
+    "music_changeTempo": "change tempo by {TEMPO}",
     "music_getTempo": "(tempo)",
     
     # Music menu blocks - these should just return the value without wrappers
@@ -290,20 +353,20 @@ OPCODE_MAP = {
     "pen_stamp": "stamp",
     "pen_penDown": "pen down",
     "pen_penUp": "pen up",
-    "pen_setPenColorToColor": "set pen color to [{COLOR}]",
-    "pen_changePenColorParamBy": "change pen [{COLOR_PARAM} v] by [{VALUE}]",
-    "pen_setPenColorParamTo": "set pen [{COLOR_PARAM} v] to [{VALUE}]",
-    "pen_changePenSizeBy": "change pen size by [{SIZE}]",
-    "pen_setPenSizeTo": "set pen size to [{SIZE}]",
+    "pen_setPenColorToColor": "set pen color to {COLOR}",
+    "pen_changePenColorParamBy": "change pen {COLOR_PARAM} by {VALUE}",
+    "pen_setPenColorParamTo": "set pen {COLOR_PARAM} to {VALUE}",
+    "pen_changePenSizeBy": "change pen size by {SIZE}",
+    "pen_setPenSizeTo": "set pen size to {SIZE}",
     
     # Pen menu blocks
     "pen_menu_colorParam": "{colorParam}",
     
     # Video Sensing extension blocks
-    "videoSensing_whenMotionGreaterThan": "when video motion > [{REFERENCE}]",
-    "videoSensing_videoOn": "(video [{ATTRIBUTE} v] on [{SUBJECT} v])",
-    "videoSensing_videoToggle": "turn video [{VIDEO_STATE} v]",
-    "videoSensing_setVideoTransparency": "set video transparency to [{TRANSPARENCY}]%",
+    "videoSensing_whenMotionGreaterThan": "when video motion > {REFERENCE}",
+    "videoSensing_videoOn": "(video {ATTRIBUTE} on {SUBJECT})",
+    "videoSensing_videoToggle": "turn video {VIDEO_STATE}",
+    "videoSensing_setVideoTransparency": "set video transparency to {TRANSPARENCY}%",
     
     # Video Sensing menu blocks
     "videoSensing_menu_ATTRIBUTE": "{ATTRIBUTE}",
@@ -312,9 +375,9 @@ OPCODE_MAP = {
     
     # Face Sensing extension blocks
     "faceSensing_whenFaceDetected": "when face is detected::#00aa00",
-    "faceSensing_whenTilted": "when head tilted [{DIRECTION} v]::#00aa00",
-    "faceSensing_whenSpriteTouchesPart": "when this sprite touches [{PART} v]::#00aa00",
-    "faceSensing_goToPart": "go to [{PART} v]::#00aa00",
+    "faceSensing_whenTilted": "when head tilted {DIRECTION}::#00aa00",
+    "faceSensing_whenSpriteTouchesPart": "when this sprite touches {PART}::#00aa00",
+    "faceSensing_goToPart": "go to {PART}::#00aa00",
     "faceSensing_pointInFaceTiltDirection": "point in face tilt direction::#00aa00",
     "faceSensing_setSizeToFaceSize": "set size to face size::#00aa00",
     "faceSensing_faceIsDetected": "<face is detected?::#00aa00>",
@@ -322,16 +385,16 @@ OPCODE_MAP = {
     "faceSensing_faceSize": "(face size::#00aa00)",
     
     # Text to Speech extension blocks
-    "text2speech_speakAndWait": "speak [{WORDS}]",
-    "text2speech_setVoice": "set voice to [{VOICE} v]",
-    "text2speech_setLanguage": "set language to [{LANGUAGE} v]",
+    "text2speech_speakAndWait": "speak {WORDS}",
+    "text2speech_setVoice": "set voice to {VOICE}",
+    "text2speech_setLanguage": "set language to {LANGUAGE}",
     
     # Text to Speech menu blocks
     "text2speech_menu_voices": "{voices}",
     "text2speech_menu_languages": "{languages}",
     
     # Translate extension blocks
-    "translate_getTranslate": "(translate [{WORDS}] to [{LANGUAGE} v])",
+    "translate_getTranslate": "(translate {WORDS} to {LANGUAGE})",
     "translate_getViewerLanguage": "(language)",
     
     # Translate menu blocks
@@ -339,15 +402,22 @@ OPCODE_MAP = {
 }
 
 def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> str:
-    """Extract input value from a block."""
+    """Extract input value from a block and wrap with appropriate brackets.
+    
+    Brackets are determined by the value type:
+    - Literals (numbers, text) use []
+    - Reporter blocks use ()
+    - Boolean blocks use <>
+    - Menu blocks return unwrapped values (will be wrapped with [v] in templates)
+    """
     if not block.inputs or input_name not in block.inputs:
-        return "?"
+        return "[?]"
     
     input_data = block.inputs[input_name]
     
     # Input format: [input_type, value, ...] or [input_type, value]
     if not isinstance(input_data, list) or len(input_data) < 2:
-        return "?"
+        return "[?]"
     
     input_type = input_data[0]
     value = input_data[1]
@@ -360,9 +430,26 @@ def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> 
     if isinstance(value, str):
         # It's a block ID reference
         if value in blocks:
-            return block_to_scratchblocks(blocks[value], blocks)
+            referenced_block = blocks[value]
+            scratchblock = block_to_scratchblocks(referenced_block, blocks)
+            
+            # Determine bracket type based on the referenced block's opcode
+            if referenced_block.opcode in BOOLEAN_BLOCKS:
+                # Check if already has outer <> brackets
+                if scratchblock.strip().startswith("<") and scratchblock.strip().endswith(">"):
+                    return scratchblock
+                return f"<{scratchblock}>"
+            elif referenced_block.opcode in MENU_BLOCKS:
+                # Menu blocks should not be wrapped - they return values for dropdowns
+                return scratchblock
+            else:
+                # Reporter blocks and others use ()
+                # Check if already has outer () brackets
+                if scratchblock.strip().startswith("(") and scratchblock.strip().endswith(")"):
+                    return scratchblock
+                return f"({scratchblock})"
         # Unknown block reference
-        return value
+        return f"[{value}]"
     
     # Check if it's a primitive value [type, value]
     if isinstance(value, list) and len(value) >= 2:
@@ -370,11 +457,19 @@ def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> 
         primitive_value = value[1]
         
         # Type 4-8 are primitives (number, positive number, angle, color, text, broadcast, variable, list)
-        if primitive_type in [4, 5, 6, 7, 8, 9, 10, 11, 12, 13]:
+        # Type 11 is a dropdown menu value
+        if primitive_type in [4, 5, 6, 7, 8, 9, 10, 12, 13]:
             # Special handling for pen color parameter field menus
             if input_name == "colorParam" and str(primitive_value) in PEN_COLOR_PARAM_NAMES:
                 return PEN_COLOR_PARAM_NAMES[str(primitive_value)]
-            return str(primitive_value)
+            # Primitive literals use []
+            return f"[{primitive_value}]"
+        elif primitive_type == 11:
+            # Type 11 is a dropdown menu - add [value v] format and strip underscores
+            menu_value = str(primitive_value)
+            if menu_value.startswith("_") and menu_value.endswith("_"):
+                menu_value = menu_value.strip("_")
+            return f"[{menu_value} v]"
     
     # For obscured shadows, try the third element
     if len(input_data) >= 3 and isinstance(input_data[2], list):
@@ -383,13 +478,14 @@ def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> 
             # Special handling for pen color parameter in obscured shadows
             if input_name == "colorParam" and str(shadow[1]) in PEN_COLOR_PARAM_NAMES:
                 return PEN_COLOR_PARAM_NAMES[str(shadow[1])]
-            return str(shadow[1])
+            # Shadow values are literals, use []
+            return f"[{shadow[1]}]"
     
-    return "?"
+    return "[?]"
 
 
 def get_field_value(block: Block, field_name: str) -> str:
-    """Extract field value from a block."""
+    """Extract field value from a block and wrap with [value v] if it's a dropdown."""
     if not block.fields or field_name not in block.fields:
         return "?"
     
@@ -398,31 +494,31 @@ def get_field_value(block: Block, field_name: str) -> str:
     
     # Convert drum numbers to names for music extension
     if field_name == "DRUM" and value in DRUM_NAMES:
-        return DRUM_NAMES[value]
+        value = DRUM_NAMES[value]
     
     # Convert instrument numbers to names for music extension
     if field_name == "INSTRUMENT" and value in INSTRUMENT_NAMES:
-        return INSTRUMENT_NAMES[value]
+        value = INSTRUMENT_NAMES[value]
     
     # Convert pen color parameter names for pen extension (lowercase field name)
     if field_name == "colorParam" and value in PEN_COLOR_PARAM_NAMES:
-        return PEN_COLOR_PARAM_NAMES[value]
+        value = PEN_COLOR_PARAM_NAMES[value]
     
     # Convert face part numbers to names for face sensing extension
     if field_name == "PART" and value in FACE_PART_NAMES:
-        return FACE_PART_NAMES[value]
+        value = FACE_PART_NAMES[value]
     
     # Convert face direction for face sensing extension
     if field_name == "DIRECTION" and value in FACE_DIRECTION_NAMES:
-        return FACE_DIRECTION_NAMES[value]
+        value = FACE_DIRECTION_NAMES[value]
     
     # Convert voice names for text to speech extension
     if field_name == "voices" and value in TEXT2SPEECH_VOICES:
-        return TEXT2SPEECH_VOICES[value]
+        value = TEXT2SPEECH_VOICES[value]
     
     # Convert language codes for text to speech extension
     if field_name == "languages" and value in TEXT2SPEECH_LANGUAGES:
-        return TEXT2SPEECH_LANGUAGES[value]
+        value = TEXT2SPEECH_LANGUAGES[value]
     
     # Convert specific uppercase field values to lowercase for scratchblocks
     uppercase_to_lowercase = [
@@ -431,11 +527,15 @@ def get_field_value(block: Block, field_name: str) -> str:
         "PITCH", "PIXELATE", "SECOND", "TIMER", "WHIRL", "YEAR"
     ]
     if value in uppercase_to_lowercase:
-        return value.lower()
+        value = value.lower()
     
     # Strip underscores from special dropdown values like _random_ and _mouse_
     if value.startswith("_") and value.endswith("_"):
-        return value.strip("_")
+        value = value.strip("_")
+    
+    # Add [value v] format for dropdown fields
+    if field_name in DROPDOWN_FIELDS:
+        return f"[{value} v]"
     
     return value
 
