@@ -33,13 +33,13 @@ View detailed information about a Scratch project without downloading it:
 
 ```bash
 # Using project ID
-python main.py metadata 1252755893
+python main.py metadata 1259204833
 
 # Using full project URL
-python main.py metadata https://scratch.mit.edu/projects/1252755893/
+python main.py metadata https://scratch.mit.edu/projects/1259204833/
 
 # Using editor URL
-python main.py metadata https://scratch.mit.edu/projects/1252755893/editor
+python main.py metadata https://scratch.mit.edu/projects/1259204833/editor
 ```
 
 The metadata command displays colorized, pretty-printed JSON with information including:
@@ -93,10 +93,10 @@ Analyze a Scratch project and display detailed statistics. Can analyze from a UR
 
 ```bash
 # Analyze from project ID
-python main.py analyze 1252755893
+python main.py analyze 1259204833
 
 # Analyze from URL
-python main.py analyze https://scratch.mit.edu/projects/1252755893/
+python main.py analyze https://scratch.mit.edu/projects/1259204833/
 
 # Analyze local project.json file
 python main.py analyze sample-project.json
@@ -122,10 +122,10 @@ Generate comprehensive HTML documentation for a Scratch project with thumbnails 
 
 ```bash
 # From project ID (standalone mode - single HTML file)
-python main.py document 1252755893
+python main.py document 1259204833
 
 # From URL
-python main.py document https://scratch.mit.edu/projects/1252755893/
+python main.py document https://scratch.mit.edu/projects/1259204833/
 
 # From local .sb3 file
 python main.py document project.sb3
@@ -137,10 +137,10 @@ python main.py document project.zip
 python main.py document project-directory/
 
 # Specify custom output name (default uses project title or input name)
-python main.py document 1252755893 --name custom-doc
+python main.py document 1259204833 --name custom-doc
 
 # Generate with local assets directory (instead of using CDN)
-python main.py document 1252755893 --no-standalone
+python main.py document 1259204833 --no-standalone
 ```
 
 #### Output Modes

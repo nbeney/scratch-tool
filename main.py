@@ -41,8 +41,8 @@ def extract_project_id(url_or_id: str) -> str:
         return url_or_id
     
     # Try to extract ID from URL patterns
-    # Matches: https://scratch.mit.edu/projects/1252755893/
-    # Matches: https://scratch.mit.edu/projects/1252755893/editor
+    # Matches: https://scratch.mit.edu/projects/1259204833/
+    # Matches: https://scratch.mit.edu/projects/1259204833/editor
     pattern = r'scratch\.mit\.edu/projects/(\d+)'
     match = re.search(pattern, url_or_id)
     
@@ -78,18 +78,44 @@ def sanitize_filename(filename: str) -> str:
     return filename
 
 
+def extract_project_id_from_filename(filename: str) -> Optional[str]:
+    """
+    Extract project ID from filename if it matches the pattern:
+    <title>-<project_id>-project.sb3 or <title>-<project_id>-project.json
+    
+    Returns the project ID if found, None otherwise.
+    """
+    # Remove path and get just the filename
+    base_name = Path(filename).stem
+    
+    # Pattern: anything-<digits>-project
+    # The project ID is always numeric and comes before "-project"
+    pattern = r'-(\d+)-project$'
+    match = re.search(pattern, base_name)
+    
+    if match:
+        return match.group(1)
+    
+    return None
+
+
 @app.command()
 def metadata(
     url_or_id: str = typer.Argument(..., help="Scratch project URL or ID"),
+    name: Optional[str] = typer.Option(None, "--name", "-n", help="Custom output filename (without extension)"),
 ):
     """
-    Fetch and display project metadata.
+    Fetch and save project metadata to a JSON file.
+    
+    By default, saves to <title>-<project_id>-metadata.json.
+    Use --name to specify a custom filename.
     
     Note: Only public and shared projects can be accessed.
     
     Examples:
-        scratch-tool metadata https://scratch.mit.edu/projects/1252755893/
-        scratch-tool metadata 1252755893
+        scratch-tool metadata https://scratch.mit.edu/projects/1259204833/
+        scratch-tool metadata 1259204833
+        scratch-tool metadata 1259204833 --name my-project
     """
     try:
         # Extract project ID from URL or use ID directly
@@ -110,10 +136,35 @@ def metadata(
         # Try to parse as ProjectMetadata, otherwise treat as error
         try:
             project_meta = ProjectMetadata.model_validate(data)
-            # Convert to dict with aliases for pretty printing
+            
+            # Generate filename
+            if name:
+                filename = f"{name}.json"
+            else:
+                # Sanitize title for filename (remove invalid characters)
+                import re
+                safe_title = re.sub(r'[<>:"/\\|?*]', '', project_meta.title)
+                safe_title = safe_title.strip()
+                # Limit length to avoid overly long filenames
+                if len(safe_title) > 50:
+                    safe_title = safe_title[:50].strip()
+                filename = f"{safe_title}-{project_id}-metadata.json"
+            
+            # Convert to dict with aliases for saving
             output_data = project_meta.model_dump(by_alias=True, mode='json')
-            print_colored_json(output_data)
-            typer.secho("\n✓ Successfully fetched metadata", fg=typer.colors.GREEN)
+            
+            # Save to file
+            import json
+            with open(filename, 'w', encoding='utf-8') as f:
+                json.dump(output_data, f, indent=2, ensure_ascii=False)
+            
+            typer.secho(f"✓ Successfully saved metadata to: {filename}", fg=typer.colors.GREEN)
+            typer.echo()
+            typer.echo(f"Project: {project_meta.title}")
+            typer.echo(f"Author: {project_meta.author.username}")
+            typer.echo(f"Views: {project_meta.stats.views:,}")
+            typer.echo(f"Loves: {project_meta.stats.loves:,}")
+            typer.echo(f"Favorites: {project_meta.stats.favorites:,}")
         except ValidationError:
             # Check if it's an error response
             try:
@@ -165,17 +216,17 @@ def download(
     
     By default, downloads the complete .sb3 file with all assets.
     Use --code to download only the project.json file.
-    By default, the file is named after the project title.
+    By default, saves to <title>-<project_id>-project.sb3.
     Use --name to specify a custom filename.
     
     Note: Only public and shared projects can be downloaded.
     
     Examples:
-        scratch-tool download https://scratch.mit.edu/projects/1252755893/
-        scratch-tool download https://scratch.mit.edu/projects/1252755893/editor
-        scratch-tool download 1252755893
-        scratch-tool download 1252755893 --name my-project
-        scratch-tool download 1252755893 --code
+        scratch-tool download https://scratch.mit.edu/projects/1259204833/
+        scratch-tool download https://scratch.mit.edu/projects/1259204833/editor
+        scratch-tool download 1259204833
+        scratch-tool download 1259204833 --name my-project
+        scratch-tool download 1259204833 --code
     """
     try:
         # Extract project ID from URL or use ID directly
@@ -220,9 +271,12 @@ def download(
                 # User provided custom name
                 filename = f"{name}.json"
             else:
-                # Use project title, sanitized for filesystem
+                # Use project title and ID, sanitized for filesystem
                 safe_title = sanitize_filename(project_metadata.title)
-                filename = f"{safe_title}.json"
+                # Limit title length to avoid overly long filenames
+                if len(safe_title) > 50:
+                    safe_title = safe_title[:50].strip()
+                filename = f"{safe_title}-{project_id}-project.json"
                 typer.echo(f"Using filename: {filename}")
             
             # Write JSON file
@@ -268,9 +322,12 @@ def download(
             # User provided custom name
             filename = f"{name}.sb3"
         else:
-            # Use project title, sanitized for filesystem
+            # Use project title and ID, sanitized for filesystem
             safe_title = sanitize_filename(project_metadata.title)
-            filename = f"{safe_title}.sb3"
+            # Limit title length to avoid overly long filenames
+            if len(safe_title) > 50:
+                safe_title = safe_title[:50].strip()
+            filename = f"{safe_title}-{project_id}-project.sb3"
             typer.echo(f"Using filename: {filename}")
         
         # Create the .sb3 file as a ZIP archive
@@ -330,15 +387,15 @@ def analyze(
     Analyze a Scratch project and display detailed statistics.
     
     Can analyze from:
-    - Project URL (e.g., https://scratch.mit.edu/projects/1252755893/)
-    - Project ID (e.g., 1252755893)
+    - Project URL (e.g., https://scratch.mit.edu/projects/1259204833/)
+    - Project ID (e.g., 1259204833)
     - Local project.json file (e.g., my-project.json)
     
     Note: When using URL or ID, only public and shared projects can be accessed.
     
     Examples:
-        scratch-tool analyze https://scratch.mit.edu/projects/1252755893/
-        scratch-tool analyze 1252755893
+        scratch-tool analyze https://scratch.mit.edu/projects/1259204833/
+        scratch-tool analyze 1259204833
         scratch-tool analyze sample-project.json
         scratch-tool analyze sample-project.json --quiet  # Validate silently
     """
@@ -501,15 +558,15 @@ def document(
     Use --no-standalone to extract assets locally.
     
     Supported inputs:
-    - Project URL (e.g., https://scratch.mit.edu/projects/1252755893/)
-    - Project ID (e.g., 1252755893)
+    - Project URL (e.g., https://scratch.mit.edu/projects/1259204833/)
+    - Project ID (e.g., 1259204833)
     - .sb3 file (e.g., my-project.sb3)
     - .zip file (same format as .sb3)
     - Directory containing project.json and assets
     
     Examples:
-        scratch-tool document https://scratch.mit.edu/projects/1252755893/
-        scratch-tool document 1252755893
+        scratch-tool document https://scratch.mit.edu/projects/1259204833/
+        scratch-tool document 1259204833
         scratch-tool document my-project.sb3 --name my-docs
         scratch-tool document my-project.sb3 --no-standalone  # Extract assets locally
     """
@@ -545,6 +602,9 @@ def document(
             # Load from .sb3 or .zip file
             typer.echo(f"Loading project from file: {source}")
             
+            # Try to extract project ID from filename
+            project_id = extract_project_id_from_filename(source)
+            
             with ZipFile(source_path, 'r') as zf:
                 # Read project.json
                 project_json = json.loads(zf.read('project.json'))
@@ -560,6 +620,9 @@ def document(
         elif source_path.is_file() and source_path.suffix == '.json':
             # Load from .json file (project.json)
             typer.echo(f"Loading project from file: {source}")
+            
+            # Try to extract project ID from filename
+            project_id = extract_project_id_from_filename(source)
             
             with open(source_path) as f:
                 project_json = json.load(f)

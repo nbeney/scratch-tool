@@ -33,10 +33,14 @@ class Costume(BaseModel):
     bitmapResolution: Optional[int] = None  # 1 for SVG, 2 for PNG
     dataFormat: str  # "svg", "png", "jpg"
     assetId: str
-    md5ext: str
+    md5ext: Optional[str] = None  # Will be computed from assetId and dataFormat if missing
     rotationCenterX: Union[int, float]
     rotationCenterY: Union[int, float]
-
+    
+    def model_post_init(self, __context):
+        """Compute md5ext from assetId and dataFormat if not provided."""
+        if self.md5ext is None and self.assetId and self.dataFormat:
+            self.md5ext = f"{self.assetId}.{self.dataFormat}"
 
 class Sound(BaseModel):
     """A sound asset."""
@@ -46,8 +50,12 @@ class Sound(BaseModel):
     format: str = ""  # Empty string or format info
     rate: int  # Sample rate (e.g., 48000)
     sampleCount: int
-    md5ext: str
-
+    md5ext: Optional[str] = None  # Will be computed from assetId and dataFormat if missing
+    
+    def model_post_init(self, __context):
+        """Compute md5ext from assetId and dataFormat if not provided."""
+        if self.md5ext is None and self.assetId and self.dataFormat:
+            self.md5ext = f"{self.assetId}.{self.dataFormat}"
 
 class Block(BaseModel):
     """A Scratch code block.

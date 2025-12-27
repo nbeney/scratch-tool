@@ -17,30 +17,50 @@ class TestMetadataCommand:
 
     def test_metadata_valid_project_by_id(self):
         """Test fetching metadata with a valid project ID."""
-        result = runner.invoke(app, ["metadata", "1252755893"])
+        result = runner.invoke(app, ["metadata", "1259204833"])
         
         assert result.exit_code == 0
-        assert "Fetching metadata for project 1252755893" in result.stdout
-        assert "✓ Successfully fetched metadata" in result.stdout
-        assert "project_token" in result.stdout
+        assert "Fetching metadata for project 1259204833" in result.stdout
+        assert "✓ Successfully saved metadata to:" in result.stdout
+        assert "metadata.json" in result.stdout
         assert "nicoben2" in result.stdout  # Author username
-        assert "Snowball fight" in result.stdout  # Title
+        assert "All Blocks" in result.stdout  # Title
+        
+        # Verify file was created
+        import glob
+        metadata_files = glob.glob("*1259204833-metadata.json")
+        assert len(metadata_files) > 0, "Metadata file should be created"
 
     def test_metadata_valid_project_by_url(self):
         """Test fetching metadata with a valid project URL."""
-        result = runner.invoke(app, ["metadata", "https://scratch.mit.edu/projects/1252755893/"])
+        result = runner.invoke(app, ["metadata", "https://scratch.mit.edu/projects/1259204833/"])
         
         assert result.exit_code == 0
-        assert "Fetching metadata for project 1252755893" in result.stdout
-        assert "✓ Successfully fetched metadata" in result.stdout
+        assert "Fetching metadata for project 1259204833" in result.stdout
+        assert "✓ Successfully saved metadata to:" in result.stdout
 
     def test_metadata_valid_project_by_editor_url(self):
         """Test fetching metadata with a valid project editor URL."""
-        result = runner.invoke(app, ["metadata", "https://scratch.mit.edu/projects/1252755893/editor"])
+        result = runner.invoke(app, ["metadata", "https://scratch.mit.edu/projects/1259204833/editor"])
         
         assert result.exit_code == 0
-        assert "Fetching metadata for project 1252755893" in result.stdout
-        assert "✓ Successfully fetched metadata" in result.stdout
+        assert "Fetching metadata for project 1259204833" in result.stdout
+        assert "✓ Successfully saved metadata to:" in result.stdout
+
+    def test_metadata_with_custom_name(self):
+        """Test fetching metadata with a custom filename."""
+        result = runner.invoke(app, ["metadata", "1259204833", "--name", "test-custom"])
+        
+        assert result.exit_code == 0
+        assert "✓ Successfully saved metadata to: test-custom.json" in result.stdout
+        
+        # Verify file was created with custom name
+        import os
+        assert os.path.exists("test-custom.json"), "Custom named file should be created"
+        
+        # Clean up
+        if os.path.exists("test-custom.json"):
+            os.remove("test-custom.json")
 
     def test_metadata_invalid_project_id(self):
         """Test fetching metadata with an invalid/non-existent project ID."""
@@ -122,17 +142,17 @@ class TestDownloadCommand:
         try:
             # This is a real project - will actually download
             # Use a small project for faster test
-            result = runner.invoke(app, ["download", "1252755893"])
+            result = runner.invoke(app, ["download", "1259204833"])
             
             # Note: This test will fail if the project becomes unavailable
             # or network is down - that's expected for integration tests
             if result.exit_code == 0:
-                # Should create file with title-based name
-                expected_file = tmp_path / "Snowball fight.sb3"
+                # Should create file with new format: title-projectid-project.sb3
+                expected_file = tmp_path / "All Blocks-1259204833-project.sb3"
                 assert expected_file.exists()
                 assert expected_file.stat().st_size > 0
                 assert "✓ Successfully downloaded" in result.stdout
-                assert "Snowball fight.sb3" in result.stdout
+                assert "All Blocks-1259204833-project.sb3" in result.stdout
             else:
                 # If download fails, at least check error handling works
                 output = result.stdout + result.stderr
@@ -147,7 +167,7 @@ class TestDownloadCommand:
         os.chdir(tmp_path)
         
         try:
-            result = runner.invoke(app, ["download", "1252755893", "--name", "my-custom-project"])
+            result = runner.invoke(app, ["download", "1259204833", "--name", "my-custom-project"])
             
             if result.exit_code == 0:
                 output_file = tmp_path / "my-custom-project.sb3"
@@ -163,23 +183,23 @@ class TestDownloadCommand:
         os.chdir(tmp_path)
         
         try:
-            result = runner.invoke(app, ["download", "1252755893", "--code"])
+            result = runner.invoke(app, ["download", "1259204833", "--code"])
             
             if result.exit_code == 0:
-                # Should create JSON file with title-based name
-                expected_file = tmp_path / "Snowball fight.json"
+                # Should create JSON file with new format: title-projectid-project.json
+                expected_file = tmp_path / "All Blocks-1259204833-project.json"
                 assert expected_file.exists()
                 assert expected_file.stat().st_size > 0
                 assert "✓ Successfully downloaded code" in result.stdout
-                assert "Snowball fight.json" in result.stdout
+                assert "All Blocks-1259204833-project.json" in result.stdout
                 
                 # Verify it's valid JSON
                 import json
                 content = json.loads(expected_file.read_text())
                 assert "targets" in content
                 
-                # Should not create .sb3 file
-                sb3_file = tmp_path / "Snowball fight.sb3"
+                # Should not create .sb3 file (with new filename format)
+                sb3_file = tmp_path / "All Blocks-1259204833-project.sb3"
                 assert not sb3_file.exists()
         finally:
             os.chdir(original_cwd)
@@ -191,7 +211,7 @@ class TestDownloadCommand:
         os.chdir(tmp_path)
         
         try:
-            result = runner.invoke(app, ["download", "1252755893", "--code", "--name", "my-code"])
+            result = runner.invoke(app, ["download", "1259204833", "--code", "--name", "my-code"])
             
             if result.exit_code == 0:
                 output_file = tmp_path / "my-code.json"
@@ -207,25 +227,59 @@ class TestExtractProjectId:
     def test_extract_from_numeric_id(self):
         """Test extraction from numeric ID."""
         from main import extract_project_id
-        assert extract_project_id("1252755893") == "1252755893"
+        assert extract_project_id("1259204833") == "1259204833"
 
     def test_extract_from_full_url(self):
         """Test extraction from full project URL."""
         from main import extract_project_id
-        url = "https://scratch.mit.edu/projects/1252755893/"
-        assert extract_project_id(url) == "1252755893"
+        url = "https://scratch.mit.edu/projects/1259204833/"
+        assert extract_project_id(url) == "1259204833"
 
     def test_extract_from_editor_url(self):
         """Test extraction from editor URL."""
         from main import extract_project_id
-        url = "https://scratch.mit.edu/projects/1252755893/editor"
-        assert extract_project_id(url) == "1252755893"
+        url = "https://scratch.mit.edu/projects/1259204833/editor"
+        assert extract_project_id(url) == "1259204833"
 
     def test_extract_from_invalid_format(self):
         """Test extraction fails with invalid format."""
         from main import extract_project_id
         with pytest.raises(ValueError, match="Could not extract project ID"):
             extract_project_id("invalid-format")
+
+
+class TestExtractProjectIdFromFilename:
+    """Tests for extracting project ID from filename."""
+
+    def test_extract_from_sb3_filename(self):
+        """Test extraction from .sb3 filename with project ID."""
+        from main import extract_project_id_from_filename
+        assert extract_project_id_from_filename("My Project-1259204833-project.sb3") == "1259204833"
+
+    def test_extract_from_json_filename(self):
+        """Test extraction from .json filename with project ID."""
+        from main import extract_project_id_from_filename
+        assert extract_project_id_from_filename("My Project-1259204833-project.json") == "1259204833"
+
+    def test_extract_from_path(self):
+        """Test extraction works with full path."""
+        from main import extract_project_id_from_filename
+        assert extract_project_id_from_filename("/path/to/My Project-1259204833-project.sb3") == "1259204833"
+
+    def test_extract_with_special_chars_in_title(self):
+        """Test extraction when title has hyphens."""
+        from main import extract_project_id_from_filename
+        assert extract_project_id_from_filename("My-Cool-Project-9876543210-project.sb3") == "9876543210"
+
+    def test_extract_returns_none_for_simple_filename(self):
+        """Test returns None for filename without project ID."""
+        from main import extract_project_id_from_filename
+        assert extract_project_id_from_filename("my-project.sb3") is None
+
+    def test_extract_returns_none_for_wrong_format(self):
+        """Test returns None for filename not matching pattern."""
+        from main import extract_project_id_from_filename
+        assert extract_project_id_from_filename("project-12345.sb3") is None
 
 
 class TestSanitizeFilename:
@@ -282,8 +336,8 @@ class TestPydanticModels:
         
         metadata = ProjectMetadata.model_validate(data)
         
-        assert metadata.id == 1252755893
-        assert metadata.title == "Snowball fight"
+        assert metadata.id == 1259204833
+        assert metadata.title == "All Blocks"
         assert metadata.author.username == "nicoben2"
         assert metadata.public is True
         assert metadata.project_token is not None
@@ -386,19 +440,19 @@ class TestAnalyzeCommand:
 
     def test_analyze_valid_project_by_id(self):
         """Test analyzing a project by ID from Scratch."""
-        result = runner.invoke(app, ["analyze", "1252755893"])
+        result = runner.invoke(app, ["analyze", "1259204833"])
         
         assert result.exit_code == 0
-        assert "Fetching project 1252755893 from Scratch" in result.stdout
+        assert "Fetching project 1259204833 from Scratch" in result.stdout
         assert "📊 Project Overview:" in result.stdout
         assert "✅ Analysis complete!" in result.stdout
 
     def test_analyze_valid_project_by_url(self):
         """Test analyzing a project by URL from Scratch."""
-        result = runner.invoke(app, ["analyze", "https://scratch.mit.edu/projects/1252755893/"])
+        result = runner.invoke(app, ["analyze", "https://scratch.mit.edu/projects/1259204833/"])
         
         assert result.exit_code == 0
-        assert "Fetching project 1252755893 from Scratch" in result.stdout
+        assert "Fetching project 1259204833 from Scratch" in result.stdout
         assert "✅ Analysis complete!" in result.stdout
 
     def test_analyze_invalid_project_id(self):
@@ -467,7 +521,7 @@ class TestAnalyzeCommand:
     
     def test_analyze_quiet_mode_valid_remote_project(self):
         """Test analyzing remote project in quiet mode."""
-        result = runner.invoke(app, ["analyze", "1252755893", "--quiet"])
+        result = runner.invoke(app, ["analyze", "1259204833", "--quiet"])
         
         assert result.exit_code == 0
         assert result.stdout == ""  # No output in quiet mode
@@ -480,21 +534,21 @@ class TestDocumentCommand:
         """Test generating documentation from a project ID."""
         monkeypatch.chdir(tmp_path)
         
-        result = runner.invoke(app, ["document", "1252755893"])
+        result = runner.invoke(app, ["document", "1259204833"])
         
         assert result.exit_code == 0
-        assert "Downloading project 1252755893" in result.stdout
+        assert "Downloading project 1259204833" in result.stdout
         assert "✓ Documentation generated successfully!" in result.stdout
-        assert Path("Snowball fight.html").exists()
+        assert Path("All Blocks.html").exists()
         # Standalone mode by default - no directory created
         assert "Standalone" in result.stdout
-        assert not Path("Snowball fight").exists()
+        assert not Path("All Blocks").exists()
         
     def test_document_with_custom_name(self, tmp_path, monkeypatch):
         """Test generating documentation with --name option."""
         monkeypatch.chdir(tmp_path)
         
-        result = runner.invoke(app, ["document", "1252755893", "--name", "custom-doc"])
+        result = runner.invoke(app, ["document", "1259204833", "--name", "custom-doc"])
         
         assert result.exit_code == 0
         assert "✓ Documentation generated successfully!" in result.stdout
@@ -507,7 +561,7 @@ class TestDocumentCommand:
         monkeypatch.chdir(tmp_path)
         
         # First download the project
-        result = runner.invoke(app, ["download", "1252755893", "--name", "test"])
+        result = runner.invoke(app, ["download", "1259204833", "--name", "test"])
         assert result.exit_code == 0
         
         # Then generate documentation
@@ -524,21 +578,21 @@ class TestDocumentCommand:
         """Test that documentation creates thumbnails for costumes when using local mode."""
         monkeypatch.chdir(tmp_path)
         
-        result = runner.invoke(app, ["document", "1252755893", "--name", "thumb-test", "--no-standalone"])
+        result = runner.invoke(app, ["document", "1259204833", "--name", "thumb-test", "--no-standalone"])
         
         assert result.exit_code == 0
         
         # Check that thumbnails were created (project has at least one PNG costume)
         thumb_dir = Path("thumb-test")
         thumb_files = list(thumb_dir.glob("thumb_*.png"))
-        # Snowball fight project has 1 PNG backdrop
+        # All Blocks project has 1 PNG backdrop
         assert len(thumb_files) >= 1
         
     def test_document_includes_audio_players(self, tmp_path, monkeypatch):
         """Test that documentation includes audio players for sounds."""
         monkeypatch.chdir(tmp_path)
         
-        result = runner.invoke(app, ["document", "1252755893", "--name", "audio-test"])
+        result = runner.invoke(app, ["document", "1259204833", "--name", "audio-test"])
         
         assert result.exit_code == 0
         
@@ -552,7 +606,7 @@ class TestDocumentCommand:
         """Test that documentation includes project information."""
         monkeypatch.chdir(tmp_path)
         
-        result = runner.invoke(app, ["document", "1252755893", "--name", "info-test"])
+        result = runner.invoke(app, ["document", "1259204833", "--name", "info-test"])
         
         assert result.exit_code == 0
         
@@ -568,7 +622,7 @@ class TestDocumentCommand:
         """Test that documentation includes scratchblocks scripts."""
         monkeypatch.chdir(tmp_path)
         
-        result = runner.invoke(app, ["document", "1252755893", "--name", "scripts-test"])
+        result = runner.invoke(app, ["document", "1259204833", "--name", "scripts-test"])
         
         assert result.exit_code == 0
         
@@ -595,3 +649,29 @@ class TestDocumentCommand:
         
         assert result.exit_code == 1
         assert "Error" in (result.stdout + result.stderr)
+
+    def test_document_extracts_project_id_from_filename(self, tmp_path, monkeypatch):
+        """Test that project ID is extracted from filename and shown in HTML."""
+        monkeypatch.chdir(tmp_path)
+        
+        # Download the project with the standard naming format
+        result = runner.invoke(app, ["download", "1259204833"])
+        assert result.exit_code == 0
+        
+        # The file should be named "All Blocks-1259204833-project.sb3"
+        sb3_file = "All Blocks-1259204833-project.sb3"
+        assert Path(sb3_file).exists()
+        
+        # Generate documentation from the file
+        result = runner.invoke(app, ["document", sb3_file])
+        assert result.exit_code == 0
+        
+        # Check that the HTML was generated
+        html_file = "All Blocks-1259204833-project.html"
+        assert Path(html_file).exists()
+        
+        # Verify the project ID appears in the HTML
+        html_content = Path(html_file).read_text()
+        assert "1259204833" in html_content
+        assert "Project ID" in html_content
+
