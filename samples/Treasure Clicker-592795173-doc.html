@@ -510,10 +510,10 @@
             <pre class="blocks">when green flag clicked
 clear graphic effects
 forever
-  if &lt;[points] &gt; [2500]&gt; then
+  if &lt;(points) &gt; [2500]&gt; then
     set [pixelate v] effect to [0]
 else
-    set [pixelate v] effect to ([2500] - [points])
+    set [pixelate v] effect to ([2500] - (points))
   end
 end
 
@@ -521,8 +521,8 @@ when green flag clicked
 set [points v] to [0]
 set [rate per sec v] to [0]
 set [rate per click v] to [1]
-repeat until &lt;[points] &gt; [2500]&gt;
-  change [points v] by [rate per sec]
+repeat until &lt;(points) &gt; [2500]&gt;
+  change [points v] by (rate per sec)
   wait [1] seconds
 end
 broadcast [you win v] and wait
@@ -576,7 +576,7 @@ stop [all v]</pre>
           <div class="scripts-section">
             <pre class="blocks">when this sprite clicked
 say []
-change [points v] by [rate per click]
+change [points v] by (rate per click)
 change size by [2]
 wait [0.05] seconds
 change size by [-2]
@@ -631,7 +631,7 @@ say [Click me to get points, buy other objects to get points faster. Discover th
             <pre class="blocks">when green flag clicked
 go to x: [-150] y: [50]
 forever
-  if &lt;[points] &lt; [10]&gt; then
+  if &lt;(points) &lt; [10]&gt; then
     hide
 else
     show
@@ -698,7 +698,7 @@ change size by [-2]
 when green flag clicked
 go to x: [0] y: [-100]
 forever
-  if &lt;[points] &lt; [200]&gt; then
+  if &lt;(points) &lt; [200]&gt; then
     hide
 else
     show
@@ -758,7 +758,7 @@ change size by [-2]
 when green flag clicked
 go to x: [-150] y: [-100]
 forever
-  if &lt;[points] &lt; [50]&gt; then
+  if &lt;(points) &lt; [50]&gt; then
     hide
 else
     show
@@ -818,7 +818,7 @@ change size by [-2]
 when green flag clicked
 go to x: [150] y: [50]
 forever
-  if &lt;[points] &lt; [500]&gt; then
+  if &lt;(points) &lt; [500]&gt; then
     hide
 else
     show
@@ -878,7 +878,7 @@ change size by [-2]
 when green flag clicked
 go to x: [150] y: [-100]
 forever
-  if &lt;[points] &lt; [1000]&gt; then
+  if &lt;(points) &lt; [1000]&gt; then
     hide
 else
     show

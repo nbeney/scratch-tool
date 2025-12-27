@@ -579,7 +579,7 @@ end
 
 when green flag clicked
 set [time v] to [30]
-repeat until &lt;[time] = [0]&gt;
+repeat until &lt;(time) = [0]&gt;
   change [time v] by [-1]
   wait [1] seconds
 end
@@ -602,7 +602,7 @@ stop [all v]</pre>
             </div>
             <div class="prop">
               <div class="prop-label">Direction</div>
-              <div class="prop-value">53.40761327410678°</div>
+              <div class="prop-value">53°</div>
             </div>
             <div class="prop">
               <div class="prop-label">Visible</div>
@@ -673,7 +673,7 @@ end</pre>
             </div>
             <div class="prop">
               <div class="prop-label">Direction</div>
-              <div class="prop-value">60.617745377020285°</div>
+              <div class="prop-value">61°</div>
             </div>
             <div class="prop">
               <div class="prop-label">Visible</div>
@@ -710,15 +710,15 @@ go to x: [-200] y: [-140]
 when [space v] key pressed
 set [power v] to [0]
 repeat until &lt;not &lt;key [space v] pressed?&gt;&gt;
-  if &lt;[power] &lt; [25]&gt; then
+  if &lt;(power) &lt; [25]&gt; then
     change [power v] by [1]
   end
 end
 point towards [mouse v]
 set [speed y v] to [0]
 repeat until &lt;(y position) &lt; [-170]&gt;
-  move [power] steps
-  change y by [speed y]
+  move (power) steps
+  change y by (speed y)
   change [speed y v] by [-1]
 end
 go to x: [-200] y: [-140]</pre>

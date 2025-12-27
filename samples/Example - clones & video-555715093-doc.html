@@ -605,39 +605,39 @@ set [DIRECTION v] to [90]</pre>
 set video transparency to [100]%
 set [ROWS v] to [15]
 set [COLS v] to [20]
-set [DX v] to ([480] / [COLS])
-set [DY v] to ([360] / [ROWS])
+set [DX v] to ([480] / (COLS))
+set [DY v] to ([360] / (ROWS))
 switch costume to [square v]
 hide
-set [y v] to ([180] - ([DY] / [2]))
-repeat [ROWS]
-  set [x v] to ([-240] + ([DX] / [2]))
-  repeat [COLS]
+set [y v] to ([180] - ((DY) / [2]))
+repeat (ROWS)
+  set [x v] to ([-240] + ((DX) / [2]))
+  repeat (COLS)
     create clone of [myself v]
-    change [x v] by [DX]
+    change [x v] by (DX)
   end
-  change [y v] by ([0] - [DY])
+  change [y v] by ([0] - (DY))
 end
 
 when I start as a clone
 set size to [45]%
 show
-go to x: [x] y: [y]
+go to x: (x) y: (y)
 set [color v] to [0]
 forever
   wait [.1] seconds
-  if &lt;[color] &gt; [0]&gt; then
+  if &lt;(color) &gt; [0]&gt; then
     change [color v] by [-5]
-    if &lt;[color] &lt; [0]&gt; then
+    if &lt;(color) &lt; [0]&gt; then
       set [color v] to [0]
     end
   end
-  set [color v] effect to ([color] + ([BASE COLOR] + []))
+  set [color v] effect to ((color) + ((BASE COLOR) + []))
 end
 
-when video motion &gt; [VIDEO SENS.]
+when video motion &gt; (VIDEO SENS.)
 set [color v] to (video [motion v] on [this sprite v])
-set [color v] effect to ([color] + ([BASE COLOR] + []))
+set [color v] effect to ((color) + ((BASE COLOR) + []))
 
 when green flag clicked
 set [BASE COLOR v] to [0]
@@ -647,9 +647,9 @@ forever
 end
 
 when I receive [Change costume v]
-switch costume to [COSTUME]
+switch costume to (COSTUME)
 
-when [loudness v] &gt; [SOUND SENS.]
+when [loudness v] &gt; (SOUND SENS.)
 change [BASE COLOR v] by [30]
 
 when green flag clicked
@@ -709,7 +709,7 @@ set [SOUND SENS. v] to [20]</pre>
           <h3>Scripts</h3>
           <div class="scripts-section">
             <pre class="blocks">when this sprite clicked
-if &lt;[COSTUME] = [1]&gt; then
+if &lt;(COSTUME) = [1]&gt; then
   set [COSTUME v] to [2]
 else
   set [COSTUME v] to [1]
@@ -787,7 +787,7 @@ set [COSTUME v] to [1]</pre>
             <pre class="blocks">when green flag clicked
 set [music v] to [2]
 forever
-  play sound [music] until done
+  play sound (music) until done
 end
 
 [Silent v]
@@ -795,7 +795,7 @@ end
 when this sprite clicked
 stop all sounds
 change [music v] by [1]
-if &lt;[music] &gt; [2]&gt; then
+if &lt;(music) &gt; [2]&gt; then
   set [music v] to [1]
 end</pre>
           </div>

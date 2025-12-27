@@ -586,12 +586,12 @@
           <h3>Scripts</h3>
           <div class="scripts-section">
             <pre class="blocks">when [left arrow v] key pressed
-if &lt;[RUNNING] = [yes]&gt; then
+if &lt;(RUNNING) = [yes]&gt; then
   turn ccw [5] degrees
 end
 
 when [right arrow v] key pressed
-if &lt;[RUNNING] = [yes]&gt; then
+if &lt;(RUNNING) = [yes]&gt; then
   turn cw [5] degrees
 end
 
@@ -601,7 +601,7 @@ set [SCORE v] to [0]
 go to x: [0] y: [0]
 point in direction [0]
 forever
-  if &lt;[RUNNING] = [yes]&gt; then
+  if &lt;(RUNNING) = [yes]&gt; then
     show
 else
     hide
@@ -609,7 +609,7 @@ else
 end
 
 when [space v] key pressed
-if &lt;[RUNNING] = [yes]&gt; then
+if &lt;(RUNNING) = [yes]&gt; then
   fire burst [90] [360]
 end
 
@@ -622,10 +622,10 @@ repeat (count)
   create clone of [Laser v]
   turn cw ((angle) / (count)) degrees
 end
-point in direction [original_direction]
+point in direction (original_direction)
 
 when [up arrow v] key pressed
-if &lt;[RUNNING] = [yes]&gt; then
+if &lt;(RUNNING) = [yes]&gt; then
   create clone of [Laser v]
 end</pre>
           </div>
@@ -697,7 +697,7 @@ point in direction ([direction v] of [Rocketship v])
 go to x: [0] y: [0]
 move [30] steps
 forever
-  if &lt;[RUNNING] = [no]&gt; then
+  if &lt;(RUNNING) = [no]&gt; then
     delete this clone
   end
   move [2] steps
@@ -726,7 +726,7 @@ end</pre>
             </div>
             <div class="prop">
               <div class="prop-label">Direction</div>
-              <div class="prop-value">-49.5331496436668°</div>
+              <div class="prop-value">-50°</div>
             </div>
             <div class="prop">
               <div class="prop-label">Visible</div>
@@ -775,21 +775,21 @@ repeat [10]
   create clone of [myself v]
   wait [2] seconds
 end
-wait until &lt;[SCORE] = [10]&gt;
+wait until &lt;(SCORE) = [10]&gt;
 broadcast [You win v]
 
 define go_to_random_position
 set [position v] to (pick random [1] to [4])
-if &lt;[position] = [1]&gt; then
+if &lt;(position) = [1]&gt; then
   go to x: (pick random [-240] to [240]) y: [180]
 end
-if &lt;[position] = [2]&gt; then
+if &lt;(position) = [2]&gt; then
   go to x: (pick random [-240] to [240]) y: [-180]
 end
-if &lt;[position] = [3]&gt; then
+if &lt;(position) = [3]&gt; then
   go to x: [-240] y: (pick random [-180] to [180])
 end
-if &lt;[position] = [4]&gt; then
+if &lt;(position) = [4]&gt; then
   go to x: [240] y: (pick random [-180] to [180])
 end
 
@@ -807,7 +807,7 @@ forever
   if &lt;touching [Rocketship v]?&gt;  then
     broadcast [Game over v] and wait
   end
-  if &lt;[RUNNING] = [no]&gt; then
+  if &lt;(RUNNING) = [no]&gt; then
     delete this clone
   end
 end</pre>

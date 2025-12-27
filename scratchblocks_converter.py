@@ -467,9 +467,15 @@ def get_input_value(block: Block, input_name: str, blocks: Dict[str, Block]) -> 
         primitive_type = value[0]
         primitive_value = value[1]
         
-        # Type 4-8 are primitives (number, positive number, angle, color, text, broadcast, variable, list)
+        # Type 12 is a variable reference - use () 
+        if primitive_type == 12:
+            return f"({primitive_value})"
+        # Type 13 is a list reference - use []
+        elif primitive_type == 13:
+            return f"[{primitive_value}]"
+        # Type 4-10 are other primitives (number, positive number, angle, color, text, broadcast)
         # Type 11 is a dropdown menu value
-        if primitive_type in [4, 5, 6, 7, 8, 9, 10, 12, 13]:
+        elif primitive_type in [4, 5, 6, 7, 8, 9, 10]:
             # Special handling for pen color parameter field menus
             if input_name == "colorParam" and str(primitive_value) in PEN_COLOR_PARAM_NAMES:
                 return PEN_COLOR_PARAM_NAMES[str(primitive_value)]

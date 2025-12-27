@@ -755,22 +755,22 @@ set [TRIES v] to [0]
 
 define create cards
 set [index v] to [0]
-repeat [NUM PAIRS]
+repeat (NUM PAIRS)
   repeat [2]
-    set [costume v] to (item ([index] + [1]) of [ARRANGEMENT v])
+    set [costume v] to (item ((index) + [1]) of [ARRANGEMENT v])
     create clone of [myself v]
     change [index v] by [1]
   end
 end
 
 when I start as a clone
-set [row v] to ([floor v] of ([index] / [NUM COLS]) :: operators)
-set [col v] to ([index] mod [NUM COLS])
-set [x v] to ([OFFSET X] + ([col] * [CARD WIDTH]))
-set [y v] to ([OFFSET Y] - ([row] * [CARD HEIGHT]))
+set [row v] to ([floor v] of ((index) / (NUM COLS)) :: operators)
+set [col v] to ((index) mod (NUM COLS))
+set [x v] to ((OFFSET X) + ((col) * (CARD WIDTH)))
+set [y v] to ((OFFSET Y) - ((row) * (CARD HEIGHT)))
 switch costume to [back v]
 show
-go to x: [x] y: [y]
+go to x: (x) y: (y)
 
 define initialize constants
 set size to [20]%
@@ -780,20 +780,20 @@ set [CARD WIDTH v] to [45]
 set [CARD HEIGHT v] to [55]
 set [NUM ROWS v] to [5]
 set [NUM COLS v] to [10]
-set [NUM PAIRS v] to ([floor v] of (([NUM ROWS] * [NUM COLS]) / [2]) :: operators)
+set [NUM PAIRS v] to ([floor v] of (((NUM ROWS) * (NUM COLS)) / [2]) :: operators)
 set [NUM COSTUMES v] to [29]
 
 when this sprite clicked
-if &lt;[FACEUP INDEX] = [nil]&gt; then
-  set [FACEUP INDEX v] to [index]
-  set [FACEUP COSTUME v] to [costume]
-  switch costume to [costume]
+if &lt;(FACEUP INDEX) = [nil]&gt; then
+  set [FACEUP INDEX v] to (index)
+  set [FACEUP COSTUME v] to (costume)
+  switch costume to (costume)
 else
-  if &lt;not &lt;[index] = [FACEUP INDEX]&gt;&gt; then
+  if &lt;not &lt;(index) = (FACEUP INDEX)&gt;&gt; then
     change [TRIES v] by [1]
-    switch costume to [costume]
+    switch costume to (costume)
     wait [0.5] seconds
-    if &lt;[costume] = [FACEUP COSTUME]&gt; then
+    if &lt;(costume) = (FACEUP COSTUME)&gt; then
       broadcast [good guess v] and wait
       set [FACEUP INDEX v] to [nil]
       set [FACEUP COSTUME v] to [nil]
@@ -810,9 +810,9 @@ end
 define initialize arrangement
 delete all of [ARRANGEMENT v]
 set [costume v] to [2]
-repeat until &lt;(length of [ARRANGEMENT v]) = ([2] * [NUM PAIRS])&gt;
-  add [costume] to [ARRANGEMENT v]
-  add [costume] to [ARRANGEMENT v]
+repeat until &lt;(length of [ARRANGEMENT v]) = ([2] * (NUM PAIRS))&gt;
+  add (costume) to [ARRANGEMENT v]
+  add (costume) to [ARRANGEMENT v]
   change [costume v] by [1]
 end
 
@@ -820,18 +820,18 @@ define shuffle arrangement
 repeat ((length of [ARRANGEMENT v]) * [0.75])
   set [SHUFFLE I v] to (pick random [1] to (length of [ARRANGEMENT v]))
   set [SHUFFLE J v] to (pick random [1] to (length of [ARRANGEMENT v]))
-  set [SHUFFLE TEMP v] to (item [SHUFFLE I] of [ARRANGEMENT v])
-  replace item [SHUFFLE I] of [ARRANGEMENT v] with (item [SHUFFLE J] of [ARRANGEMENT v])
-  replace item [SHUFFLE J] of [ARRANGEMENT v] with [SHUFFLE TEMP]
+  set [SHUFFLE TEMP v] to (item (SHUFFLE I) of [ARRANGEMENT v])
+  replace item (SHUFFLE I) of [ARRANGEMENT v] with (item (SHUFFLE J) of [ARRANGEMENT v])
+  replace item (SHUFFLE J) of [ARRANGEMENT v] with (SHUFFLE TEMP)
 end
 
 when I receive [good guess v]
-if &lt;[index] = [FACEUP INDEX]&gt; then
+if &lt;(index) = (FACEUP INDEX)&gt; then
   delete this clone
 end
 
 when I receive [bad guess v]
-if &lt;[index] = [FACEUP INDEX]&gt; then
+if &lt;(index) = (FACEUP INDEX)&gt; then
   switch costume to [back v]
 end</pre>
           </div>

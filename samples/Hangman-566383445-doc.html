@@ -754,8 +754,8 @@ when this sprite clicked
 guess (costume [name v])
 
 define guess (letter)
-if &lt;[GAME OVER?] = [no]&gt; then
-  if &lt;&lt;[dimmed?] = [no]&gt; and &lt;(letter) = (costume [name v])&gt;&gt; then
+if &lt;(GAME OVER?) = [no]&gt; then
+  if &lt;&lt;(dimmed?) = [no]&gt; and &lt;(letter) = (costume [name v])&gt;&gt; then
     set [ghost v] effect to [70]
     set [GUESS LETTER v] to (letter)
     set [dimmed? v] to [yes]
@@ -987,17 +987,17 @@ add [YOKOHAMA] to [WORDS LIST v]
 add [ZURICH] to [WORDS LIST v]
 
 when I receive [new guess v]
-if &lt;[SECRET WORD] contains [GUESS LETTER]?&gt; then
+if &lt;(SECRET WORD) contains (GUESS LETTER)?&gt; then
   change [GUESS UNIQUE LETTERS # v] by [1]
   broadcast [good guess v] and wait
-  if &lt;[GUESS UNIQUE LETTERS #] = [SECRET UNIQUE LETTERS #]&gt; then
+  if &lt;(GUESS UNIQUE LETTERS #) = (SECRET UNIQUE LETTERS #)&gt; then
     set [GAME OVER? v] to [yes]
     broadcast [you win v] and wait
   end
 else
   change [ERROR COUNT v] by [1]
   broadcast [bad guess v] and wait
-  if &lt;[ERROR COUNT] &gt; [5]&gt; then
+  if &lt;(ERROR COUNT) &gt; [5]&gt; then
     set [GAME OVER? v] to [yes]
     broadcast [game over v] and wait
   end
@@ -1007,21 +1007,21 @@ define pick word
 if &lt;(length of [USED WORDS LIST v]) = (length of [WORDS LIST v])&gt; then
   delete all of [USED WORDS LIST v]
 end
-set [SECRET WORD v] to (item [ANY] of [WORDS LIST v])
-repeat until &lt;not &lt;[USED WORDS LIST v] contains [SECRET WORD]?&gt;&gt;
-  set [SECRET WORD v] to (item [ANY] of [WORDS LIST v])
+set [SECRET WORD v] to (item (ANY) of [WORDS LIST v])
+repeat until &lt;not &lt;[USED WORDS LIST v] contains (SECRET WORD)?&gt;&gt;
+  set [SECRET WORD v] to (item (ANY) of [WORDS LIST v])
 end
-add [SECRET WORD] to [USED WORDS LIST v]
+add (SECRET WORD) to [USED WORDS LIST v]
 
 define count unique letters
 set [SECRET UNIQUE LETTERS # v] to [0]
 set [temp v] to []
 set [index v] to [1]
-repeat (length of [SECRET WORD])
-  set [letter v] to (letter [index] of [SECRET WORD])
-  if &lt;not &lt;&lt;[letter] = [ ]&gt; or &lt;[temp] contains [letter]?&gt;&gt;&gt; then
+repeat (length of (SECRET WORD))
+  set [letter v] to (letter (index) of (SECRET WORD))
+  if &lt;not &lt;&lt;(letter) = [ ]&gt; or &lt;(temp) contains (letter)?&gt;&gt;&gt; then
     change [SECRET UNIQUE LETTERS # v] by [1]
-    set [temp v] to (join [temp] [letter])
+    set [temp v] to (join (temp) (letter))
   end
   change [index v] by [1]
 end</pre>
@@ -1204,13 +1204,13 @@ when I receive [new word v]
 create letters
 
 define create letters
-set [start x v] to ([-15] * (length of [SECRET WORD]))
-go to x: [start x] y: [140]
+set [start x v] to ([-15] * (length of (SECRET WORD)))
+go to x: (start x) y: [140]
 set [index v] to [1]
 set size to [12]%
-repeat (length of [SECRET WORD])
-  set [letter v] to (letter [index] of [SECRET WORD])
-  if &lt;not &lt;[letter] = [ ]&gt;&gt; then
+repeat (length of (SECRET WORD))
+  set [letter v] to (letter (index) of (SECRET WORD))
+  if &lt;not &lt;(letter) = [ ]&gt;&gt; then
     switch costume to [blank v]
     create clone of [myself v]
     change x by [32]
@@ -1224,8 +1224,8 @@ when I start as a clone
 show
 
 when I receive [new guess v]
-if &lt;[letter] = [GUESS LETTER]&gt; then
-  switch costume to [letter]
+if &lt;(letter) = (GUESS LETTER)&gt; then
+  switch costume to (letter)
 end
 
 [Z v]
@@ -1335,7 +1335,7 @@ go to x: [0] y: [10]</pre>
             </div>
             <div class="prop">
               <div class="prop-label">Direction</div>
-              <div class="prop-value">90.107669220848°</div>
+              <div class="prop-value">90°</div>
             </div>
             <div class="prop">
               <div class="prop-label">Visible</div>
@@ -1402,12 +1402,12 @@ switch costume to [costume1 v]
 say []
 
 when I receive [bad guess v]
-if &lt;[ERROR COUNT] &lt; [7]&gt; then
+if &lt;(ERROR COUNT) &lt; [7]&gt; then
   next costume
 end
 
 when I receive [game over v]
-say [SECRET WORD]
+say (SECRET WORD)
 shake
 
 when I receive [you win v]
