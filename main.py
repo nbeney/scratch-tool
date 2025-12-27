@@ -476,7 +476,7 @@ def analyze(
             typer.echo(f"  • {sprite.name}")
             typer.echo(f"    - Position: ({sprite.x}, {sprite.y})")
             typer.echo(f"    - Size: {sprite.size}%")
-            typer.echo(f"    - Direction: {sprite.direction}°")
+            typer.echo(f"    - Direction: {round(sprite.direction)}°")
             typer.echo(f"    - Visible: {sprite.visible}")
             typer.echo(f"    - Costumes: {len(sprite.costumes)}")
             typer.echo(f"    - Sounds: {len(sprite.sounds)}")
@@ -1373,7 +1373,7 @@ def generate_html_documentation(
                                     div(f'{sprite.size}%', cls='prop-value')
                                 with div(cls='prop'):
                                     div('Direction', cls='prop-label')
-                                    div(f'{sprite.direction}°', cls='prop-value')
+                                    div(f'{round(sprite.direction)}°', cls='prop-value')
                                 with div(cls='prop'):
                                     div('Visible', cls='prop-label')
                                     div('Yes' if sprite.visible else 'No', cls='prop-value')
