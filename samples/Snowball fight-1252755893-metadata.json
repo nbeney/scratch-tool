@@ -1,0 +1,57 @@
+{
+  "id": 1252755893,
+  "title": "Snowball fight",
+  "description": "",
+  "instructions": "",
+  "visibility": "visible",
+  "public": true,
+  "comments_allowed": true,
+  "is_published": true,
+  "author": {
+    "id": 79312038,
+    "username": "nicoben2",
+    "scratchteam": false,
+    "history": {
+      "joined": "1900-01-01T00:00:00Z",
+      "created": null,
+      "modified": null,
+      "shared": null
+    },
+    "profile": {
+      "id": null,
+      "images": {
+        "90x90": "https://cdn2.scratch.mit.edu/get_image/user/79312038_90x90.png?v=",
+        "60x60": "https://cdn2.scratch.mit.edu/get_image/user/79312038_60x60.png?v=",
+        "55x55": "https://cdn2.scratch.mit.edu/get_image/user/79312038_55x55.png?v=",
+        "50x50": "https://cdn2.scratch.mit.edu/get_image/user/79312038_50x50.png?v=",
+        "32x32": "https://cdn2.scratch.mit.edu/get_image/user/79312038_32x32.png?v="
+      }
+    }
+  },
+  "image": "https://cdn2.scratch.mit.edu/get_image/project/1252755893_480x360.png",
+  "images": {
+    "282x218": "https://cdn2.scratch.mit.edu/get_image/project/1252755893_282x218.png?v=1766564926",
+    "216x163": "https://cdn2.scratch.mit.edu/get_image/project/1252755893_216x163.png?v=1766564926",
+    "200x200": "https://cdn2.scratch.mit.edu/get_image/project/1252755893_200x200.png?v=1766564926",
+    "144x108": "https://cdn2.scratch.mit.edu/get_image/project/1252755893_144x108.png?v=1766564926",
+    "135x102": "https://cdn2.scratch.mit.edu/get_image/project/1252755893_135x102.png?v=1766564926",
+    "100x80": "https://cdn2.scratch.mit.edu/get_image/project/1252755893_100x80.png?v=1766564926"
+  },
+  "history": {
+    "joined": null,
+    "created": "2025-12-07T12:24:30Z",
+    "modified": "2025-12-24T08:28:46Z",
+    "shared": "2025-12-21T11:02:44Z"
+  },
+  "stats": {
+    "views": 1,
+    "loves": 0,
+    "favorites": 0,
+    "remixes": 0
+  },
+  "remix": {
+    "parent": 1242631052,
+    "root": 1242631052
+  },
+  "project_token": "1766860397_ff809be531d9c2576a5cb1ca07ad5efef28f3953efe3f6a06b37189294dd95bfd3660cd09af888fc25a7d76f8e70fad300ac4a8654677f20cf19df0d7ee5f640"
+}

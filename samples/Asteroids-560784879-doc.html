@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Asteroids - Scratch Project Documentation</title>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="https://cdn.jsdelivr.net/npm/scratchblocks@3.6.4/build/scratchblocks.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+        }
+        .sidebar {
+            width: 280px;
+            background: white;
+            padding: 20px;
+            border-right: 2px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ff6680;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff6680;
+        }
+        .sidebar-nav {
+            list-style: none;
+        }
+        .sidebar-nav &gt; li {
+            margin-bottom: 5px;
+        }
+        .sidebar-nav a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .sidebar-nav a:hover {
+            background: #f0f0f0;
+            color: #ff6680;
+            transform: translateX(5px);
+        }
+        .sidebar-nav a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        .sidebar-nav .sprite-subnav {
+            list-style: none;
+            margin-top: 5px;
+            margin-left: 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .sidebar-nav .sprite-subnav.expanded {
+            max-height: 2000px;
+        }
+        .sidebar-nav .sprite-subnav li {
+            margin-bottom: 3px;
+        }
+        .sidebar-nav .sprite-subnav a {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            font-weight: 400;
+            color: #666;
+        }
+        .sidebar-nav .sprite-subnav a:hover {
+            color: #4a90e2;
+            background: #e8f4fd;
+        }
+        .sidebar-nav .sprite-subnav a.active {
+            background: #4a90e2;
+            color: white;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #ff6680;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+        }
+        .metadata-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .metadata-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .sprite {
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .sprite-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .sprite-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #4a90e2;
+        }
+        .sprite-props {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .prop {
+            background: white;
+            padding: 6px;
+            border-radius: 4px;
+            border-left: 3px solid #4a90e2;
+        }
+        .prop-label {
+            font-size: 0.75em;
+            color: #666;
+        }
+        .prop-value {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9em;
+        }
+        .assets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .asset {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .asset img {
+            max-width: 150px;
+            max-height: 150px;
+            display: block;
+            margin: 0 auto 10px;
+            border: 1px solid #eee;
+        }
+        .asset-name {
+            font-size: 0.9em;
+            color: #333;
+            word-break: break-word;
+        }
+        .audio-player {
+            margin-top: 10px;
+        }
+        .variables-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .variable {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #ff8c1a;
+        }
+        .variable-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .variable-value {
+            color: #666;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85em;
+            word-break: break-word;
+        }
+        .lists-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .list {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #cc5b22;
+        }
+        .list-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        .list-values {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85em;
+        }
+        .list-item {
+            padding: 3px 0;
+            color: #555;
+        }
+        .list-more {
+            padding: 5px 0;
+            color: #888;
+            font-style: italic;
+        }
+        .messages-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .message {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #ffab19;
+        }
+        .message-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+        .blocks-count {
+            background: #e8f4fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #4a90e2;
+        }
+        .extensions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .extension {
+            background: #fef3cd;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 1px solid #f5c842;
+        }
+        .statistics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+        .scripts-section {
+            margin-top: 20px;
+        }
+        .script {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #ff6680;
+        }
+        pre.blocks {
+            margin: 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="sidebar-title">🎨 Navigation</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="#info">📋 Info</a>
+        </li>
+        <li>
+          <a href="#statistics">📊 Statistics</a>
+        </li>
+        <li>
+          <a href="#stage">🎭 Stage</a>
+        </li>
+        <li>
+          <a class="sprites-toggle" href="#sprites">🎮 Sprites</a>
+          <ul class="sprite-subnav expanded" id="sprite-subnav">
+            <li>
+              <a href="#sprite-rocketship">Rocketship</a>
+            </li>
+            <li>
+              <a href="#sprite-laser">Laser</a>
+            </li>
+            <li>
+              <a href="#sprite-star">Star</a>
+            </li>
+            <li>
+              <a href="#sprite-messages">Messages</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="main-content">
+      <h1>🎨 Asteroids</h1>
+      <div class="section" id="info">
+        <h2>Project Information</h2>
+        <div class="metadata">
+          <div class="metadata-item">
+            <div class="metadata-label">Author</div>
+            <div>
+              <a href="https://scratch.mit.edu/users/nicoben2/" target="_blank">nicoben2</a>
+            </div>
+          </div>
+          <div class="metadata-item">
+            <div class="metadata-label">Remix</div>
+            <div>No</div>
+          </div>
+          <div class="metadata-item">
+            <div class="metadata-label">Project ID</div>
+            <div>
+              <a href="https://scratch.mit.edu/projects/560784879/" target="_blank">560784879</a>
+            </div>
+          </div>
+          <div class="metadata-item">
+            <div class="metadata-label">Scratch Version</div>
+            <div>3.0.0</div>
+          </div>
+          <div class="metadata-item">
+            <div class="metadata-label">VM Version</div>
+            <div>0.2.0-prerelease.20210812043817</div>
+          </div>
+        </div>
+      </div>
+      <div class="section" id="statistics">
+        <h2>Statistics</h2>
+        <div class="statistics">
+          <div class="stat-card">
+            <div class="stat-label">Sprites</div>
+            <div class="stat-value">4</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Blocks</div>
+            <div class="stat-value">148</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Cloud Variables</div>
+            <div class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Global Variables</div>
+            <div class="stat-value">2</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Sprite Variables</div>
+            <div class="stat-value">2</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Lists</div>
+            <div class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Broadcasts</div>
+            <div class="stat-value">2</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Custom Blocks</div>
+            <div class="stat-value">4</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Clones</div>
+            <div class="stat-value">3</div>
+          </div>
+        </div>
+      </div>
+      <div class="section" id="stage">
+        <h2>🎭 Stage</h2>
+        <div class="sprite">
+          <div class="sprite-header">
+            <div class="sprite-name">Stage</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Costumes</div>
+              <div class="prop-value">6</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Sounds</div>
+              <div class="prop-value">1</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Variables</div>
+              <div class="prop-value">2</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Lists</div>
+              <div class="prop-value">0</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Blocks</div>
+              <div class="prop-value">0</div>
+            </div>
+          </div>
+          <h3>Backdrops</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="Stars" src="https://assets.scratch.mit.edu/internalapi/asset/47282ff0f7047c6fab9c94b531abf721.png/get/">
+              <div class="asset-name">Stars</div>
+            </div>
+            <div class="asset">
+              <img alt="Nebula" src="https://assets.scratch.mit.edu/internalapi/asset/9b5cdbd596da1b6149f56b794b6394f4.png/get/">
+              <div class="asset-name">Nebula</div>
+            </div>
+            <div class="asset">
+              <img alt="Xy-grid" src="https://assets.scratch.mit.edu/internalapi/asset/9838d02002d05f88dc54d96494fbc202.png/get/">
+              <div class="asset-name">Xy-grid</div>
+            </div>
+            <div class="asset">
+              <img alt="Nebula2" src="https://assets.scratch.mit.edu/internalapi/asset/9b5cdbd596da1b6149f56b794b6394f4.png/get/">
+              <div class="asset-name">Nebula2</div>
+            </div>
+            <div class="asset">
+              <img alt="Galaxy" src="https://assets.scratch.mit.edu/internalapi/asset/5fab1922f254ae9fd150162c3e392bef.png/get/">
+              <div class="asset-name">Galaxy</div>
+            </div>
+            <div class="asset">
+              <img alt="Neon Tunnel" src="https://assets.scratch.mit.edu/internalapi/asset/57d2b13b2f73d3d878c72810c137b0d6.png/get/">
+              <div class="asset-name">Neon Tunnel</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 pop</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/83a9787d4cb6f3b7632b4ddfebf74367.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Variables</h3>
+          <div class="variables-section">
+            <div class="variable">
+              <div class="variable-name">SCORE</div>
+              <div class="variable-value">3</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">RUNNING</div>
+              <div class="variable-value">yes</div>
+            </div>
+          </div>
+          <h3>Messages</h3>
+          <div class="messages-section">
+            <div class="message">
+              <div class="message-name">📢 You win</div>
+            </div>
+            <div class="message">
+              <div class="message-name">📢 Game over</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section" id="sprites">
+        <h2>🎮 Sprites</h2>
+        <div class="sprite" id="sprite-rocketship">
+          <div class="sprite-header">
+            <div class="sprite-name">Rocketship</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Position</div>
+              <div class="prop-value">(0, 0)</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Size</div>
+              <div class="prop-value">30%</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Direction</div>
+              <div class="prop-value">0°</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Visible</div>
+              <div class="prop-value">Yes</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Rotation Style</div>
+              <div class="prop-value">all around</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Draggable</div>
+              <div class="prop-value">No</div>
+            </div>
+          </div>
+          <div class="blocks-count">
+            <div>📦 49 blocks | 🎨 1 costumes | 🔊 3 sounds</div>
+          </div>
+          <h3>Costumes</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="rocketship-e" src="https://assets.scratch.mit.edu/internalapi/asset/7c956a2d474e2c22ca2001b532c8d0c4.svg/get/">
+              <div class="asset-name">rocketship-e</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 space ripple</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/ff8b8c3bf841a11fd5fe3afaa92be1b5.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+            <div class="asset">
+              <div class="asset-name">🔊 laser1</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/46571f8ec0f2cc91666c80e312579082.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+            <div class="asset">
+              <div class="asset-name">🔊 laser2</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/27654ed2e3224f0a3f77c244e4fae9aa.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Variables</h3>
+          <div class="variables-section">
+            <div class="variable">
+              <div class="variable-name">original_direction</div>
+              <div class="variable-value">0</div>
+            </div>
+          </div>
+          <h3>Scripts</h3>
+          <div class="scripts-section">
+            <pre class="blocks">when [left arrow v] key pressed
+if &lt;[RUNNING] = [yes]&gt; then
+  turn ccw [5] degrees
+end
+
+when [right arrow v] key pressed
+if &lt;[RUNNING] = [yes]&gt; then
+  turn cw [5] degrees
+end
+
+when green flag clicked
+set [RUNNING v] to [yes]
+set [SCORE v] to [0]
+go to x: [0] y: [0]
+point in direction [0]
+forever
+  if &lt;[RUNNING] = [yes]&gt; then
+    show
+else
+    hide
+  end
+end
+
+when [space v] key pressed
+if &lt;[RUNNING] = [yes]&gt; then
+  fire burst [90] [360]
+end
+
+define fire burst (count) (angle)
+set [original_direction v] to (direction)
+if &lt;not &lt;(angle) = [360]&gt;&gt; then
+  turn ccw ((angle) / [2]) degrees
+end
+repeat (count)
+  create clone of [Laser v]
+  turn cw ((angle) / (count)) degrees
+end
+point in direction [original_direction]
+
+when [up arrow v] key pressed
+if &lt;[RUNNING] = [yes]&gt; then
+  create clone of [Laser v]
+end</pre>
+          </div>
+        </div>
+        <div class="sprite" id="sprite-laser">
+          <div class="sprite-header">
+            <div class="sprite-name">Laser</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Position</div>
+              <div class="prop-value">(100, 0)</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Size</div>
+              <div class="prop-value">100%</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Direction</div>
+              <div class="prop-value">0°</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Visible</div>
+              <div class="prop-value">No</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Rotation Style</div>
+              <div class="prop-value">all around</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Draggable</div>
+              <div class="prop-value">No</div>
+            </div>
+          </div>
+          <div class="blocks-count">
+            <div>📦 25 blocks | 🎨 1 costumes | 🔊 2 sounds</div>
+          </div>
+          <h3>Costumes</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="costume1" src="https://assets.scratch.mit.edu/internalapi/asset/963798cd716b2ca11c2dab0bf3c74e98.svg/get/">
+              <div class="asset-name">costume1</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 pop</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/83a9787d4cb6f3b7632b4ddfebf74367.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+            <div class="asset">
+              <div class="asset-name">🔊 Low Whoosh</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/d42f096c89764484a442046f4342c9ad.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Scripts</h3>
+          <div class="scripts-section">
+            <pre class="blocks">when green flag clicked
+hide
+
+when I start as a clone
+start sound [pop v]
+show
+point in direction ([direction v] of [Rocketship v])
+go to x: [0] y: [0]
+move [30] steps
+forever
+  if &lt;[RUNNING] = [no]&gt; then
+    delete this clone
+  end
+  move [2] steps
+  if &lt;touching [edge v]?&gt;  then
+    delete this clone
+  end
+  if &lt;touching [Star v]?&gt;  then
+    wait [0.1] seconds
+    delete this clone
+  end
+end</pre>
+          </div>
+        </div>
+        <div class="sprite" id="sprite-star">
+          <div class="sprite-header">
+            <div class="sprite-name">Star</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Position</div>
+              <div class="prop-value">(-69, 59)</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Size</div>
+              <div class="prop-value">80%</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Direction</div>
+              <div class="prop-value">-49.5331496436668°</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Visible</div>
+              <div class="prop-value">No</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Rotation Style</div>
+              <div class="prop-value">all around</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Draggable</div>
+              <div class="prop-value">No</div>
+            </div>
+          </div>
+          <div class="blocks-count">
+            <div>📦 49 blocks | 🎨 1 costumes | 🔊 1 sounds</div>
+          </div>
+          <h3>Costumes</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="star" src="https://assets.scratch.mit.edu/internalapi/asset/551629f2a64c1f3703e57aaa133effa6.svg/get/">
+              <div class="asset-name">star</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 collect</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/32514c51e03db680e9c63857b840ae78.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Variables</h3>
+          <div class="variables-section">
+            <div class="variable">
+              <div class="variable-name">position</div>
+              <div class="variable-value">2</div>
+            </div>
+          </div>
+          <h3>Scripts</h3>
+          <div class="scripts-section">
+            <pre class="blocks">when green flag clicked
+hide
+repeat [10]
+  create clone of [myself v]
+  wait [2] seconds
+end
+wait until &lt;[SCORE] = [10]&gt;
+broadcast [You win v]
+
+define go_to_random_position
+set [position v] to (pick random [1] to [4])
+if &lt;[position] = [1]&gt; then
+  go to x: (pick random [-240] to [240]) y: [180]
+end
+if &lt;[position] = [2]&gt; then
+  go to x: (pick random [-240] to [240]) y: [-180]
+end
+if &lt;[position] = [3]&gt; then
+  go to x: [-240] y: (pick random [-180] to [180])
+end
+if &lt;[position] = [4]&gt; then
+  go to x: [240] y: (pick random [-180] to [180])
+end
+
+when I start as a clone
+show
+go_to_random_position
+point towards [Rocketship v]
+forever
+  move [1] steps
+  if &lt;touching [Laser v]?&gt;  then
+    change [SCORE v] by [1]
+    wait [0.1] seconds
+    delete this clone
+  end
+  if &lt;touching [Rocketship v]?&gt;  then
+    broadcast [Game over v] and wait
+  end
+  if &lt;[RUNNING] = [no]&gt; then
+    delete this clone
+  end
+end</pre>
+          </div>
+        </div>
+        <div class="sprite" id="sprite-messages">
+          <div class="sprite-header">
+            <div class="sprite-name">Messages</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Position</div>
+              <div class="prop-value">(0, 0)</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Size</div>
+              <div class="prop-value">200%</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Direction</div>
+              <div class="prop-value">90°</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Visible</div>
+              <div class="prop-value">No</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Rotation Style</div>
+              <div class="prop-value">all around</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Draggable</div>
+              <div class="prop-value">No</div>
+            </div>
+          </div>
+          <div class="blocks-count">
+            <div>📦 25 blocks | 🎨 2 costumes | 🔊 1 sounds</div>
+          </div>
+          <h3>Costumes</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="You win" src="https://assets.scratch.mit.edu/internalapi/asset/62e236f8710617a5c9b19d8eceba60aa.svg/get/">
+              <div class="asset-name">You win</div>
+            </div>
+            <div class="asset">
+              <img alt="Game over" src="https://assets.scratch.mit.edu/internalapi/asset/d7ec5c0a577db4ab02ee7704b32af42e.svg/get/">
+              <div class="asset-name">Game over</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 Triumph</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/072f4d9a3dfd2a082d50ff90ac7dc8f2.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Scripts</h3>
+          <div class="scripts-section">
+            <pre class="blocks">when green flag clicked
+go to x: [0] y: [0]
+set size to [200]%
+hide
+
+when I receive [You win v]
+switch costume to [You win v]
+stop_game
+
+when I receive [Game over v]
+switch costume to [Game over v]
+stop_game
+
+define blink
+repeat [5]
+  hide
+  wait [0.2] seconds
+  show
+  wait [0.2] seconds
+end
+
+define stop_game
+set [RUNNING v] to [no]
+go to [front v] layer
+show
+blink</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/scratchblocks@3.6.4/build/scratchblocks.min.js"></script>
+    <script>
+        // Render blocks immediately - script tag is at end of body so DOM is ready
+        scratchblocks.renderMatching('pre.blocks', {
+            style: 'scratch3',
+            scale: 0.675
+        });
+        
+        // Sidebar navigation highlighting with scroll tracking
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section[id], .sprite[id]');
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            
+            // Create a map of section IDs to nav links
+            const linkMap = {};
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    const id = href.substring(1);
+                    linkMap[id] = link;
+                }
+            });
+            
+            function updateActiveLinks() {
+                // Remove all active classes
+                navLinks.forEach(link => link.classList.remove('active'));
+                
+                // Find which section is currently at the top of the viewport
+                // We check from top to bottom and highlight the last section whose top is above viewport top + 150px
+                let currentSection = null;
+                const scrollOffset = 150; // pixels from top of viewport
+                
+                sections.forEach(section => {
+                    const rect = section.getBoundingClientRect();
+                    // If the section's top is above our scroll offset, it could be the current section
+                    if (rect.top <= scrollOffset) {
+                        currentSection = section;
+                    }
+                });
+                
+                let activeLinkToScroll = null;
+                
+                if (currentSection) {
+                    const id = currentSection.id;
+                    
+                    // Handle sprite sub-items (sprite-xxx)
+                    if (id.startsWith('sprite-')) {
+                        // Activate the individual sprite link (priority for scrolling)
+                        if (linkMap[id]) {
+                            linkMap[id].classList.add('active');
+                            activeLinkToScroll = linkMap[id];
+                        }
+                        // Also activate the main Sprites link
+                        if (linkMap['sprites']) {
+                            linkMap['sprites'].classList.add('active');
+                        }
+                        
+                        // Ensure sprite subnav is expanded
+                        const spriteSubnav = document.getElementById('sprite-subnav');
+                        if (spriteSubnav) {
+                            spriteSubnav.classList.add('expanded');
+                        }
+                    } else {
+                        // Activate the section link
+                        if (linkMap[id]) {
+                            linkMap[id].classList.add('active');
+                            activeLinkToScroll = linkMap[id];
+                        }
+                        
+                        // If it's the sprites section, expand the subnav
+                        if (id === 'sprites') {
+                            const spriteSubnav = document.getElementById('sprite-subnav');
+                            if (spriteSubnav) {
+                                spriteSubnav.classList.add('expanded');
+                            }
+                        }
+                    }
+                }
+                
+                // Scroll the active link into view in the sidebar
+                if (activeLinkToScroll) {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) {
+                        const linkRect = activeLinkToScroll.getBoundingClientRect();
+                        const sidebarRect = sidebar.getBoundingClientRect();
+                        
+                        // Check if link is outside the visible sidebar area
+                        if (linkRect.top < sidebarRect.top || linkRect.bottom > sidebarRect.bottom) {
+                            activeLinkToScroll.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // Update on scroll with throttling
+            let scrollTimeout;
+            window.addEventListener('scroll', function() {
+                if (scrollTimeout) {
+                    window.cancelAnimationFrame(scrollTimeout);
+                }
+                scrollTimeout = window.requestAnimationFrame(updateActiveLinks);
+            });
+            
+            // Initial update
+            updateActiveLinks();
+            // Initial update
+            updateActiveLinks();
+            
+            // Smooth scroll for anchor links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && href.startsWith('#')) {
+                        e.preventDefault();
+                        const target = document.querySelector(href);
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                });
+            });
+        });
+        </script>
+  </body>
+</html>

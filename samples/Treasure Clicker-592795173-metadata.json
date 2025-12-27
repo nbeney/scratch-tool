@@ -1,0 +1,57 @@
+{
+  "id": 592795173,
+  "title": "Treasure Clicker",
+  "description": "These images are for non-commercial usage only; not for distribution to third parties.\n\nAll images © The Board of Trustees of the Science Museum, London\n\nFurther enquiries: contact emilia.mckenzie@sciencemuseum.ac.uk\n\nThe original images with their explanations can be found at \nhttps://learning.sciencemuseumgroup.org.uk/beta-coder-dojo-image-bundles/",
+  "instructions": "Click the wall phone to get points. When you have enough points, buy other objects that will make you gain points faster. Discover the hidden picture when you reach 2500 points!",
+  "visibility": "visible",
+  "public": true,
+  "comments_allowed": true,
+  "is_published": true,
+  "author": {
+    "id": 79312038,
+    "username": "nicoben2",
+    "scratchteam": false,
+    "history": {
+      "joined": "1900-01-01T00:00:00Z",
+      "created": null,
+      "modified": null,
+      "shared": null
+    },
+    "profile": {
+      "id": null,
+      "images": {
+        "90x90": "https://cdn2.scratch.mit.edu/get_image/user/79312038_90x90.png?v=",
+        "60x60": "https://cdn2.scratch.mit.edu/get_image/user/79312038_60x60.png?v=",
+        "55x55": "https://cdn2.scratch.mit.edu/get_image/user/79312038_55x55.png?v=",
+        "50x50": "https://cdn2.scratch.mit.edu/get_image/user/79312038_50x50.png?v=",
+        "32x32": "https://cdn2.scratch.mit.edu/get_image/user/79312038_32x32.png?v="
+      }
+    }
+  },
+  "image": "https://cdn2.scratch.mit.edu/get_image/project/592795173_480x360.png",
+  "images": {
+    "282x218": "https://cdn2.scratch.mit.edu/get_image/project/592795173_282x218.png?v=1764432656",
+    "216x163": "https://cdn2.scratch.mit.edu/get_image/project/592795173_216x163.png?v=1764432656",
+    "200x200": "https://cdn2.scratch.mit.edu/get_image/project/592795173_200x200.png?v=1764432656",
+    "144x108": "https://cdn2.scratch.mit.edu/get_image/project/592795173_144x108.png?v=1764432656",
+    "135x102": "https://cdn2.scratch.mit.edu/get_image/project/592795173_135x102.png?v=1764432656",
+    "100x80": "https://cdn2.scratch.mit.edu/get_image/project/592795173_100x80.png?v=1764432656"
+  },
+  "history": {
+    "joined": null,
+    "created": "2021-10-31T16:10:15Z",
+    "modified": "2025-11-29T16:10:56Z",
+    "shared": "2021-11-01T07:15:53Z"
+  },
+  "stats": {
+    "views": 5,
+    "loves": 0,
+    "favorites": 0,
+    "remixes": 0
+  },
+  "remix": {
+    "parent": null,
+    "root": null
+  },
+  "project_token": "1766860550_eb923b38aa798dc788f630e194a5ea45e09429e90f524875442757eca536dd846c58dacae1d9b6459f4553a1978de359e636455a248ee3a16eedffc37b2041ec"
+}

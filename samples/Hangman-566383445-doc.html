@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hangman - Scratch Project Documentation</title>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="https://cdn.jsdelivr.net/npm/scratchblocks@3.6.4/build/scratchblocks.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+        }
+        .sidebar {
+            width: 280px;
+            background: white;
+            padding: 20px;
+            border-right: 2px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ff6680;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff6680;
+        }
+        .sidebar-nav {
+            list-style: none;
+        }
+        .sidebar-nav &gt; li {
+            margin-bottom: 5px;
+        }
+        .sidebar-nav a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .sidebar-nav a:hover {
+            background: #f0f0f0;
+            color: #ff6680;
+            transform: translateX(5px);
+        }
+        .sidebar-nav a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        .sidebar-nav .sprite-subnav {
+            list-style: none;
+            margin-top: 5px;
+            margin-left: 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .sidebar-nav .sprite-subnav.expanded {
+            max-height: 2000px;
+        }
+        .sidebar-nav .sprite-subnav li {
+            margin-bottom: 3px;
+        }
+        .sidebar-nav .sprite-subnav a {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            font-weight: 400;
+            color: #666;
+        }
+        .sidebar-nav .sprite-subnav a:hover {
+            color: #4a90e2;
+            background: #e8f4fd;
+        }
+        .sidebar-nav .sprite-subnav a.active {
+            background: #4a90e2;
+            color: white;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #ff6680;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+        }
+        .metadata-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .metadata-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .sprite {
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .sprite-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .sprite-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #4a90e2;
+        }
+        .sprite-props {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .prop {
+            background: white;
+            padding: 6px;
+            border-radius: 4px;
+            border-left: 3px solid #4a90e2;
+        }
+        .prop-label {
+            font-size: 0.75em;
+            color: #666;
+        }
+        .prop-value {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9em;
+        }
+        .assets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .asset {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .asset img {
+            max-width: 150px;
+            max-height: 150px;
+            display: block;
+            margin: 0 auto 10px;
+            border: 1px solid #eee;
+        }
+        .asset-name {
+            font-size: 0.9em;
+            color: #333;
+            word-break: break-word;
+        }
+        .audio-player {
+            margin-top: 10px;
+        }
+        .variables-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .variable {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #ff8c1a;
+        }
+        .variable-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .variable-value {
+            color: #666;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85em;
+            word-break: break-word;
+        }
+        .lists-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .list {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #cc5b22;
+        }
+        .list-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        .list-values {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85em;
+        }
+        .list-item {
+            padding: 3px 0;
+            color: #555;
+        }
+        .list-more {
+            padding: 5px 0;
+            color: #888;
+            font-style: italic;
+        }
+        .messages-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .message {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #ffab19;
+        }
+        .message-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+        .blocks-count {
+            background: #e8f4fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #4a90e2;
+        }
+        .extensions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .extension {
+            background: #fef3cd;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 1px solid #f5c842;
+        }
+        .statistics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+        .scripts-section {
+            margin-top: 20px;
+        }
+        .script {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #ff6680;
+        }
+        pre.blocks {
+            margin: 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="sidebar-title">🎨 Navigation</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="#info">📋 Info</a>
+        </li>
+        <li>
+          <a href="#statistics">📊 Statistics</a>
+        </li>
+        <li>
+          <a href="#stage">🎭 Stage</a>
+        </li>
+        <li>
+          <a class="sprites-toggle" href="#sprites">🎮 Sprites</a>
+          <ul class="sprite-subnav expanded" id="sprite-subnav">
+            <li>
+              <a href="#sprite-guess-letter">Guess Letter</a>
+            </li>
+            <li>
+              <a href="#sprite-controller">Controller</a>
+            </li>
+            <li>
+              <a href="#sprite-word-letter">Word Letter</a>
+            </li>
+            <li>
+              <a href="#sprite-gallow">Gallow</a>
+            </li>
+            <li>
+              <a href="#sprite-hangman">Hangman</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="main-content">
+      <h1>🎨 Hangman</h1>
+      <div class="section" id="info">
+        <h2>Project Information</h2>
+        <div class="metadata">
+          <div class="metadata-item">
+            <div class="metadata-label">Author</div>
+            <div>
+              <a href="https://scratch.mit.edu/users/nicoben2/" target="_blank">nicoben2</a>
+            </div>
+          </div>
+          <div class="metadata-item">
+            <div class="metadata-label">Remix</div>
+            <div>No</div>
+          </div>
+          <div class="metadata-item">
+            <div class="metadata-label">Project ID</div>
+            <div>
+              <a href="https://scratch.mit.edu/projects/566383445/" target="_blank">566383445</a>
+            </div>
+          </div>
+          <div class="metadata-item">
+            <div class="metadata-label">Scratch Version</div>
+            <div>3.0.0</div>
+          </div>
+          <div class="metadata-item">
+            <div class="metadata-label">VM Version</div>
+            <div>0.2.0-prerelease.20210812043817</div>
+          </div>
+        </div>
+      </div>
+      <div class="section" id="statistics">
+        <h2>Statistics</h2>
+        <div class="statistics">
+          <div class="stat-card">
+            <div class="stat-label">Sprites</div>
+            <div class="stat-value">5</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Blocks</div>
+            <div class="stat-value">285</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Cloud Variables</div>
+            <div class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Global Variables</div>
+            <div class="stat-value">7</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Sprite Variables</div>
+            <div class="stat-value">7</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Lists</div>
+            <div class="stat-value">2</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Broadcasts</div>
+            <div class="stat-value">6</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Custom Blocks</div>
+            <div class="stat-value">7</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Clones</div>
+            <div class="stat-value">2</div>
+          </div>
+        </div>
+      </div>
+      <div class="section" id="stage">
+        <h2>🎭 Stage</h2>
+        <div class="sprite">
+          <div class="sprite-header">
+            <div class="sprite-name">Stage</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Costumes</div>
+              <div class="prop-value">1</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Sounds</div>
+              <div class="prop-value">1</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Variables</div>
+              <div class="prop-value">7</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Lists</div>
+              <div class="prop-value">2</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Blocks</div>
+              <div class="prop-value">0</div>
+            </div>
+          </div>
+          <h3>Backdrops</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="backdrop1" src="https://assets.scratch.mit.edu/internalapi/asset/60bd4a564843c759a7fd88411e499241.svg/get/">
+              <div class="asset-name">backdrop1</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 pop</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/83a9787d4cb6f3b7632b4ddfebf74367.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Variables</h3>
+          <div class="variables-section">
+            <div class="variable">
+              <div class="variable-name">GUESS LETTER</div>
+              <div class="variable-value">W</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">SECRET WORD</div>
+              <div class="variable-value">KUALA LUMPUR</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">ANY</div>
+              <div class="variable-value">any</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">ERROR COUNT</div>
+              <div class="variable-value">6</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">GAME OVER?</div>
+              <div class="variable-value">yes</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">GUESS UNIQUE LETTERS #</div>
+              <div class="variable-value">3</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">SECRET UNIQUE LETTERS #</div>
+              <div class="variable-value">7</div>
+            </div>
+          </div>
+          <h3>Lists</h3>
+          <div class="lists-section">
+            <div class="list">
+              <div class="list-name">WORDS LIST (56 items)</div>
+              <div class="list-values">
+                <div class="list-item">1. AMSTERDAM</div>
+                <div class="list-item">2. ATHENS</div>
+                <div class="list-item">3. BANGKOK</div>
+                <div class="list-item">4. BARCELONA</div>
+                <div class="list-item">5. BEIJING</div>
+                <div class="list-item">6. BELFAST</div>
+                <div class="list-item">7. BERLIN</div>
+                <div class="list-item">8. BERN</div>
+                <div class="list-item">9. BIRMINGHAM</div>
+                <div class="list-item">10. BORDEAUX</div>
+                <div class="list-more">... and 46 more</div>
+              </div>
+            </div>
+            <div class="list">
+              <div class="list-name">USED WORDS LIST (260 items)</div>
+              <div class="list-values">
+                <div class="list-item">1. ANKARA</div>
+                <div class="list-item">2. AUCKLAND</div>
+                <div class="list-item">3. ISLAMABAD</div>
+                <div class="list-item">4. ISTANBUL</div>
+                <div class="list-item">5. JOHANNESBURG</div>
+                <div class="list-item">6. KABUL</div>
+                <div class="list-item">7. PRETORIA</div>
+                <div class="list-item">8. SINGAPORE</div>
+                <div class="list-item">9. TORONTO</div>
+                <div class="list-item">10. REYKJAVIK</div>
+                <div class="list-more">... and 250 more</div>
+              </div>
+            </div>
+          </div>
+          <h3>Messages</h3>
+          <div class="messages-section">
+            <div class="message">
+              <div class="message-name">📢 new guess</div>
+            </div>
+            <div class="message">
+              <div class="message-name">📢 new word</div>
+            </div>
+            <div class="message">
+              <div class="message-name">📢 good guess</div>
+            </div>
+            <div class="message">
+              <div class="message-name">📢 bad guess</div>
+            </div>
+            <div class="message">
+              <div class="message-name">📢 game over</div>
+            </div>
+            <div class="message">
+              <div class="message-name">📢 you win</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section" id="sprites">
+        <h2>🎮 Sprites</h2>
+        <div class="sprite" id="sprite-guess-letter">
+          <div class="sprite-header">
+            <div class="sprite-name">Guess Letter</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Position</div>
+              <div class="prop-value">(-210, -180)</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Size</div>
+              <div class="prop-value">10%</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Direction</div>
+              <div class="prop-value">90°</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Visible</div>
+              <div class="prop-value">No</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Rotation Style</div>
+              <div class="prop-value">all around</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Draggable</div>
+              <div class="prop-value">No</div>
+            </div>
+          </div>
+          <div class="blocks-count">
+            <div>📦 92 blocks | 🎨 27 costumes | 🔊 1 sounds</div>
+          </div>
+          <h3>Costumes</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="blank" src="https://assets.scratch.mit.edu/internalapi/asset/33b39a981c752b27880648d3b8644ba5.png/get/">
+              <div class="asset-name">blank</div>
+            </div>
+            <div class="asset">
+              <img alt="A" src="https://assets.scratch.mit.edu/internalapi/asset/7e0c614599a8b04342e51a0f8af467cd.png/get/">
+              <div class="asset-name">A</div>
+            </div>
+            <div class="asset">
+              <img alt="B" src="https://assets.scratch.mit.edu/internalapi/asset/b3ef45e5ad4bca3a76ae00cbdca3d824.png/get/">
+              <div class="asset-name">B</div>
+            </div>
+            <div class="asset">
+              <img alt="C" src="https://assets.scratch.mit.edu/internalapi/asset/d6c7a3ab341bb632090a9e93e57ef3fe.png/get/">
+              <div class="asset-name">C</div>
+            </div>
+            <div class="asset">
+              <img alt="D" src="https://assets.scratch.mit.edu/internalapi/asset/2280c5b509c7068e20e90a30879c464b.png/get/">
+              <div class="asset-name">D</div>
+            </div>
+            <div class="asset">
+              <img alt="E" src="https://assets.scratch.mit.edu/internalapi/asset/f66c72264c6e9f8eae10f01379eb3410.png/get/">
+              <div class="asset-name">E</div>
+            </div>
+            <div class="asset">
+              <img alt="F" src="https://assets.scratch.mit.edu/internalapi/asset/8beed28349be9360c93d7944ede4ee55.png/get/">
+              <div class="asset-name">F</div>
+            </div>
+            <div class="asset">
+              <img alt="G" src="https://assets.scratch.mit.edu/internalapi/asset/e340c491e2fb1281809ab497f726d480.png/get/">
+              <div class="asset-name">G</div>
+            </div>
+            <div class="asset">
+              <img alt="H" src="https://assets.scratch.mit.edu/internalapi/asset/b9ae1463710c12da7ac0df10c9b2b4be.png/get/">
+              <div class="asset-name">H</div>
+            </div>
+            <div class="asset">
+              <img alt="I" src="https://assets.scratch.mit.edu/internalapi/asset/306fac91083fc2a29801b70765f53452.png/get/">
+              <div class="asset-name">I</div>
+            </div>
+            <div class="asset">
+              <img alt="J" src="https://assets.scratch.mit.edu/internalapi/asset/a587f23e3dd463f7bd878d34bf5bf02d.png/get/">
+              <div class="asset-name">J</div>
+            </div>
+            <div class="asset">
+              <img alt="K" src="https://assets.scratch.mit.edu/internalapi/asset/5b5e9fb511cc0f4dfcef70aaff84f338.png/get/">
+              <div class="asset-name">K</div>
+            </div>
+            <div class="asset">
+              <img alt="L" src="https://assets.scratch.mit.edu/internalapi/asset/a143fecf773f4ec3e1c3fcca566a93de.png/get/">
+              <div class="asset-name">L</div>
+            </div>
+            <div class="asset">
+              <img alt="M" src="https://assets.scratch.mit.edu/internalapi/asset/1107eb162e2744557be263cbc64c4c5e.png/get/">
+              <div class="asset-name">M</div>
+            </div>
+            <div class="asset">
+              <img alt="N" src="https://assets.scratch.mit.edu/internalapi/asset/2d85951b6ce1ca47e2414023dfb57f4b.png/get/">
+              <div class="asset-name">N</div>
+            </div>
+            <div class="asset">
+              <img alt="O" src="https://assets.scratch.mit.edu/internalapi/asset/48ee421d4e9c8b2a3ea263f62acd7f50.png/get/">
+              <div class="asset-name">O</div>
+            </div>
+            <div class="asset">
+              <img alt="P" src="https://assets.scratch.mit.edu/internalapi/asset/33c3bb7bd8ce2053fae872794212c927.png/get/">
+              <div class="asset-name">P</div>
+            </div>
+            <div class="asset">
+              <img alt="Q" src="https://assets.scratch.mit.edu/internalapi/asset/f3397485bbbdbeae613ece5670d9c165.png/get/">
+              <div class="asset-name">Q</div>
+            </div>
+            <div class="asset">
+              <img alt="R" src="https://assets.scratch.mit.edu/internalapi/asset/c1a2984dda2f699fb870eeaf2d76414d.png/get/">
+              <div class="asset-name">R</div>
+            </div>
+            <div class="asset">
+              <img alt="S" src="https://assets.scratch.mit.edu/internalapi/asset/ba3751a92da227201a65fbcd956b4bdb.png/get/">
+              <div class="asset-name">S</div>
+            </div>
+            <div class="asset">
+              <img alt="T" src="https://assets.scratch.mit.edu/internalapi/asset/d399379e878de20a15d185587211a506.png/get/">
+              <div class="asset-name">T</div>
+            </div>
+            <div class="asset">
+              <img alt="U" src="https://assets.scratch.mit.edu/internalapi/asset/600e37f8a7642ab9aef6e567e050e5d3.png/get/">
+              <div class="asset-name">U</div>
+            </div>
+            <div class="asset">
+              <img alt="V" src="https://assets.scratch.mit.edu/internalapi/asset/7bf000e5029cddf568ea555e9a4d35e5.png/get/">
+              <div class="asset-name">V</div>
+            </div>
+            <div class="asset">
+              <img alt="W" src="https://assets.scratch.mit.edu/internalapi/asset/e4b59eaf6d129852d655bdb8bc42d9d0.png/get/">
+              <div class="asset-name">W</div>
+            </div>
+            <div class="asset">
+              <img alt="X" src="https://assets.scratch.mit.edu/internalapi/asset/78d880d639d95dad26ca77e97db7547b.png/get/">
+              <div class="asset-name">X</div>
+            </div>
+            <div class="asset">
+              <img alt="Y" src="https://assets.scratch.mit.edu/internalapi/asset/d9e5ad374e3c0a290b61595a0979e2bf.png/get/">
+              <div class="asset-name">Y</div>
+            </div>
+            <div class="asset">
+              <img alt="Z" src="https://assets.scratch.mit.edu/internalapi/asset/948638d104dba84d04ecd3c02a11f569.png/get/">
+              <div class="asset-name">Z</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 pop</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/83a9787d4cb6f3b7632b4ddfebf74367.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Variables</h3>
+          <div class="variables-section">
+            <div class="variable">
+              <div class="variable-name">dimmed?</div>
+              <div class="variable-value">no</div>
+            </div>
+          </div>
+          <h3>Scripts</h3>
+          <div class="scripts-section">
+            <pre class="blocks">when green flag clicked
+hide
+create letters
+set [GUESS LETTER v] to []
+
+when I start as a clone
+show
+
+define create letters
+set size to [10]%
+switch costume to [A v]
+go to x: [-210] y: [-120]
+repeat [2]
+  repeat [13]
+    set [dimmed? v] to [no]
+    create clone of [myself v]
+    change x by [35]
+    next costume
+  end
+  set x to [-210]
+  change y by [-35]
+end
+
+when this sprite clicked
+guess (costume [name v])
+
+define guess (letter)
+if &lt;[GAME OVER?] = [no]&gt; then
+  if &lt;&lt;[dimmed?] = [no]&gt; and &lt;(letter) = (costume [name v])&gt;&gt; then
+    set [ghost v] effect to [70]
+    set [GUESS LETTER v] to (letter)
+    set [dimmed? v] to [yes]
+    broadcast [new guess v] and wait
+  end
+end
+
+when [a v] key pressed
+guess [A]
+
+when [b v] key pressed
+guess [B]
+
+when [c v] key pressed
+guess [C]
+
+when [d v] key pressed
+guess [D]
+
+when [e v] key pressed
+guess [E]
+
+when [f v] key pressed
+guess [F]
+
+when [g v] key pressed
+guess [G]
+
+when [j v] key pressed
+guess [J]
+
+when [i v] key pressed
+guess [I]
+
+when [k v] key pressed
+guess [K]
+
+when [l v] key pressed
+guess [L]
+
+when [m v] key pressed
+guess [M]
+
+when [n v] key pressed
+guess [N]
+
+when [o v] key pressed
+guess [O]
+
+when [p v] key pressed
+guess [P]
+
+when [q v] key pressed
+guess [Q]
+
+when [r v] key pressed
+guess [R]
+
+when [s v] key pressed
+guess [S]
+
+when [t v] key pressed
+guess [T]
+
+when [u v] key pressed
+guess [U]
+
+when [v v] key pressed
+guess [V]
+
+when [w v] key pressed
+guess [W]
+
+when [x v] key pressed
+guess [X]
+
+when [y v] key pressed
+guess [Y]
+
+when [z v] key pressed
+guess [Z]
+
+when [h v] key pressed
+guess [H]</pre>
+          </div>
+        </div>
+        <div class="sprite" id="sprite-controller">
+          <div class="sprite-header">
+            <div class="sprite-name">Controller</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Position</div>
+              <div class="prop-value">(-214, 0)</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Size</div>
+              <div class="prop-value">10%</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Direction</div>
+              <div class="prop-value">90°</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Visible</div>
+              <div class="prop-value">No</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Rotation Style</div>
+              <div class="prop-value">all around</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Draggable</div>
+              <div class="prop-value">No</div>
+            </div>
+          </div>
+          <div class="blocks-count">
+            <div>📦 125 blocks | 🎨 1 costumes | 🔊 1 sounds</div>
+          </div>
+          <h3>Costumes</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="costume1" src="https://assets.scratch.mit.edu/internalapi/asset/f88b3dafa1ca257806046d8173df1d43.png/get/">
+              <div class="asset-name">costume1</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 pop</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/83a9787d4cb6f3b7632b4ddfebf74367.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Variables</h3>
+          <div class="variables-section">
+            <div class="variable">
+              <div class="variable-name">index</div>
+              <div class="variable-value">13</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">temp</div>
+              <div class="variable-value">KUALMPR</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">letter</div>
+              <div class="variable-value">R</div>
+            </div>
+          </div>
+          <h3>Scripts</h3>
+          <div class="scripts-section">
+            <pre class="blocks">when green flag clicked
+initialize words list
+pick word
+count unique letters
+set [ERROR COUNT v] to [0]
+set [GAME OVER? v] to [no]
+set [GUESS UNIQUE LETTERS # v] to [0]
+broadcast [new word v] and wait
+
+define initialize words list
+set [ANY v] to [any]
+delete all of [WORDS LIST v]
+add [AMSTERDAM] to [WORDS LIST v]
+add [ANKARA] to [USED WORDS LIST v]
+add [ATHENS] to [WORDS LIST v]
+add [AUCKLAND] to [USED WORDS LIST v]
+add [BANGKOK] to [WORDS LIST v]
+add [BARCELONA] to [WORDS LIST v]
+add [BEIJING] to [WORDS LIST v]
+add [BELFAST] to [WORDS LIST v]
+add [BERLIN] to [WORDS LIST v]
+add [BERN] to [WORDS LIST v]
+add [BIRMINGHAM] to [WORDS LIST v]
+add [BORDEAUX] to [WORDS LIST v]
+add [BOSTON] to [WORDS LIST v]
+add [BRASILIA] to [WORDS LIST v]
+add [BUCHAREST] to [WORDS LIST v]
+add [BUDAPEST] to [WORDS LIST v]
+add [BUENOS AIRES] to [WORDS LIST v]
+add [CANBERRA] to [WORDS LIST v]
+add [CARDIFF] to [WORDS LIST v]
+add [COPENHAGEN] to [WORDS LIST v]
+add [DUBLIN] to [WORDS LIST v]
+add [EDINBURGH] to [WORDS LIST v]
+add [GENEVA] to [WORDS LIST v]
+add [HELSINKI] to [WORDS LIST v]
+add [HONG KONG] to [WORDS LIST v]
+add [ISLAMABAD] to [USED WORDS LIST v]
+add [ISTANBUL] to [USED WORDS LIST v]
+add [JAKARTA] to [WORDS LIST v]
+add [JOHANNESBURG] to [USED WORDS LIST v]
+add [KABUL] to [USED WORDS LIST v]
+add [KIEV] to [WORDS LIST v]
+add [KUALA LUMPUR] to [WORDS LIST v]
+add [LISBON] to [WORDS LIST v]
+add [LIVERPOOL] to [WORDS LIST v]
+add [LONDON] to [WORDS LIST v]
+add [LOS ANGELES] to [WORDS LIST v]
+add [LYON] to [WORDS LIST v]
+add [MADRID] to [WORDS LIST v]
+add [MANCHESTER] to [WORDS LIST v]
+add [MANILLA] to [WORDS LIST v]
+add [MARSEILLES] to [WORDS LIST v]
+add [MEXICO CITY] to [WORDS LIST v]
+add [MOSCOW] to [WORDS LIST v]
+add [MUNICH] to [WORDS LIST v]
+add [NEW YORK] to [WORDS LIST v]
+add [NEW DELHI] to [WORDS LIST v]
+add [OSLO] to [WORDS LIST v]
+add [OTTAWA] to [WORDS LIST v]
+add [PARIS] to [WORDS LIST v]
+add [PRETORIA] to [USED WORDS LIST v]
+add [REYKJAVIK] to [WORDS LIST v]
+add [ROME] to [WORDS LIST v]
+add [SHANGHAI] to [WORDS LIST v]
+add [SINGAPORE] to [USED WORDS LIST v]
+add [SOFIA] to [WORDS LIST v]
+add [STOCKHOLM] to [WORDS LIST v]
+add [SYDNEY] to [WORDS LIST v]
+add [TOKYO] to [WORDS LIST v]
+add [TORONTO] to [USED WORDS LIST v]
+add [VADUZ] to [WORDS LIST v]
+add [VIENNA] to [WORDS LIST v]
+add [VLADIVOSTOK] to [WORDS LIST v]
+add [WASHINGTON] to [WORDS LIST v]
+add [YOKOHAMA] to [WORDS LIST v]
+add [ZURICH] to [WORDS LIST v]
+
+when I receive [new guess v]
+if &lt;[SECRET WORD] contains [GUESS LETTER]?&gt; then
+  change [GUESS UNIQUE LETTERS # v] by [1]
+  broadcast [good guess v] and wait
+  if &lt;[GUESS UNIQUE LETTERS #] = [SECRET UNIQUE LETTERS #]&gt; then
+    set [GAME OVER? v] to [yes]
+    broadcast [you win v] and wait
+  end
+else
+  change [ERROR COUNT v] by [1]
+  broadcast [bad guess v] and wait
+  if &lt;[ERROR COUNT] &gt; [5]&gt; then
+    set [GAME OVER? v] to [yes]
+    broadcast [game over v] and wait
+  end
+end
+
+define pick word
+if &lt;(length of [USED WORDS LIST v]) = (length of [WORDS LIST v])&gt; then
+  delete all of [USED WORDS LIST v]
+end
+set [SECRET WORD v] to (item [ANY] of [WORDS LIST v])
+repeat until &lt;not &lt;[USED WORDS LIST v] contains [SECRET WORD]?&gt;&gt;
+  set [SECRET WORD v] to (item [ANY] of [WORDS LIST v])
+end
+add [SECRET WORD] to [USED WORDS LIST v]
+
+define count unique letters
+set [SECRET UNIQUE LETTERS # v] to [0]
+set [temp v] to []
+set [index v] to [1]
+repeat (length of [SECRET WORD])
+  set [letter v] to (letter [index] of [SECRET WORD])
+  if &lt;not &lt;&lt;[letter] = [ ]&gt; or &lt;[temp] contains [letter]?&gt;&gt;&gt; then
+    change [SECRET UNIQUE LETTERS # v] by [1]
+    set [temp v] to (join [temp] [letter])
+  end
+  change [index v] by [1]
+end</pre>
+          </div>
+        </div>
+        <div class="sprite" id="sprite-word-letter">
+          <div class="sprite-header">
+            <div class="sprite-name">Word Letter</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Position</div>
+              <div class="prop-value">(188, 140)</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Size</div>
+              <div class="prop-value">12%</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Direction</div>
+              <div class="prop-value">90°</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Visible</div>
+              <div class="prop-value">No</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Rotation Style</div>
+              <div class="prop-value">all around</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Draggable</div>
+              <div class="prop-value">No</div>
+            </div>
+          </div>
+          <div class="blocks-count">
+            <div>📦 40 blocks | 🎨 27 costumes | 🔊 1 sounds</div>
+          </div>
+          <h3>Costumes</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="blank" src="https://assets.scratch.mit.edu/internalapi/asset/9267133482a5b3968813bf25eaaced5a.png/get/">
+              <div class="asset-name">blank</div>
+            </div>
+            <div class="asset">
+              <img alt="A" src="https://assets.scratch.mit.edu/internalapi/asset/47228a2c64226fad92ac1b99ce146095.png/get/">
+              <div class="asset-name">A</div>
+            </div>
+            <div class="asset">
+              <img alt="B" src="https://assets.scratch.mit.edu/internalapi/asset/a5e09902978ef4e1d74d81154e96dde2.png/get/">
+              <div class="asset-name">B</div>
+            </div>
+            <div class="asset">
+              <img alt="C" src="https://assets.scratch.mit.edu/internalapi/asset/5dd329503048b644049ad5c07f795810.png/get/">
+              <div class="asset-name">C</div>
+            </div>
+            <div class="asset">
+              <img alt="D" src="https://assets.scratch.mit.edu/internalapi/asset/ad442036185fa247fe3d6234c62139f8.png/get/">
+              <div class="asset-name">D</div>
+            </div>
+            <div class="asset">
+              <img alt="E" src="https://assets.scratch.mit.edu/internalapi/asset/68939d47b393058ba25f2114acbfa75d.png/get/">
+              <div class="asset-name">E</div>
+            </div>
+            <div class="asset">
+              <img alt="F" src="https://assets.scratch.mit.edu/internalapi/asset/81c2bc91cce767f174b9fef2b80ab537.png/get/">
+              <div class="asset-name">F</div>
+            </div>
+            <div class="asset">
+              <img alt="G" src="https://assets.scratch.mit.edu/internalapi/asset/6dc4631a1ef5de7252eeb60f24f66da8.png/get/">
+              <div class="asset-name">G</div>
+            </div>
+            <div class="asset">
+              <img alt="H" src="https://assets.scratch.mit.edu/internalapi/asset/61a03232fa3eca21a03048cb6c625ce2.png/get/">
+              <div class="asset-name">H</div>
+            </div>
+            <div class="asset">
+              <img alt="I" src="https://assets.scratch.mit.edu/internalapi/asset/9b4408533b0e3fe04182eab64f84e6b9.png/get/">
+              <div class="asset-name">I</div>
+            </div>
+            <div class="asset">
+              <img alt="J" src="https://assets.scratch.mit.edu/internalapi/asset/4aea04afb1af7eb458930b7538bfef89.png/get/">
+              <div class="asset-name">J</div>
+            </div>
+            <div class="asset">
+              <img alt="K" src="https://assets.scratch.mit.edu/internalapi/asset/e0b2b085741b7ae16dd9822999421d90.png/get/">
+              <div class="asset-name">K</div>
+            </div>
+            <div class="asset">
+              <img alt="L" src="https://assets.scratch.mit.edu/internalapi/asset/620f743c02aef2452f4112633b5e89d6.png/get/">
+              <div class="asset-name">L</div>
+            </div>
+            <div class="asset">
+              <img alt="M" src="https://assets.scratch.mit.edu/internalapi/asset/5570654b57d35f30dcdb4b7d024d4f09.png/get/">
+              <div class="asset-name">M</div>
+            </div>
+            <div class="asset">
+              <img alt="N" src="https://assets.scratch.mit.edu/internalapi/asset/40ebfe1b61b476d7b54fce77f0eae4db.png/get/">
+              <div class="asset-name">N</div>
+            </div>
+            <div class="asset">
+              <img alt="O" src="https://assets.scratch.mit.edu/internalapi/asset/204679a942e7e77931b7449d22f87990.png/get/">
+              <div class="asset-name">O</div>
+            </div>
+            <div class="asset">
+              <img alt="P" src="https://assets.scratch.mit.edu/internalapi/asset/7ae74e4f75f79e000c71e4875041bf9b.png/get/">
+              <div class="asset-name">P</div>
+            </div>
+            <div class="asset">
+              <img alt="Q" src="https://assets.scratch.mit.edu/internalapi/asset/bed76fb9abb3a165967cd7a8b66d6c6d.png/get/">
+              <div class="asset-name">Q</div>
+            </div>
+            <div class="asset">
+              <img alt="R" src="https://assets.scratch.mit.edu/internalapi/asset/1169e04f0dce20d76d18c6805fc076e3.png/get/">
+              <div class="asset-name">R</div>
+            </div>
+            <div class="asset">
+              <img alt="S" src="https://assets.scratch.mit.edu/internalapi/asset/7340a1c6af0a00e939917213866dbdf1.png/get/">
+              <div class="asset-name">S</div>
+            </div>
+            <div class="asset">
+              <img alt="T" src="https://assets.scratch.mit.edu/internalapi/asset/fa0b66c11733ea637cde05d6ef4dc842.png/get/">
+              <div class="asset-name">T</div>
+            </div>
+            <div class="asset">
+              <img alt="U" src="https://assets.scratch.mit.edu/internalapi/asset/41c569fdb3599c00625124775e209d37.png/get/">
+              <div class="asset-name">U</div>
+            </div>
+            <div class="asset">
+              <img alt="V" src="https://assets.scratch.mit.edu/internalapi/asset/cdb71bb624897f0a67a4587118697971.png/get/">
+              <div class="asset-name">V</div>
+            </div>
+            <div class="asset">
+              <img alt="W" src="https://assets.scratch.mit.edu/internalapi/asset/b8b0b041dc084ee75b4e0808a74b1453.png/get/">
+              <div class="asset-name">W</div>
+            </div>
+            <div class="asset">
+              <img alt="X" src="https://assets.scratch.mit.edu/internalapi/asset/bfcbcbd7170cf91d5255e6db19c6fd2e.png/get/">
+              <div class="asset-name">X</div>
+            </div>
+            <div class="asset">
+              <img alt="Y" src="https://assets.scratch.mit.edu/internalapi/asset/d8b7adf1271d517d8671d360696f768c.png/get/">
+              <div class="asset-name">Y</div>
+            </div>
+            <div class="asset">
+              <img alt="Z" src="https://assets.scratch.mit.edu/internalapi/asset/e5dbbefd8f2cc0c37eaeedc8aa64575c.png/get/">
+              <div class="asset-name">Z</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 pop</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/83a9787d4cb6f3b7632b4ddfebf74367.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Variables</h3>
+          <div class="variables-section">
+            <div class="variable">
+              <div class="variable-name">index</div>
+              <div class="variable-value">13</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">letter</div>
+              <div class="variable-value">R</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">start x</div>
+              <div class="variable-value">-180</div>
+            </div>
+          </div>
+          <h3>Scripts</h3>
+          <div class="scripts-section">
+            <pre class="blocks">when green flag clicked
+hide
+
+when I receive [new word v]
+create letters
+
+define create letters
+set [start x v] to ([-15] * (length of [SECRET WORD]))
+go to x: [start x] y: [140]
+set [index v] to [1]
+set size to [12]%
+repeat (length of [SECRET WORD])
+  set [letter v] to (letter [index] of [SECRET WORD])
+  if &lt;not &lt;[letter] = [ ]&gt;&gt; then
+    switch costume to [blank v]
+    create clone of [myself v]
+    change x by [32]
+else
+    change x by [16]
+  end
+  change [index v] by [1]
+end
+
+when I start as a clone
+show
+
+when I receive [new guess v]
+if &lt;[letter] = [GUESS LETTER]&gt; then
+  switch costume to [letter]
+end
+
+[Z v]
+
+when I receive [you win v]
+repeat [5]
+  change [ghost v] effect by [20]
+  wait [0.1] seconds
+  change [ghost v] effect by [-20]
+  wait [0.1] seconds
+end
+
+broadcast [you win v]</pre>
+          </div>
+        </div>
+        <div class="sprite" id="sprite-gallow">
+          <div class="sprite-header">
+            <div class="sprite-name">Gallow</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Position</div>
+              <div class="prop-value">(0, 10)</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Size</div>
+              <div class="prop-value">100%</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Direction</div>
+              <div class="prop-value">90°</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Visible</div>
+              <div class="prop-value">Yes</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Rotation Style</div>
+              <div class="prop-value">all around</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Draggable</div>
+              <div class="prop-value">No</div>
+            </div>
+          </div>
+          <div class="blocks-count">
+            <div>📦 2 blocks | 🎨 7 costumes | 🔊 1 sounds</div>
+          </div>
+          <h3>Costumes</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="costume1" src="https://assets.scratch.mit.edu/internalapi/asset/4fe470b4b876841c164b72defab3409c.svg/get/">
+              <div class="asset-name">costume1</div>
+            </div>
+            <div class="asset">
+              <img alt="costume2" src="https://assets.scratch.mit.edu/internalapi/asset/b0e0b5f53951aa99045f4d1f14267bbe.svg/get/">
+              <div class="asset-name">costume2</div>
+            </div>
+            <div class="asset">
+              <img alt="costume3" src="https://assets.scratch.mit.edu/internalapi/asset/e4233ccda6b7134fe92465ab8b91710c.svg/get/">
+              <div class="asset-name">costume3</div>
+            </div>
+            <div class="asset">
+              <img alt="costume4" src="https://assets.scratch.mit.edu/internalapi/asset/3d3b998d8249bb72856c0326b9febc69.svg/get/">
+              <div class="asset-name">costume4</div>
+            </div>
+            <div class="asset">
+              <img alt="costume5" src="https://assets.scratch.mit.edu/internalapi/asset/58bdc815b350a0111f619351ef3ef0d7.svg/get/">
+              <div class="asset-name">costume5</div>
+            </div>
+            <div class="asset">
+              <img alt="costume6" src="https://assets.scratch.mit.edu/internalapi/asset/e4e68ed7ad794942b141853195a5bf56.svg/get/">
+              <div class="asset-name">costume6</div>
+            </div>
+            <div class="asset">
+              <img alt="costume7" src="https://assets.scratch.mit.edu/internalapi/asset/710fd0944f342db61147519b3a16b2ec.svg/get/">
+              <div class="asset-name">costume7</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 pop</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/83a9787d4cb6f3b7632b4ddfebf74367.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Scripts</h3>
+          <div class="scripts-section">
+            <pre class="blocks">when green flag clicked
+go to x: [0] y: [10]</pre>
+          </div>
+        </div>
+        <div class="sprite" id="sprite-hangman">
+          <div class="sprite-header">
+            <div class="sprite-name">Hangman</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Position</div>
+              <div class="prop-value">(50, 0)</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Size</div>
+              <div class="prop-value">100%</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Direction</div>
+              <div class="prop-value">90.107669220848°</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Visible</div>
+              <div class="prop-value">Yes</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Rotation Style</div>
+              <div class="prop-value">all around</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Draggable</div>
+              <div class="prop-value">No</div>
+            </div>
+          </div>
+          <div class="blocks-count">
+            <div>📦 26 blocks | 🎨 7 costumes | 🔊 1 sounds</div>
+          </div>
+          <h3>Costumes</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="costume1" src="https://assets.scratch.mit.edu/internalapi/asset/14e46ec3e2ba471c2adfe8f119052307.svg/get/">
+              <div class="asset-name">costume1</div>
+            </div>
+            <div class="asset">
+              <img alt="costume2" src="https://assets.scratch.mit.edu/internalapi/asset/16d0b91c4dd0be7e3fad69e3ef0a2ab8.svg/get/">
+              <div class="asset-name">costume2</div>
+            </div>
+            <div class="asset">
+              <img alt="costume3" src="https://assets.scratch.mit.edu/internalapi/asset/12f58bf84b8e83da103bfaac04e96a66.svg/get/">
+              <div class="asset-name">costume3</div>
+            </div>
+            <div class="asset">
+              <img alt="costume4" src="https://assets.scratch.mit.edu/internalapi/asset/ad60f82a158549698af2d931b3ef88b1.svg/get/">
+              <div class="asset-name">costume4</div>
+            </div>
+            <div class="asset">
+              <img alt="costume5" src="https://assets.scratch.mit.edu/internalapi/asset/d92bf45251f5f505511f3180f7a2940d.svg/get/">
+              <div class="asset-name">costume5</div>
+            </div>
+            <div class="asset">
+              <img alt="costume6" src="https://assets.scratch.mit.edu/internalapi/asset/501c20ea9334dfce82303276d4c1e4e5.svg/get/">
+              <div class="asset-name">costume6</div>
+            </div>
+            <div class="asset">
+              <img alt="costume7" src="https://assets.scratch.mit.edu/internalapi/asset/ae9fce073039377132d2423443fa6925.svg/get/">
+              <div class="asset-name">costume7</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 pop</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/83a9787d4cb6f3b7632b4ddfebf74367.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Scripts</h3>
+          <div class="scripts-section">
+            <pre class="blocks">when green flag clicked
+go to x: [50] y: [0]
+set size to [80]%
+switch costume to [costume1 v]
+say []
+
+when I receive [bad guess v]
+if &lt;[ERROR COUNT] &lt; [7]&gt; then
+  next costume
+end
+
+when I receive [game over v]
+say [SECRET WORD]
+shake
+
+when I receive [you win v]
+say [YOU WIN!]
+
+define shake
+turn ccw [5] degrees
+repeat [10]
+  turn cw [10] degrees
+  wait [0] seconds
+  turn ccw [10] degrees
+  wait [0] seconds
+end
+turn cw [5] degrees
+
+when this sprite clicked
+shake</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/scratchblocks@3.6.4/build/scratchblocks.min.js"></script>
+    <script>
+        // Render blocks immediately - script tag is at end of body so DOM is ready
+        scratchblocks.renderMatching('pre.blocks', {
+            style: 'scratch3',
+            scale: 0.675
+        });
+        
+        // Sidebar navigation highlighting with scroll tracking
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section[id], .sprite[id]');
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            
+            // Create a map of section IDs to nav links
+            const linkMap = {};
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    const id = href.substring(1);
+                    linkMap[id] = link;
+                }
+            });
+            
+            function updateActiveLinks() {
+                // Remove all active classes
+                navLinks.forEach(link => link.classList.remove('active'));
+                
+                // Find which section is currently at the top of the viewport
+                // We check from top to bottom and highlight the last section whose top is above viewport top + 150px
+                let currentSection = null;
+                const scrollOffset = 150; // pixels from top of viewport
+                
+                sections.forEach(section => {
+                    const rect = section.getBoundingClientRect();
+                    // If the section's top is above our scroll offset, it could be the current section
+                    if (rect.top <= scrollOffset) {
+                        currentSection = section;
+                    }
+                });
+                
+                let activeLinkToScroll = null;
+                
+                if (currentSection) {
+                    const id = currentSection.id;
+                    
+                    // Handle sprite sub-items (sprite-xxx)
+                    if (id.startsWith('sprite-')) {
+                        // Activate the individual sprite link (priority for scrolling)
+                        if (linkMap[id]) {
+                            linkMap[id].classList.add('active');
+                            activeLinkToScroll = linkMap[id];
+                        }
+                        // Also activate the main Sprites link
+                        if (linkMap['sprites']) {
+                            linkMap['sprites'].classList.add('active');
+                        }
+                        
+                        // Ensure sprite subnav is expanded
+                        const spriteSubnav = document.getElementById('sprite-subnav');
+                        if (spriteSubnav) {
+                            spriteSubnav.classList.add('expanded');
+                        }
+                    } else {
+                        // Activate the section link
+                        if (linkMap[id]) {
+                            linkMap[id].classList.add('active');
+                            activeLinkToScroll = linkMap[id];
+                        }
+                        
+                        // If it's the sprites section, expand the subnav
+                        if (id === 'sprites') {
+                            const spriteSubnav = document.getElementById('sprite-subnav');
+                            if (spriteSubnav) {
+                                spriteSubnav.classList.add('expanded');
+                            }
+                        }
+                    }
+                }
+                
+                // Scroll the active link into view in the sidebar
+                if (activeLinkToScroll) {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) {
+                        const linkRect = activeLinkToScroll.getBoundingClientRect();
+                        const sidebarRect = sidebar.getBoundingClientRect();
+                        
+                        // Check if link is outside the visible sidebar area
+                        if (linkRect.top < sidebarRect.top || linkRect.bottom > sidebarRect.bottom) {
+                            activeLinkToScroll.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // Update on scroll with throttling
+            let scrollTimeout;
+            window.addEventListener('scroll', function() {
+                if (scrollTimeout) {
+                    window.cancelAnimationFrame(scrollTimeout);
+                }
+                scrollTimeout = window.requestAnimationFrame(updateActiveLinks);
+            });
+            
+            // Initial update
+            updateActiveLinks();
+            // Initial update
+            updateActiveLinks();
+            
+            // Smooth scroll for anchor links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && href.startsWith('#')) {
+                        e.preventDefault();
+                        const target = document.querySelector(href);
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                });
+            });
+        });
+        </script>
+  </body>
+</html>

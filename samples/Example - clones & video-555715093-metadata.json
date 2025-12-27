@@ -1,0 +1,57 @@
+{
+  "id": 555715093,
+  "title": "Example - clones & video",
+  "description": "",
+  "instructions": "Move in front of the video camera and see how the pixels react. Use the \"VIDEO SENS.\" slider to change the sensitivity.\n\nClap your hands or snap your fingers to change the colour of all the pixels at the same time. Use the \"SOUND SENS.\" slider to change the sensitivity.\n\nUse the \"Music\" button to toggle the music on/off.\n\nUse the \"Shape\" button to toggle between square and round pixels.",
+  "visibility": "visible",
+  "public": true,
+  "comments_allowed": true,
+  "is_published": true,
+  "author": {
+    "id": 79312038,
+    "username": "nicoben2",
+    "scratchteam": false,
+    "history": {
+      "joined": "1900-01-01T00:00:00Z",
+      "created": null,
+      "modified": null,
+      "shared": null
+    },
+    "profile": {
+      "id": null,
+      "images": {
+        "90x90": "https://cdn2.scratch.mit.edu/get_image/user/79312038_90x90.png?v=",
+        "60x60": "https://cdn2.scratch.mit.edu/get_image/user/79312038_60x60.png?v=",
+        "55x55": "https://cdn2.scratch.mit.edu/get_image/user/79312038_55x55.png?v=",
+        "50x50": "https://cdn2.scratch.mit.edu/get_image/user/79312038_50x50.png?v=",
+        "32x32": "https://cdn2.scratch.mit.edu/get_image/user/79312038_32x32.png?v="
+      }
+    }
+  },
+  "image": "https://cdn2.scratch.mit.edu/get_image/project/555715093_480x360.png",
+  "images": {
+    "282x218": "https://cdn2.scratch.mit.edu/get_image/project/555715093_282x218.png?v=1629045080",
+    "216x163": "https://cdn2.scratch.mit.edu/get_image/project/555715093_216x163.png?v=1629045080",
+    "200x200": "https://cdn2.scratch.mit.edu/get_image/project/555715093_200x200.png?v=1629045080",
+    "144x108": "https://cdn2.scratch.mit.edu/get_image/project/555715093_144x108.png?v=1629045080",
+    "135x102": "https://cdn2.scratch.mit.edu/get_image/project/555715093_135x102.png?v=1629045080",
+    "100x80": "https://cdn2.scratch.mit.edu/get_image/project/555715093_100x80.png?v=1629045080"
+  },
+  "history": {
+    "joined": null,
+    "created": "2021-07-25T09:11:02Z",
+    "modified": "2021-08-15T16:31:20Z",
+    "shared": "2021-07-25T12:09:31Z"
+  },
+  "stats": {
+    "views": 1,
+    "loves": 0,
+    "favorites": 0,
+    "remixes": 0
+  },
+  "remix": {
+    "parent": null,
+    "root": null
+  },
+  "project_token": "1766860558_fac8ef965d03384ce6b668f4ea40c739fa050cffefb6f23cfdaa83181746a451369fd6ce4f778a5574a481076e281b030754a75ed2eb003d0539f753a6740019"
+}

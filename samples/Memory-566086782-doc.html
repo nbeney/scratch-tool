@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Memory - Scratch Project Documentation</title>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="https://cdn.jsdelivr.net/npm/scratchblocks@3.6.4/build/scratchblocks.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+        }
+        .sidebar {
+            width: 280px;
+            background: white;
+            padding: 20px;
+            border-right: 2px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #ff6680;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ff6680;
+        }
+        .sidebar-nav {
+            list-style: none;
+        }
+        .sidebar-nav &gt; li {
+            margin-bottom: 5px;
+        }
+        .sidebar-nav a {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .sidebar-nav a:hover {
+            background: #f0f0f0;
+            color: #ff6680;
+            transform: translateX(5px);
+        }
+        .sidebar-nav a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        .sidebar-nav .sprite-subnav {
+            list-style: none;
+            margin-top: 5px;
+            margin-left: 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .sidebar-nav .sprite-subnav.expanded {
+            max-height: 2000px;
+        }
+        .sidebar-nav .sprite-subnav li {
+            margin-bottom: 3px;
+        }
+        .sidebar-nav .sprite-subnav a {
+            padding: 8px 12px;
+            font-size: 0.9em;
+            font-weight: 400;
+            color: #666;
+        }
+        .sidebar-nav .sprite-subnav a:hover {
+            color: #4a90e2;
+            background: #e8f4fd;
+        }
+        .sidebar-nav .sprite-subnav a.active {
+            background: #4a90e2;
+            color: white;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: #ff6680;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+        }
+        .metadata-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .metadata-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .sprite {
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .sprite-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .sprite-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #4a90e2;
+        }
+        .sprite-props {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .prop {
+            background: white;
+            padding: 6px;
+            border-radius: 4px;
+            border-left: 3px solid #4a90e2;
+        }
+        .prop-label {
+            font-size: 0.75em;
+            color: #666;
+        }
+        .prop-value {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9em;
+        }
+        .assets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .asset {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .asset img {
+            max-width: 150px;
+            max-height: 150px;
+            display: block;
+            margin: 0 auto 10px;
+            border: 1px solid #eee;
+        }
+        .asset-name {
+            font-size: 0.9em;
+            color: #333;
+            word-break: break-word;
+        }
+        .audio-player {
+            margin-top: 10px;
+        }
+        .variables-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .variable {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #ff8c1a;
+        }
+        .variable-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .variable-value {
+            color: #666;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85em;
+            word-break: break-word;
+        }
+        .lists-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .list {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #cc5b22;
+        }
+        .list-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+        .list-values {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85em;
+        }
+        .list-item {
+            padding: 3px 0;
+            color: #555;
+        }
+        .list-more {
+            padding: 5px 0;
+            color: #888;
+            font-style: italic;
+        }
+        .messages-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .message {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            border-left: 4px solid #ffab19;
+        }
+        .message-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+        .blocks-count {
+            background: #e8f4fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #4a90e2;
+        }
+        .extensions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .extension {
+            background: #fef3cd;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 1px solid #f5c842;
+        }
+        .statistics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+        .scripts-section {
+            margin-top: 20px;
+        }
+        .script {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #ff6680;
+        }
+        pre.blocks {
+            margin: 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div class="sidebar-title">🎨 Navigation</div>
+      <ul class="sidebar-nav">
+        <li>
+          <a href="#info">📋 Info</a>
+        </li>
+        <li>
+          <a href="#statistics">📊 Statistics</a>
+        </li>
+        <li>
+          <a href="#stage">🎭 Stage</a>
+        </li>
+        <li>
+          <a class="sprites-toggle" href="#sprites">🎮 Sprites</a>
+          <ul class="sprite-subnav expanded" id="sprite-subnav">
+            <li>
+              <a href="#sprite-card">Card</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div class="main-content">
+      <h1>🎨 Memory</h1>
+      <div class="section" id="info">
+        <h2>Project Information</h2>
+        <div class="metadata">
+          <div class="metadata-item">
+            <div class="metadata-label">Author</div>
+            <div>
+              <a href="https://scratch.mit.edu/users/nicoben2/" target="_blank">nicoben2</a>
+            </div>
+          </div>
+          <div class="metadata-item">
+            <div class="metadata-label">Remix</div>
+            <div>No</div>
+          </div>
+          <div class="metadata-item">
+            <div class="metadata-label">Project ID</div>
+            <div>
+              <a href="https://scratch.mit.edu/projects/566086782/" target="_blank">566086782</a>
+            </div>
+          </div>
+          <div class="metadata-item">
+            <div class="metadata-label">Scratch Version</div>
+            <div>3.0.0</div>
+          </div>
+          <div class="metadata-item">
+            <div class="metadata-label">VM Version</div>
+            <div>0.2.0-prerelease.20210812043817</div>
+          </div>
+        </div>
+      </div>
+      <div class="section" id="statistics">
+        <h2>Statistics</h2>
+        <div class="statistics">
+          <div class="stat-card">
+            <div class="stat-label">Sprites</div>
+            <div class="stat-value">1</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Blocks</div>
+            <div class="stat-value">111</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Cloud Variables</div>
+            <div class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Global Variables</div>
+            <div class="stat-value">14</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Sprite Variables</div>
+            <div class="stat-value">6</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Lists</div>
+            <div class="stat-value">1</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Broadcasts</div>
+            <div class="stat-value">2</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Custom Blocks</div>
+            <div class="stat-value">4</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Clones</div>
+            <div class="stat-value">1</div>
+          </div>
+        </div>
+      </div>
+      <div class="section" id="stage">
+        <h2>🎭 Stage</h2>
+        <div class="sprite">
+          <div class="sprite-header">
+            <div class="sprite-name">Stage</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Costumes</div>
+              <div class="prop-value">1</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Sounds</div>
+              <div class="prop-value">1</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Variables</div>
+              <div class="prop-value">14</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Lists</div>
+              <div class="prop-value">1</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Blocks</div>
+              <div class="prop-value">0</div>
+            </div>
+          </div>
+          <h3>Backdrops</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="backdrop1" src="https://assets.scratch.mit.edu/internalapi/asset/fdeae05ba400c26736964148fc46c5ae.svg/get/">
+              <div class="asset-name">backdrop1</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 pop</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/83a9787d4cb6f3b7632b4ddfebf74367.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Variables</h3>
+          <div class="variables-section">
+            <div class="variable">
+              <div class="variable-name">NUM ROWS</div>
+              <div class="variable-value">5</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">NUM COLS</div>
+              <div class="variable-value">10</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">CARD WIDTH</div>
+              <div class="variable-value">45</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">CARD HEIGHT</div>
+              <div class="variable-value">55</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">OFFSET X</div>
+              <div class="variable-value">-203</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">OFFSET Y</div>
+              <div class="variable-value">80</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">NUM COSTUMES</div>
+              <div class="variable-value">29</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">NUM PAIRS</div>
+              <div class="variable-value">25</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">SHUFFLE I</div>
+              <div class="variable-value">25</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">SHUFFLE J</div>
+              <div class="variable-value">22</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">SHUFFLE TEMP</div>
+              <div class="variable-value">21</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">FACEUP INDEX</div>
+              <div class="variable-value">nil</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">FACEUP COSTUME</div>
+              <div class="variable-value">nil</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">TRIES</div>
+              <div class="variable-value">0</div>
+            </div>
+          </div>
+          <h3>Lists</h3>
+          <div class="lists-section">
+            <div class="list">
+              <div class="list-name">ARRANGEMENT (50 items)</div>
+              <div class="list-values">
+                <div class="list-item">1. 2</div>
+                <div class="list-item">2. 13</div>
+                <div class="list-item">3. 9</div>
+                <div class="list-item">4. 3</div>
+                <div class="list-item">5. 4</div>
+                <div class="list-item">6. 11</div>
+                <div class="list-item">7. 23</div>
+                <div class="list-item">8. 5</div>
+                <div class="list-item">9. 25</div>
+                <div class="list-item">10. 13</div>
+                <div class="list-more">... and 40 more</div>
+              </div>
+            </div>
+          </div>
+          <h3>Messages</h3>
+          <div class="messages-section">
+            <div class="message">
+              <div class="message-name">📢 good guess</div>
+            </div>
+            <div class="message">
+              <div class="message-name">📢 bad guess</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section" id="sprites">
+        <h2>🎮 Sprites</h2>
+        <div class="sprite" id="sprite-card">
+          <div class="sprite-header">
+            <div class="sprite-name">Card</div>
+          </div>
+          <div class="sprite-props">
+            <div class="prop">
+              <div class="prop-label">Position</div>
+              <div class="prop-value">(-203, -190)</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Size</div>
+              <div class="prop-value">20%</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Direction</div>
+              <div class="prop-value">90°</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Visible</div>
+              <div class="prop-value">No</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Rotation Style</div>
+              <div class="prop-value">all around</div>
+            </div>
+            <div class="prop">
+              <div class="prop-label">Draggable</div>
+              <div class="prop-value">No</div>
+            </div>
+          </div>
+          <div class="blocks-count">
+            <div>📦 111 blocks | 🎨 29 costumes | 🔊 1 sounds</div>
+          </div>
+          <h3>Costumes</h3>
+          <div class="assets">
+            <div class="asset">
+              <img alt="back" src="https://assets.scratch.mit.edu/internalapi/asset/879443dd67a5a80c5937b2ef987ecf21.svg/get/">
+              <div class="asset-name">back</div>
+            </div>
+            <div class="asset">
+              <img alt="bear" src="https://assets.scratch.mit.edu/internalapi/asset/b69ea3af8a718548da91acdca2655d7d.svg/get/">
+              <div class="asset-name">bear</div>
+            </div>
+            <div class="asset">
+              <img alt="buffalo" src="https://assets.scratch.mit.edu/internalapi/asset/d45b9e1b6784c49fcb0e84f57de4a44f.svg/get/">
+              <div class="asset-name">buffalo</div>
+            </div>
+            <div class="asset">
+              <img alt="chick" src="https://assets.scratch.mit.edu/internalapi/asset/856b8f41cdece37aa9067c1288c424b4.svg/get/">
+              <div class="asset-name">chick</div>
+            </div>
+            <div class="asset">
+              <img alt="chicken" src="https://assets.scratch.mit.edu/internalapi/asset/4ecc4e5b2446aa253194334864167f1e.svg/get/">
+              <div class="asset-name">chicken</div>
+            </div>
+            <div class="asset">
+              <img alt="cow" src="https://assets.scratch.mit.edu/internalapi/asset/586d20793e718547e183c36c137e7302.svg/get/">
+              <div class="asset-name">cow</div>
+            </div>
+            <div class="asset">
+              <img alt="crocodile" src="https://assets.scratch.mit.edu/internalapi/asset/b52c9b11fe0e282d366371ee10448a1e.svg/get/">
+              <div class="asset-name">crocodile</div>
+            </div>
+            <div class="asset">
+              <img alt="dog" src="https://assets.scratch.mit.edu/internalapi/asset/5b440ae9187194a88edefa479de8218c.svg/get/">
+              <div class="asset-name">dog</div>
+            </div>
+            <div class="asset">
+              <img alt="duck" src="https://assets.scratch.mit.edu/internalapi/asset/6d0d09e6c5b2b9ea67575fbdc9bd1f5f.svg/get/">
+              <div class="asset-name">duck</div>
+            </div>
+            <div class="asset">
+              <img alt="elephant" src="https://assets.scratch.mit.edu/internalapi/asset/23b8f99ad95e959d0bd06714b08aa4af.svg/get/">
+              <div class="asset-name">elephant</div>
+            </div>
+            <div class="asset">
+              <img alt="frog" src="https://assets.scratch.mit.edu/internalapi/asset/a46fd097433bfcd0ecb8e5fc55cdb650.svg/get/">
+              <div class="asset-name">frog</div>
+            </div>
+            <div class="asset">
+              <img alt="giraffe" src="https://assets.scratch.mit.edu/internalapi/asset/3fdee2ba51ef997533623d2b9236f109.svg/get/">
+              <div class="asset-name">giraffe</div>
+            </div>
+            <div class="asset">
+              <img alt="goat" src="https://assets.scratch.mit.edu/internalapi/asset/79886e03103e5e95ab67e0fd46b828e0.svg/get/">
+              <div class="asset-name">goat</div>
+            </div>
+            <div class="asset">
+              <img alt="gorilla" src="https://assets.scratch.mit.edu/internalapi/asset/09c483f1e12ccb9c153f50bed7792f65.svg/get/">
+              <div class="asset-name">gorilla</div>
+            </div>
+            <div class="asset">
+              <img alt="hippo" src="https://assets.scratch.mit.edu/internalapi/asset/29a8635d6f09dca240e889acf53ef076.svg/get/">
+              <div class="asset-name">hippo</div>
+            </div>
+            <div class="asset">
+              <img alt="horse" src="https://assets.scratch.mit.edu/internalapi/asset/1cb2bf996791e72cd87305c1a2c490a8.svg/get/">
+              <div class="asset-name">horse</div>
+            </div>
+            <div class="asset">
+              <img alt="narwhal" src="https://assets.scratch.mit.edu/internalapi/asset/91cf5d9468d8d16d1434505328e38711.svg/get/">
+              <div class="asset-name">narwhal</div>
+            </div>
+            <div class="asset">
+              <img alt="owl" src="https://assets.scratch.mit.edu/internalapi/asset/528455d2f9e46c3235900758c197158c.svg/get/">
+              <div class="asset-name">owl</div>
+            </div>
+            <div class="asset">
+              <img alt="panda" src="https://assets.scratch.mit.edu/internalapi/asset/7d3c4d94b63c9e688648e90e7ad7306f.svg/get/">
+              <div class="asset-name">panda</div>
+            </div>
+            <div class="asset">
+              <img alt="parrot" src="https://assets.scratch.mit.edu/internalapi/asset/a42c137bdf706a2599d4560103a1a5b8.svg/get/">
+              <div class="asset-name">parrot</div>
+            </div>
+            <div class="asset">
+              <img alt="penguin" src="https://assets.scratch.mit.edu/internalapi/asset/4f5a58a9d2bff913ea409d5a5f94fb3d.svg/get/">
+              <div class="asset-name">penguin</div>
+            </div>
+            <div class="asset">
+              <img alt="pig" src="https://assets.scratch.mit.edu/internalapi/asset/4505b7214aa59ef333a3e10509f4a37a.svg/get/">
+              <div class="asset-name">pig</div>
+            </div>
+            <div class="asset">
+              <img alt="rabbit" src="https://assets.scratch.mit.edu/internalapi/asset/5407dd5cda40542f25e07668a1ed0408.svg/get/">
+              <div class="asset-name">rabbit</div>
+            </div>
+            <div class="asset">
+              <img alt="rhino" src="https://assets.scratch.mit.edu/internalapi/asset/11848061882ea4b83be9eacc177365b4.svg/get/">
+              <div class="asset-name">rhino</div>
+            </div>
+            <div class="asset">
+              <img alt="sloth" src="https://assets.scratch.mit.edu/internalapi/asset/bf9ffe943184c4e76ac244f1dbe7ee82.svg/get/">
+              <div class="asset-name">sloth</div>
+            </div>
+            <div class="asset">
+              <img alt="snake" src="https://assets.scratch.mit.edu/internalapi/asset/9a78fb8cae59076a28816dd0088852df.svg/get/">
+              <div class="asset-name">snake</div>
+            </div>
+            <div class="asset">
+              <img alt="walrus" src="https://assets.scratch.mit.edu/internalapi/asset/67eb77f3433bf613e88dd9d92056acda.svg/get/">
+              <div class="asset-name">walrus</div>
+            </div>
+            <div class="asset">
+              <img alt="whale" src="https://assets.scratch.mit.edu/internalapi/asset/6dfc1b1858d0a36f11af0a46fe4e971a.svg/get/">
+              <div class="asset-name">whale</div>
+            </div>
+            <div class="asset">
+              <img alt="zebra" src="https://assets.scratch.mit.edu/internalapi/asset/f984d39c2b0846ce0016781473787c4b.svg/get/">
+              <div class="asset-name">zebra</div>
+            </div>
+          </div>
+          <h3>Sounds</h3>
+          <div class="assets">
+            <div class="asset">
+              <div class="asset-name">🔊 pop</div>
+              <audio class="audio-player" controls="controls">
+                <source src="https://assets.scratch.mit.edu/internalapi/asset/83a9787d4cb6f3b7632b4ddfebf74367.wav/get/" type="audio/wav">
+              </audio>
+            </div>
+          </div>
+          <h3>Variables</h3>
+          <div class="variables-section">
+            <div class="variable">
+              <div class="variable-name">index</div>
+              <div class="variable-value">50</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">x</div>
+              <div class="variable-value">-203</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">row</div>
+              <div class="variable-value">5</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">col</div>
+              <div class="variable-value">0</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">y</div>
+              <div class="variable-value">-195</div>
+            </div>
+            <div class="variable">
+              <div class="variable-name">costume</div>
+              <div class="variable-value">12</div>
+            </div>
+          </div>
+          <h3>Scripts</h3>
+          <div class="scripts-section">
+            <pre class="blocks">when green flag clicked
+hide
+initialize constants
+initialize arrangement
+shuffle arrangement
+create cards
+set [FACEUP INDEX v] to [nil]
+set [FACEUP COSTUME v] to [nil]
+set [TRIES v] to [0]
+
+define create cards
+set [index v] to [0]
+repeat [NUM PAIRS]
+  repeat [2]
+    set [costume v] to (item ([index] + [1]) of [ARRANGEMENT v])
+    create clone of [myself v]
+    change [index v] by [1]
+  end
+end
+
+when I start as a clone
+set [row v] to ([floor v] of ([index] / [NUM COLS]) :: operators)
+set [col v] to ([index] mod [NUM COLS])
+set [x v] to ([OFFSET X] + ([col] * [CARD WIDTH]))
+set [y v] to ([OFFSET Y] - ([row] * [CARD HEIGHT]))
+switch costume to [back v]
+show
+go to x: [x] y: [y]
+
+define initialize constants
+set size to [20]%
+set [OFFSET X v] to [-203]
+set [OFFSET Y v] to [80]
+set [CARD WIDTH v] to [45]
+set [CARD HEIGHT v] to [55]
+set [NUM ROWS v] to [5]
+set [NUM COLS v] to [10]
+set [NUM PAIRS v] to ([floor v] of (([NUM ROWS] * [NUM COLS]) / [2]) :: operators)
+set [NUM COSTUMES v] to [29]
+
+when this sprite clicked
+if &lt;[FACEUP INDEX] = [nil]&gt; then
+  set [FACEUP INDEX v] to [index]
+  set [FACEUP COSTUME v] to [costume]
+  switch costume to [costume]
+else
+  if &lt;not &lt;[index] = [FACEUP INDEX]&gt;&gt; then
+    change [TRIES v] by [1]
+    switch costume to [costume]
+    wait [0.5] seconds
+    if &lt;[costume] = [FACEUP COSTUME]&gt; then
+      broadcast [good guess v] and wait
+      set [FACEUP INDEX v] to [nil]
+      set [FACEUP COSTUME v] to [nil]
+      delete this clone
+else
+      broadcast [bad guess v] and wait
+      set [FACEUP INDEX v] to [nil]
+      set [FACEUP COSTUME v] to [nil]
+      switch costume to [back v]
+    end
+  end
+end
+
+define initialize arrangement
+delete all of [ARRANGEMENT v]
+set [costume v] to [2]
+repeat until &lt;(length of [ARRANGEMENT v]) = ([2] * [NUM PAIRS])&gt;
+  add [costume] to [ARRANGEMENT v]
+  add [costume] to [ARRANGEMENT v]
+  change [costume v] by [1]
+end
+
+define shuffle arrangement
+repeat ((length of [ARRANGEMENT v]) * [0.75])
+  set [SHUFFLE I v] to (pick random [1] to (length of [ARRANGEMENT v]))
+  set [SHUFFLE J v] to (pick random [1] to (length of [ARRANGEMENT v]))
+  set [SHUFFLE TEMP v] to (item [SHUFFLE I] of [ARRANGEMENT v])
+  replace item [SHUFFLE I] of [ARRANGEMENT v] with (item [SHUFFLE J] of [ARRANGEMENT v])
+  replace item [SHUFFLE J] of [ARRANGEMENT v] with [SHUFFLE TEMP]
+end
+
+when I receive [good guess v]
+if &lt;[index] = [FACEUP INDEX]&gt; then
+  delete this clone
+end
+
+when I receive [bad guess v]
+if &lt;[index] = [FACEUP INDEX]&gt; then
+  switch costume to [back v]
+end</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/scratchblocks@3.6.4/build/scratchblocks.min.js"></script>
+    <script>
+        // Render blocks immediately - script tag is at end of body so DOM is ready
+        scratchblocks.renderMatching('pre.blocks', {
+            style: 'scratch3',
+            scale: 0.675
+        });
+        
+        // Sidebar navigation highlighting with scroll tracking
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section[id], .sprite[id]');
+            const navLinks = document.querySelectorAll('.sidebar-nav a');
+            
+            // Create a map of section IDs to nav links
+            const linkMap = {};
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    const id = href.substring(1);
+                    linkMap[id] = link;
+                }
+            });
+            
+            function updateActiveLinks() {
+                // Remove all active classes
+                navLinks.forEach(link => link.classList.remove('active'));
+                
+                // Find which section is currently at the top of the viewport
+                // We check from top to bottom and highlight the last section whose top is above viewport top + 150px
+                let currentSection = null;
+                const scrollOffset = 150; // pixels from top of viewport
+                
+                sections.forEach(section => {
+                    const rect = section.getBoundingClientRect();
+                    // If the section's top is above our scroll offset, it could be the current section
+                    if (rect.top <= scrollOffset) {
+                        currentSection = section;
+                    }
+                });
+                
+                let activeLinkToScroll = null;
+                
+                if (currentSection) {
+                    const id = currentSection.id;
+                    
+                    // Handle sprite sub-items (sprite-xxx)
+                    if (id.startsWith('sprite-')) {
+                        // Activate the individual sprite link (priority for scrolling)
+                        if (linkMap[id]) {
+                            linkMap[id].classList.add('active');
+                            activeLinkToScroll = linkMap[id];
+                        }
+                        // Also activate the main Sprites link
+                        if (linkMap['sprites']) {
+                            linkMap['sprites'].classList.add('active');
+                        }
+                        
+                        // Ensure sprite subnav is expanded
+                        const spriteSubnav = document.getElementById('sprite-subnav');
+                        if (spriteSubnav) {
+                            spriteSubnav.classList.add('expanded');
+                        }
+                    } else {
+                        // Activate the section link
+                        if (linkMap[id]) {
+                            linkMap[id].classList.add('active');
+                            activeLinkToScroll = linkMap[id];
+                        }
+                        
+                        // If it's the sprites section, expand the subnav
+                        if (id === 'sprites') {
+                            const spriteSubnav = document.getElementById('sprite-subnav');
+                            if (spriteSubnav) {
+                                spriteSubnav.classList.add('expanded');
+                            }
+                        }
+                    }
+                }
+                
+                // Scroll the active link into view in the sidebar
+                if (activeLinkToScroll) {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) {
+                        const linkRect = activeLinkToScroll.getBoundingClientRect();
+                        const sidebarRect = sidebar.getBoundingClientRect();
+                        
+                        // Check if link is outside the visible sidebar area
+                        if (linkRect.top < sidebarRect.top || linkRect.bottom > sidebarRect.bottom) {
+                            activeLinkToScroll.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
+                        }
+                    }
+                }
+            }
+            
+            // Update on scroll with throttling
+            let scrollTimeout;
+            window.addEventListener('scroll', function() {
+                if (scrollTimeout) {
+                    window.cancelAnimationFrame(scrollTimeout);
+                }
+                scrollTimeout = window.requestAnimationFrame(updateActiveLinks);
+            });
+            
+            // Initial update
+            updateActiveLinks();
+            // Initial update
+            updateActiveLinks();
+            
+            // Smooth scroll for anchor links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && href.startsWith('#')) {
+                        e.preventDefault();
+                        const target = document.querySelector(href);
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                });
+            });
+        });
+        </script>
+  </body>
+</html>
