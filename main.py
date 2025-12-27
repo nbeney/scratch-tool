@@ -1181,16 +1181,30 @@ def generate_html_documentation(
                     if project_metadata:
                         with div(cls='metadata-item'):
                             div('Author', cls='metadata-label')
-                            div(project_metadata.author.username)
+                            with div():
+                                a(project_metadata.author.username, 
+                                  href=f'https://scratch.mit.edu/users/{project_metadata.author.username}/',
+                                  target='_blank')
                         with div(cls='metadata-item'):
                             div('Remix', cls='metadata-label')
                             if project_metadata.remix.parent:
-                                div(f'Yes (parent: {project_metadata.remix.parent})')
+                                with div():
+                                    raw('Yes (parent: ')
+                                    a(str(project_metadata.remix.parent), 
+                                      href=f'https://scratch.mit.edu/projects/{project_metadata.remix.parent}/',
+                                      target='_blank')
+                                    raw(')')
                             else:
                                 div('No')
                     with div(cls='metadata-item'):
                         div('Project ID', cls='metadata-label')
-                        div(project_id if project_id else '-')
+                        if project_id:
+                            with div():
+                                a(project_id, 
+                                  href=f'https://scratch.mit.edu/projects/{project_id}/',
+                                  target='_blank')
+                        else:
+                            div('-')
                     with div(cls='metadata-item'):
                         div('Scratch Version', cls='metadata-label')
                         div(project.meta.semver)
