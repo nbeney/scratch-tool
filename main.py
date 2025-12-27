@@ -576,6 +576,7 @@ def document(
         assets_data: dict = {}  # md5ext -> bytes
         output_name: str
         project_id: Optional[str] = None  # Track project ID when available
+        project_metadata: Optional[ProjectMetadata] = None  # Track metadata when available from API
         
         # Determine source type and load project
         source_path = Path(source)
@@ -690,6 +691,28 @@ def document(
             for sound in target.sounds:
                 asset_md5s.add(sound.md5ext)
         
+        # Apply default naming convention if name wasn't explicitly provided
+        # Format: <title>-<project_id>-doc
+        if not name and project_id:
+            # Get the base title (from metadata or existing output_name)
+            if project_metadata:
+                base_title = sanitize_filename(project_metadata.title)[:50]
+            else:
+                # For local files, extract the base title from output_name
+                # Remove both "-project" and "-<project_id>" patterns if present
+                base_title = output_name
+                
+                # Remove "-<project_id>-project" pattern (e.g., "Title-123-project" -> "Title")
+                import re
+                pattern = f'-{project_id}-project$'
+                base_title = re.sub(pattern, '', base_title)
+                
+                # Also handle just "-project" suffix
+                if base_title.endswith('-project'):
+                    base_title = base_title[:-8]
+            
+            output_name = f"{base_title}-{project_id}-doc"
+        
         # Prepare asset URLs and thumbnails based on mode
         costume_thumbnails = {}
         sound_files = {}
@@ -744,7 +767,7 @@ def document(
         
         # Generate HTML documentation
         html_content = generate_html_documentation(
-            project, project_json, costume_thumbnails, sound_files, output_name, standalone, project_id
+            project, project_json, costume_thumbnails, sound_files, output_name, standalone, project_id, project_metadata
         )
         
         # Write HTML file
@@ -776,7 +799,8 @@ def generate_html_documentation(
     sound_files: dict,
     output_name: str,
     standalone: bool = True,
-    project_id: Optional[str] = None
+    project_id: Optional[str] = None,
+    project_metadata: Optional[ProjectMetadata] = None
 ) -> str:
     """Generate HTML documentation for a Scratch project using dominate.
     
@@ -788,9 +812,13 @@ def generate_html_documentation(
         output_name: Base name for output files
         standalone: If True, URLs are CDN links; if False, local paths
         project_id: Optional Scratch project ID
+        project_metadata: Optional project metadata from Scratch API (includes title, author, remix info)
     """
     
-    doc = dom_document(title='Scratch Project Documentation')
+    # Determine the title to display
+    page_title = project_metadata.title if project_metadata else output_name
+    
+    doc = dom_document(title=f'{page_title} - Scratch Project Documentation')
     
     with doc.head:
         meta(charset='UTF-8')
@@ -901,7 +929,7 @@ def generate_html_documentation(
         }
         .metadata {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
             gap: 15px;
         }
         .metadata-item {
@@ -1144,12 +1172,22 @@ def generate_html_documentation(
         
         # Main content area
         with div(cls='main-content'):
-            h1('🎨 Scratch Project Documentation')
+            h1(f'🎨 {page_title}')
             
             # Project Information Section
             with div(cls='section', id='info'):
                 h2('Project Information')
                 with div(cls='metadata'):
+                    if project_metadata:
+                        with div(cls='metadata-item'):
+                            div('Author', cls='metadata-label')
+                            div(project_metadata.author.username)
+                        with div(cls='metadata-item'):
+                            div('Remix', cls='metadata-label')
+                            if project_metadata.remix.parent:
+                                div(f'Yes (parent: {project_metadata.remix.parent})')
+                            else:
+                                div('No')
                     with div(cls='metadata-item'):
                         div('Project ID', cls='metadata-label')
                         div(project_id if project_id else '-')

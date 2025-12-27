@@ -539,10 +539,10 @@ class TestDocumentCommand:
         assert result.exit_code == 0
         assert "Downloading project 1259204833" in result.stdout
         assert "✓ Documentation generated successfully!" in result.stdout
-        assert Path("All Blocks.html").exists()
+        assert Path("All Blocks-1259204833-doc.html").exists()
         # Standalone mode by default - no directory created
         assert "Standalone" in result.stdout
-        assert not Path("All Blocks").exists()
+        assert not Path("All Blocks-1259204833-doc").exists()
         
     def test_document_with_custom_name(self, tmp_path, monkeypatch):
         """Test generating documentation with --name option."""
@@ -666,8 +666,8 @@ class TestDocumentCommand:
         result = runner.invoke(app, ["document", sb3_file])
         assert result.exit_code == 0
         
-        # Check that the HTML was generated
-        html_file = "All Blocks-1259204833-project.html"
+        # Check that the HTML was generated with new naming format
+        html_file = "All Blocks-1259204833-doc.html"
         assert Path(html_file).exists()
         
         # Verify the project ID appears in the HTML
