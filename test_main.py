@@ -81,13 +81,13 @@ class TestMetadataCommand:
         assert "Could not extract project ID from" in output
 
     @pytest.mark.skipif(
-        not Path("project-meta-fail.json").exists(),
+        not Path("test-data/project-meta-fail.json").exists(),
         reason="Test data file not found"
     )
     def test_metadata_error_response_format(self, mocker):
         """Test handling of error response format from API."""
         # Load the error response
-        with open("project-meta-fail.json") as f:
+        with open("test-data/project-meta-fail.json") as f:
             error_data = json.load(f)
         
         # Mock the requests.get to return error response
@@ -324,14 +324,14 @@ class TestPydanticModels:
     """Tests for Pydantic models."""
 
     @pytest.mark.skipif(
-        not Path("project-meta-pass.json").exists(),
+        not Path("test-data/project-meta-pass.json").exists(),
         reason="Test data file not found"
     )
     def test_project_metadata_valid(self):
         """Test ProjectMetadata model with valid data."""
         from models.metadata import ProjectMetadata
         
-        with open("project-meta-pass.json") as f:
+        with open("test-data/project-meta-pass.json") as f:
             data = json.load(f)
         
         metadata = ProjectMetadata.model_validate(data)
@@ -343,14 +343,14 @@ class TestPydanticModels:
         assert metadata.project_token is not None
 
     @pytest.mark.skipif(
-        not Path("project-meta-fail.json").exists(),
+        not Path("test-data/project-meta-fail.json").exists(),
         reason="Test data file not found"
     )
     def test_error_response_valid(self):
         """Test ErrorResponse model with valid error data."""
         from models.metadata import ErrorResponse
         
-        with open("project-meta-fail.json") as f:
+        with open("test-data/project-meta-fail.json") as f:
             data = json.load(f)
         
         error = ErrorResponse.model_validate(data)
