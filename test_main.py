@@ -675,3 +675,97 @@ class TestDocumentCommand:
         assert "1259204833" in html_content
         assert "Project ID" in html_content
 
+
+class TestUnpackCommand:
+    """Tests for the unpack command."""
+
+    def test_unpack_valid_sb3_file(self, tmp_path, monkeypatch):
+        """Test unpacking a valid .sb3 file."""
+        monkeypatch.chdir(tmp_path)
+        
+        # First download a project to get an .sb3 file
+        result = runner.invoke(app, ["download", "1259204833"])
+        assert result.exit_code == 0
+        
+        # Find the downloaded .sb3 file
+        sb3_files = list(Path(".").glob("*.sb3"))
+        assert len(sb3_files) == 1
+        sb3_file = sb3_files[0]
+        original_name = sb3_file.stem
+        
+        # Unpack the file
+        result = runner.invoke(app, ["unpack", str(sb3_file)])
+        assert result.exit_code == 0
+        assert "Unpacking" in result.stdout
+        assert "Creating directory:" in result.stdout
+        assert "Extracting contents..." in result.stdout
+        assert "Deleting original file:" in result.stdout
+        assert "✅ Successfully unpacked!" in result.stdout
+        
+        # Verify directory was created
+        unpacked_dir = Path(original_name)
+        assert unpacked_dir.exists()
+        assert unpacked_dir.is_dir()
+        
+        # Verify project.json exists in the directory
+        project_json = unpacked_dir / "project.json"
+        assert project_json.exists()
+        
+        # Verify the project.json is valid JSON
+        with open(project_json) as f:
+            data = json.load(f)
+            assert "targets" in data
+            assert "meta" in data
+        
+        # Verify original .sb3 file was deleted
+        assert not sb3_file.exists()
+        
+        # Verify assets were extracted
+        asset_files = list(unpacked_dir.glob("*"))
+        assert len(asset_files) > 1  # Should have project.json plus assets
+
+    def test_unpack_nonexistent_file(self, tmp_path, monkeypatch):
+        """Test unpacking a file that doesn't exist."""
+        monkeypatch.chdir(tmp_path)
+        
+        result = runner.invoke(app, ["unpack", "nonexistent.sb3"])
+        assert result.exit_code == 1
+        assert "Error: File not found" in (result.stdout + result.stderr)
+
+    def test_unpack_non_sb3_file(self, tmp_path, monkeypatch):
+        """Test unpacking a file without .sb3 extension."""
+        monkeypatch.chdir(tmp_path)
+        
+        # Create a dummy file
+        test_file = tmp_path / "test.txt"
+        test_file.write_text("not a scratch file")
+        
+        result = runner.invoke(app, ["unpack", "test.txt"])
+        assert result.exit_code == 1
+        assert "Error: File must have .sb3 extension" in (result.stdout + result.stderr)
+
+    def test_unpack_directory_already_exists(self, tmp_path, monkeypatch):
+        """Test unpacking when target directory already exists."""
+        monkeypatch.chdir(tmp_path)
+        
+        # Download a project
+        result = runner.invoke(app, ["download", "1259204833"])
+        assert result.exit_code == 0
+        
+        sb3_files = list(Path(".").glob("*.sb3"))
+        assert len(sb3_files) == 1
+        sb3_file = sb3_files[0]
+        
+        # Create a directory with the same name as the unpacked target
+        target_dir = Path(sb3_file.stem)
+        target_dir.mkdir()
+        
+        # Try to unpack
+        result = runner.invoke(app, ["unpack", str(sb3_file)])
+        assert result.exit_code == 1
+        output = result.stdout + result.stderr
+        assert "Error: Directory already exists" in output or "Please remove or rename" in output
+        
+        # Verify original file still exists (wasn't deleted due to error)
+        assert sb3_file.exists()
+

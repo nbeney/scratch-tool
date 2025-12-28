@@ -23,7 +23,7 @@ pip install -e .
 
 ## Usage
 
-The tool provides four main commands: `metadata`, `download`, `analyze`, and `document`.
+The tool provides five main commands: `metadata`, `download`, `analyze`, `document`, and `unpack`.
 
 **Important:** Projects must be public and shared on Scratch. Unshared or private projects cannot be accessed.
 
@@ -252,6 +252,41 @@ if sprite:
 
 For a complete project analysis, use the `analyze` command which provides comprehensive statistics and insights.
 
+### Unpack Project Files
+
+Extract the contents of a `.sb3` file into a directory for inspection or editing:
+
+```bash
+# Unpack a downloaded project
+python main.py unpack my-project.sb3
+
+# Result:
+# - Creates directory: my-project/
+# - Extracts: project.json and all asset files (SVG, PNG, WAV, MP3)
+# - Deletes: my-project.sb3 (original file removed after successful extraction)
+
+# Example with full workflow
+python main.py download 1259204833
+python main.py unpack "All Blocks-1259204833-project.sb3"
+ls "All Blocks-1259204833-project/"  # View extracted files
+```
+
+The `unpack` command:
+- Creates a directory with the same name as the .sb3 file (without extension)
+- Extracts all contents (project.json and asset files) into that directory
+- Deletes the original .sb3 file after successful extraction
+- Provides error handling for existing directories and invalid files
+
+**Use cases:**
+- Inspect project structure and JSON format
+- Extract assets (images, sounds) for reuse
+- Manually edit project.json for advanced modifications
+- Store unpacked projects in version control systems
+
+**Note:** To repack a directory back into an .sb3 file, use: `cd my-project && zip -r ../my-project.sb3 *`
+
+See [UNPACK_COMMAND.md](UNPACK_COMMAND.md) for detailed documentation and examples.
+
 ## Testing
 
 Run the integration tests with pytest:
@@ -268,8 +303,9 @@ pytest test_project_models.py -v # Pydantic model tests
 Test coverage:
 - 40 CLI integration tests (metadata, download, analyze with quiet mode, parsing, sanitization)
 - 9 document command tests (HTML generation, thumbnails, audio players, scratchblocks scripts, multiple input formats)
+- 4 unpack command tests (extraction, error handling, directory conflicts)
 - 11 Pydantic model validation tests
-- Total: 60 tests, all passing
+- Total: 72 tests, all passing
 
 ## How It Works
 

@@ -1594,5 +1594,81 @@ def generate_html_documentation(
     return str(doc)
 
 
+@app.command()
+def unpack(
+    sb3_file: str = typer.Argument(..., help="Path to the .sb3 file to unpack"),
+):
+    """
+    Unpack a Scratch 3 .sb3 file into a directory.
+    
+    The .sb3 file is a ZIP archive containing project.json and asset files.
+    This command:
+    1. Creates a directory with the same name as the .sb3 file (without extension)
+    2. Extracts all contents from the .sb3 file into that directory
+    3. Deletes the original .sb3 file
+    
+    Examples:
+        scratch-tool unpack my-project.sb3
+        scratch-tool unpack path/to/project-1259204833-project.sb3
+    """
+    try:
+        # Convert to Path object for easier manipulation
+        sb3_path = Path(sb3_file)
+        
+        # Validate that the file exists
+        if not sb3_path.exists():
+            typer.secho(f"Error: File not found: {sb3_file}", fg=typer.colors.RED, err=True)
+            raise typer.Exit(1)
+        
+        # Validate that it's a .sb3 file
+        if sb3_path.suffix.lower() != '.sb3':
+            typer.secho(f"Error: File must have .sb3 extension: {sb3_file}", fg=typer.colors.RED, err=True)
+            raise typer.Exit(1)
+        
+        # Create directory name (same as file name without .sb3 extension)
+        output_dir = sb3_path.parent / sb3_path.stem
+        
+        # Check if directory already exists
+        if output_dir.exists():
+            typer.secho(f"Error: Directory already exists: {output_dir}", fg=typer.colors.RED, err=True)
+            typer.echo("Please remove or rename the existing directory first.")
+            raise typer.Exit(1)
+        
+        typer.echo(f"Unpacking {sb3_path.name}...")
+        
+        # Step 1: Create the directory
+        typer.echo(f"Creating directory: {output_dir.name}/")
+        output_dir.mkdir(parents=True, exist_ok=False)
+        
+        # Step 2: Unzip the .sb3 file into the directory
+        typer.echo(f"Extracting contents...")
+        try:
+            with ZipFile(sb3_path, 'r') as zip_ref:
+                zip_ref.extractall(output_dir)
+                extracted_files = zip_ref.namelist()
+                typer.echo(f"Extracted {len(extracted_files)} files")
+        except Exception as e:
+            # If extraction fails, clean up the directory
+            typer.secho(f"Error extracting .sb3 file: {e}", fg=typer.colors.RED, err=True)
+            if output_dir.exists():
+                shutil.rmtree(output_dir)
+                typer.echo("Cleaned up incomplete extraction.")
+            raise typer.Exit(1)
+        
+        # Step 3: Delete the original .sb3 file
+        typer.echo(f"Deleting original file: {sb3_path.name}")
+        sb3_path.unlink()
+        
+        typer.echo()
+        typer.secho("✅ Successfully unpacked!", fg=typer.colors.GREEN)
+        typer.echo(f"   Output directory: {output_dir}")
+        
+    except typer.Exit:
+        raise
+    except Exception as e:
+        typer.secho(f"Unexpected error: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+
+
 if __name__ == "__main__":
     app()
