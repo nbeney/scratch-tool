@@ -769,3 +769,189 @@ class TestUnpackCommand:
         # Verify original file still exists (wasn't deleted due to error)
         assert sb3_file.exists()
 
+
+class TestPackCommand:
+    """Tests for the pack command."""
+
+    def test_pack_valid_directory(self, tmp_path, monkeypatch):
+        """Test packing a valid directory with project.json."""
+        monkeypatch.chdir(tmp_path)
+        
+        # Download and unpack a project
+        result = runner.invoke(app, ["download", "1259204833"])
+        assert result.exit_code == 0
+        
+        sb3_files = list(Path(".").glob("*.sb3"))
+        assert len(sb3_files) == 1
+        sb3_file = sb3_files[0]
+        
+        # Unpack it
+        result = runner.invoke(app, ["unpack", str(sb3_file)])
+        assert result.exit_code == 0
+        
+        unpacked_dir = Path(sb3_file.stem)
+        assert unpacked_dir.exists()
+        assert not sb3_file.exists()  # Original deleted after unpack
+        
+        # Pack it back
+        result = runner.invoke(app, ["pack", str(unpacked_dir)])
+        assert result.exit_code == 0
+        assert "Packing" in result.stdout
+        assert "Creating archive:" in result.stdout
+        assert "Packed" in result.stdout
+        assert "files" in result.stdout
+        assert "Deleting original directory:" in result.stdout
+        assert "✅ Successfully packed!" in result.stdout
+        
+        # Verify .sb3 file was recreated
+        repacked_sb3 = Path(f"{unpacked_dir.name}.sb3")
+        assert repacked_sb3.exists()
+        
+        # Verify directory was deleted
+        assert not unpacked_dir.exists()
+        
+        # Verify the .sb3 file is valid by unpacking again
+        result = runner.invoke(app, ["unpack", str(repacked_sb3)])
+        assert result.exit_code == 0
+        
+        # Verify project.json exists and is valid
+        project_json = unpacked_dir / "project.json"
+        assert project_json.exists()
+        with open(project_json) as f:
+            data = json.load(f)
+            assert "targets" in data
+            assert "meta" in data
+
+    def test_pack_with_custom_output(self, tmp_path, monkeypatch):
+        """Test packing with custom output filename."""
+        monkeypatch.chdir(tmp_path)
+        
+        # Download and unpack a project
+        result = runner.invoke(app, ["download", "1259204833"])
+        assert result.exit_code == 0
+        
+        sb3_files = list(Path(".").glob("*.sb3"))
+        sb3_file = sb3_files[0]
+        
+        result = runner.invoke(app, ["unpack", str(sb3_file)])
+        assert result.exit_code == 0
+        
+        unpacked_dir = Path(sb3_file.stem)
+        
+        # Pack with custom name
+        custom_name = "my-custom-project"
+        result = runner.invoke(app, ["pack", str(unpacked_dir), "--output", custom_name])
+        assert result.exit_code == 0
+        assert f"{custom_name}.sb3" in result.stdout
+        
+        # Verify custom-named file exists
+        custom_sb3 = Path(f"{custom_name}.sb3")
+        assert custom_sb3.exists()
+        assert not unpacked_dir.exists()
+
+    def test_pack_nonexistent_directory(self, tmp_path, monkeypatch):
+        """Test packing a directory that doesn't exist."""
+        monkeypatch.chdir(tmp_path)
+        
+        result = runner.invoke(app, ["pack", "nonexistent-dir"])
+        assert result.exit_code == 1
+        assert "Error: Directory not found" in (result.stdout + result.stderr)
+
+    def test_pack_file_instead_of_directory(self, tmp_path, monkeypatch):
+        """Test packing a file instead of a directory."""
+        monkeypatch.chdir(tmp_path)
+        
+        # Create a file
+        test_file = tmp_path / "test.txt"
+        test_file.write_text("not a directory")
+        
+        result = runner.invoke(app, ["pack", "test.txt"])
+        assert result.exit_code == 1
+        assert "Error: Not a directory" in (result.stdout + result.stderr)
+
+    def test_pack_directory_without_project_json(self, tmp_path, monkeypatch):
+        """Test packing a directory without project.json."""
+        monkeypatch.chdir(tmp_path)
+        
+        # Create an empty directory
+        empty_dir = tmp_path / "empty"
+        empty_dir.mkdir()
+        
+        result = runner.invoke(app, ["pack", "empty"])
+        assert result.exit_code == 1
+        output = result.stdout + result.stderr
+        assert "Error: project.json not found" in output
+        assert "must contain a project.json" in output
+
+    def test_pack_output_file_already_exists(self, tmp_path, monkeypatch):
+        """Test packing when output file already exists."""
+        monkeypatch.chdir(tmp_path)
+        
+        # Download and unpack
+        result = runner.invoke(app, ["download", "1259204833"])
+        assert result.exit_code == 0
+        
+        sb3_files = list(Path(".").glob("*.sb3"))
+        sb3_file = sb3_files[0]
+        
+        result = runner.invoke(app, ["unpack", str(sb3_file)])
+        assert result.exit_code == 0
+        
+        unpacked_dir = Path(sb3_file.stem)
+        
+        # Create a dummy file with the target name
+        target_sb3 = Path(f"{unpacked_dir.name}.sb3")
+        target_sb3.write_text("dummy")
+        
+        # Try to pack
+        result = runner.invoke(app, ["pack", str(unpacked_dir)])
+        assert result.exit_code == 1
+        output = result.stdout + result.stderr
+        assert "Error: Output file already exists" in output or "Please remove or rename" in output
+        
+        # Verify directory still exists (wasn't deleted due to error)
+        assert unpacked_dir.exists()
+
+    def test_pack_unpack_roundtrip(self, tmp_path, monkeypatch):
+        """Test that pack and unpack are inverse operations."""
+        monkeypatch.chdir(tmp_path)
+        
+        # Download original
+        result = runner.invoke(app, ["download", "1259204833"])
+        assert result.exit_code == 0
+        
+        sb3_files = list(Path(".").glob("*.sb3"))
+        original_sb3 = sb3_files[0]
+        original_size = original_sb3.stat().st_size
+        
+        # Unpack
+        result = runner.invoke(app, ["unpack", str(original_sb3)])
+        assert result.exit_code == 0
+        
+        unpacked_dir = Path(original_sb3.stem)
+        file_count_unpacked = len(list(unpacked_dir.glob("*")))
+        
+        # Pack back
+        result = runner.invoke(app, ["pack", str(unpacked_dir)])
+        assert result.exit_code == 0
+        
+        repacked_sb3 = Path(f"{unpacked_dir.name}.sb3")
+        assert repacked_sb3.exists()
+        
+        # Unpack again to verify
+        result = runner.invoke(app, ["unpack", str(repacked_sb3)])
+        assert result.exit_code == 0
+        
+        # Verify same number of files
+        reunpacked_dir = Path(repacked_sb3.stem)
+        file_count_reunpacked = len(list(reunpacked_dir.glob("*")))
+        assert file_count_unpacked == file_count_reunpacked
+        
+        # Verify project.json is valid
+        project_json = reunpacked_dir / "project.json"
+        assert project_json.exists()
+        with open(project_json) as f:
+            data = json.load(f)
+            assert "targets" in data
+            assert "meta" in data
+

@@ -23,7 +23,7 @@ pip install -e .
 
 ## Usage
 
-The tool provides five main commands: `metadata`, `download`, `analyze`, `document`, and `unpack`.
+The tool provides six main commands: `metadata`, `download`, `analyze`, `document`, `unpack`, and `pack`.
 
 **Important:** Projects must be public and shared on Scratch. Unshared or private projects cannot be accessed.
 
@@ -287,6 +287,44 @@ The `unpack` command:
 
 See [UNPACK_COMMAND.md](UNPACK_COMMAND.md) for detailed documentation and examples.
 
+### Pack Project Files
+
+Pack a directory back into a `.sb3` file (reverse of unpack):
+
+```bash
+# Pack a directory into an .sb3 file
+python main.py pack my-project
+
+# Result:
+# - Creates file: my-project.sb3 (ZIP archive with all contents)
+# - Deletes: my-project/ directory (removed after successful packing)
+
+# Pack with custom output name
+python main.py pack my-project --output custom-name
+# Creates: custom-name.sb3
+
+# Complete roundtrip example (unpack → edit → pack)
+python main.py download 1259204833
+python main.py unpack "All Blocks-1259204833-project.sb3"
+# Edit files in "All Blocks-1259204833-project/" directory
+python main.py pack "All Blocks-1259204833-project"
+# Back to "All Blocks-1259204833-project.sb3"
+```
+
+The `pack` command:
+- Validates that the directory exists and contains project.json
+- Creates a .sb3 file (ZIP archive) with all directory contents
+- Deletes the original directory after successful packing
+- Provides error handling for missing files and existing output files
+
+**Use cases:**
+- Repack projects after manual editing
+- Create .sb3 files from extracted/modified projects
+- Roundtrip workflow: download → unpack → edit → pack → upload to Scratch
+- Version control: commit unpacked changes, then pack for distribution
+
+**Note:** The `pack` and `unpack` commands are inverse operations. Running unpack followed by pack (or vice versa) recreates a valid .sb3 file.
+
 ## Testing
 
 Run the integration tests with pytest:
@@ -304,8 +342,9 @@ Test coverage:
 - 40 CLI integration tests (metadata, download, analyze with quiet mode, parsing, sanitization)
 - 9 document command tests (HTML generation, thumbnails, audio players, scratchblocks scripts, multiple input formats)
 - 4 unpack command tests (extraction, error handling, directory conflicts)
+- 7 pack command tests (packing, custom output, error handling, roundtrip validation)
 - 11 Pydantic model validation tests
-- Total: 72 tests, all passing
+- Total: 79 tests, all passing
 
 ## How It Works
 

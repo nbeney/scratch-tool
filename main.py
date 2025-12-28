@@ -1670,5 +1670,102 @@ def unpack(
         raise typer.Exit(1)
 
 
+@app.command()
+def pack(
+    directory: str = typer.Argument(..., help="Path to the directory to pack"),
+    output: Optional[str] = typer.Option(None, "--output", "-o", help="Output .sb3 filename (without extension)"),
+):
+    """
+    Pack a directory into a Scratch 3 .sb3 file.
+    
+    The directory should contain project.json and asset files.
+    This command:
+    1. Validates that the directory exists and contains project.json
+    2. Creates a .sb3 file (ZIP archive) with all directory contents
+    3. Deletes the original directory after successful packing
+    
+    By default, the .sb3 file is named after the directory.
+    Use --output to specify a custom filename.
+    
+    Examples:
+        scratch-tool pack my-project
+        scratch-tool pack path/to/project-1259204833-project
+        scratch-tool pack my-project --output custom-name
+    """
+    try:
+        # Convert to Path object for easier manipulation
+        dir_path = Path(directory)
+        
+        # Validate that the directory exists
+        if not dir_path.exists():
+            typer.secho(f"Error: Directory not found: {directory}", fg=typer.colors.RED, err=True)
+            raise typer.Exit(1)
+        
+        # Validate that it's a directory
+        if not dir_path.is_dir():
+            typer.secho(f"Error: Not a directory: {directory}", fg=typer.colors.RED, err=True)
+            raise typer.Exit(1)
+        
+        # Validate that project.json exists in the directory
+        project_json = dir_path / "project.json"
+        if not project_json.exists():
+            typer.secho(f"Error: project.json not found in directory: {directory}", fg=typer.colors.RED, err=True)
+            typer.echo("The directory must contain a project.json file to be a valid Scratch project.")
+            raise typer.Exit(1)
+        
+        # Determine output filename
+        if output:
+            sb3_name = output if output.endswith('.sb3') else f"{output}.sb3"
+        else:
+            sb3_name = f"{dir_path.name}.sb3"
+        
+        # Create output path in the same parent directory as the input directory
+        sb3_path = dir_path.parent / sb3_name
+        
+        # Check if output file already exists
+        if sb3_path.exists():
+            typer.secho(f"Error: Output file already exists: {sb3_path}", fg=typer.colors.RED, err=True)
+            typer.echo("Please remove or rename the existing file first.")
+            raise typer.Exit(1)
+        
+        typer.echo(f"Packing {dir_path.name}/...")
+        
+        # Step 1: Create the .sb3 (ZIP) file
+        typer.echo(f"Creating archive: {sb3_path.name}")
+        try:
+            with ZipFile(sb3_path, 'w') as zip_ref:
+                # Walk through the directory and add all files
+                file_count = 0
+                for file_path in dir_path.rglob('*'):
+                    if file_path.is_file():
+                        # Add file with relative path (relative to the directory being packed)
+                        arcname = file_path.relative_to(dir_path)
+                        zip_ref.write(file_path, arcname)
+                        file_count += 1
+                
+                typer.echo(f"Packed {file_count} files")
+        except Exception as e:
+            # If packing fails, clean up the partial .sb3 file
+            typer.secho(f"Error creating .sb3 file: {e}", fg=typer.colors.RED, err=True)
+            if sb3_path.exists():
+                sb3_path.unlink()
+                typer.echo("Cleaned up incomplete archive.")
+            raise typer.Exit(1)
+        
+        # Step 2: Delete the original directory
+        typer.echo(f"Deleting original directory: {dir_path.name}/")
+        shutil.rmtree(dir_path)
+        
+        typer.echo()
+        typer.secho("✅ Successfully packed!", fg=typer.colors.GREEN)
+        typer.echo(f"   Output file: {sb3_path}")
+        
+    except typer.Exit:
+        raise
+    except Exception as e:
+        typer.secho(f"Unexpected error: {e}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(1)
+
+
 if __name__ == "__main__":
     app()
