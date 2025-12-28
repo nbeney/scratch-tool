@@ -23,7 +23,7 @@ pip install -e .
 
 ## Usage
 
-The tool provides six main commands: `metadata`, `download`, `analyze`, `document`, `unpack`, and `pack`.
+The tool provides seven main commands: `metadata`, `download`, `analyze`, `document`, `unpack`, `pack`, and `server`.
 
 **Important:** Projects must be public and shared on Scratch. Unshared or private projects cannot be accessed.
 
@@ -324,6 +324,55 @@ The `pack` command:
 - Version control: commit unpacked changes, then pack for distribution
 
 **Note:** The `pack` and `unpack` commands are inverse operations. Running unpack followed by pack (or vice versa) recreates a valid .sb3 file.
+
+### Start Documentation Server
+
+Start a web server with a GUI for documenting Scratch projects:
+
+```bash
+# Start server on default port (5000)
+python main.py server
+
+# Start on custom port
+python main.py server --port 8080
+
+# Bind to all interfaces (accessible from network)
+python main.py server --host 0.0.0.0 --port 8080
+
+# Enable debug mode (auto-reload on code changes)
+python main.py server --debug
+```
+
+The `server` command:
+- Starts a Flask web server with a user-friendly interface
+- Provides a form to enter project ID or URL
+- Generates HTML documentation on-demand
+- Uses Scratch CDN for assets (no local storage needed)
+- Accessible via web browser at `http://localhost:5000`
+
+**Routes:**
+- `/` - Home page with input form
+- `/document/<project_id>` - Generated documentation for a specific project
+
+**Use cases:**
+- Share documentation server with team members
+- Quick documentation generation without command line
+- Demo tool for workshops or presentations
+- On-demand documentation service
+- Network-accessible documentation generator
+
+**Example workflow:**
+```bash
+# Start the server
+python main.py server --port 8080
+
+# Open browser to http://localhost:8080
+# Enter project ID (e.g., 1259204833) or URL
+# Click "Generate Documentation"
+# View beautifully formatted HTML documentation
+```
+
+**Note:** The server runs in development mode by default. For production use, consider using a WSGI server like Gunicorn.
 
 ## Testing
 
