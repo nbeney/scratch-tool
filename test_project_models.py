@@ -13,10 +13,10 @@ class TestScratchProjectModel:
 
     def test_parse_sample_project(self):
         """Test parsing a real Scratch project.json file."""
-        project_file = Path("sample-project.json")
+        project_file = Path("test-data/sample-project.json")
         
         if not project_file.exists():
-            pytest.skip("sample-project.json not found")
+            pytest.skip("test-data/sample-project.json not found")
         
         with open(project_file) as f:
             project_data = json.load(f)
@@ -31,10 +31,10 @@ class TestScratchProjectModel:
         
     def test_stage_property(self):
         """Test the stage property."""
-        project_file = Path("sample-project.json")
+        project_file = Path("test-data/sample-project.json")
         
         if not project_file.exists():
-            pytest.skip("sample-project.json not found")
+            pytest.skip("test-data/sample-project.json not found")
         
         with open(project_file) as f:
             project_data = json.load(f)
@@ -48,10 +48,10 @@ class TestScratchProjectModel:
     
     def test_sprites_property(self):
         """Test the sprites property."""
-        project_file = Path("sample-project.json")
+        project_file = Path("test-data/sample-project.json")
         
         if not project_file.exists():
-            pytest.skip("sample-project.json not found")
+            pytest.skip("test-data/sample-project.json not found")
         
         with open(project_file) as f:
             project_data = json.load(f)
@@ -64,10 +64,10 @@ class TestScratchProjectModel:
     
     def test_count_blocks(self):
         """Test counting blocks in the project."""
-        project_file = Path("sample-project.json")
+        project_file = Path("test-data/sample-project.json")
         
         if not project_file.exists():
-            pytest.skip("sample-project.json not found")
+            pytest.skip("test-data/sample-project.json not found")
         
         with open(project_file) as f:
             project_data = json.load(f)
@@ -80,10 +80,10 @@ class TestScratchProjectModel:
     
     def test_count_sprites(self):
         """Test counting sprites."""
-        project_file = Path("sample-project.json")
+        project_file = Path("test-data/sample-project.json")
         
         if not project_file.exists():
-            pytest.skip("sample-project.json not found")
+            pytest.skip("test-data/sample-project.json not found")
         
         with open(project_file) as f:
             project_data = json.load(f)
@@ -96,10 +96,10 @@ class TestScratchProjectModel:
     
     def test_get_sprite_by_name(self):
         """Test getting a sprite by name."""
-        project_file = Path("sample-project.json")
+        project_file = Path("test-data/sample-project.json")
         
         if not project_file.exists():
-            pytest.skip("sample-project.json not found")
+            pytest.skip("test-data/sample-project.json not found")
         
         with open(project_file) as f:
             project_data = json.load(f)
@@ -118,10 +118,10 @@ class TestScratchProjectModel:
     
     def test_target_has_costumes(self):
         """Test that targets have costumes."""
-        project_file = Path("sample-project.json")
+        project_file = Path("test-data/sample-project.json")
         
         if not project_file.exists():
-            pytest.skip("sample-project.json not found")
+            pytest.skip("test-data/sample-project.json not found")
         
         with open(project_file) as f:
             project_data = json.load(f)
@@ -139,10 +139,10 @@ class TestScratchProjectModel:
     
     def test_target_has_sounds(self):
         """Test that targets have sounds."""
-        project_file = Path("sample-project.json")
+        project_file = Path("test-data/sample-project.json")
         
         if not project_file.exists():
-            pytest.skip("sample-project.json not found")
+            pytest.skip("test-data/sample-project.json not found")
         
         with open(project_file) as f:
             project_data = json.load(f)
@@ -155,10 +155,10 @@ class TestScratchProjectModel:
     
     def test_get_all_variables(self):
         """Test getting all variables."""
-        project_file = Path("sample-project.json")
+        project_file = Path("test-data/sample-project.json")
         
         if not project_file.exists():
-            pytest.skip("sample-project.json not found")
+            pytest.skip("test-data/sample-project.json not found")
         
         with open(project_file) as f:
             project_data = json.load(f)
@@ -170,10 +170,10 @@ class TestScratchProjectModel:
     
     def test_get_all_lists(self):
         """Test getting all lists."""
-        project_file = Path("sample-project.json")
+        project_file = Path("test-data/sample-project.json")
         
         if not project_file.exists():
-            pytest.skip("sample-project.json not found")
+            pytest.skip("test-data/sample-project.json not found")
         
         with open(project_file) as f:
             project_data = json.load(f)
@@ -185,10 +185,10 @@ class TestScratchProjectModel:
     
     def test_blocks_structure(self):
         """Test that blocks have proper structure."""
-        project_file = Path("sample-project.json")
+        project_file = Path("test-data/sample-project.json")
         
         if not project_file.exists():
-            pytest.skip("sample-project.json not found")
+            pytest.skip("test-data/sample-project.json not found")
         
         with open(project_file) as f:
             project_data = json.load(f)

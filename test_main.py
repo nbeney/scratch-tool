@@ -363,12 +363,12 @@ class TestAnalyzeCommand:
     """Tests for the analyze command."""
 
     @pytest.mark.skipif(
-        not Path("sample-project.json").exists(),
+        not Path("test-data/sample-project.json").exists(),
         reason="Test data file not found"
     )
     def test_analyze_local_file(self):
         """Test analyzing a local project.json file."""
-        result = runner.invoke(app, ["analyze", "sample-project.json"])
+        result = runner.invoke(app, ["analyze", "test-data/sample-project.json"])
         
         assert result.exit_code == 0
         assert "Loading project from file: sample-project.json" in result.stdout
@@ -379,26 +379,26 @@ class TestAnalyzeCommand:
         assert "✅ Analysis complete!" in result.stdout
 
     @pytest.mark.skipif(
-        not Path("sample-project.json").exists(),
+        not Path("test-data/sample-project.json").exists(),
         reason="Test data file not found"
     )
     def test_analyze_shows_project_stats(self):
         """Test that analyze shows correct statistics."""
-        result = runner.invoke(app, ["analyze", "sample-project.json"])
+        result = runner.invoke(app, ["analyze", "test-data/sample-project.json"])
         
         assert result.exit_code == 0
-        # Check for specific stats we know from sample-project.json
+        # Check for specific stats we know from test-data/sample-project.json
         assert "Total Sprites: 4" in result.stdout
         assert "Total Blocks: 56" in result.stdout
         assert "Semver: 3.0.0" in result.stdout
 
     @pytest.mark.skipif(
-        not Path("sample-project.json").exists(),
+        not Path("test-data/sample-project.json").exists(),
         reason="Test data file not found"
     )
     def test_analyze_shows_sprite_details(self):
         """Test that analyze shows sprite details."""
-        result = runner.invoke(app, ["analyze", "sample-project.json"])
+        result = runner.invoke(app, ["analyze", "test-data/sample-project.json"])
         
         assert result.exit_code == 0
         # Check for sprite names
@@ -412,12 +412,12 @@ class TestAnalyzeCommand:
         assert "Direction:" in result.stdout
 
     @pytest.mark.skipif(
-        not Path("sample-project.json").exists(),
+        not Path("test-data/sample-project.json").exists(),
         reason="Test data file not found"
     )
     def test_analyze_shows_monitors(self):
         """Test that analyze shows monitor information."""
-        result = runner.invoke(app, ["analyze", "sample-project.json"])
+        result = runner.invoke(app, ["analyze", "test-data/sample-project.json"])
         
         assert result.exit_code == 0
         assert "👁️  Monitors" in result.stdout
@@ -426,12 +426,12 @@ class TestAnalyzeCommand:
         assert "score" in result.stdout
 
     @pytest.mark.skipif(
-        not Path("sample-project.json").exists(),
+        not Path("test-data/sample-project.json").exists(),
         reason="Test data file not found"
     )
     def test_analyze_shows_block_types(self):
         """Test that analyze shows block types used."""
-        result = runner.invoke(app, ["analyze", "sample-project.json"])
+        result = runner.invoke(app, ["analyze", "test-data/sample-project.json"])
         
         assert result.exit_code == 0
         assert "🧩 Block Types Used" in result.stdout
@@ -490,23 +490,23 @@ class TestAnalyzeCommand:
         assert "project.json" in result.stdout
 
     @pytest.mark.skipif(
-        not Path("sample-project.json").exists(),
+        not Path("test-data/sample-project.json").exists(),
         reason="Test data file not found"
     )
     def test_analyze_quiet_mode_valid_file(self):
         """Test analyzing with --quiet flag produces no output for valid JSON."""
-        result = runner.invoke(app, ["analyze", "sample-project.json", "--quiet"])
+        result = runner.invoke(app, ["analyze", "test-data/sample-project.json", "--quiet"])
         
         assert result.exit_code == 0
         assert result.stdout == ""  # No output in quiet mode
     
     @pytest.mark.skipif(
-        not Path("sample-project.json").exists(),
+        not Path("test-data/sample-project.json").exists(),
         reason="Test data file not found"
     )
     def test_analyze_quiet_mode_short_flag(self):
         """Test analyzing with -q short flag."""
-        result = runner.invoke(app, ["analyze", "sample-project.json", "-q"])
+        result = runner.invoke(app, ["analyze", "test-data/sample-project.json", "-q"])
         
         assert result.exit_code == 0
         assert result.stdout == ""  # No output in quiet mode
