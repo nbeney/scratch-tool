@@ -1237,7 +1237,7 @@ def generate_html_documentation(
                         div('Lists', cls='stat-label')
                         div(str(len(project.get_all_lists())), cls='stat-value')
                     with div(cls='stat-card'):
-                        div('Broadcasts', cls='stat-label')
+                        div('Messages', cls='stat-label')
                         div(str(project.count_broadcasts()), cls='stat-value')
                     with div(cls='stat-card'):
                         div('Custom Blocks', cls='stat-label')
