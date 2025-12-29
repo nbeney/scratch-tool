@@ -175,6 +175,57 @@ The generated documentation includes:
 
 The output HTML is self-contained with embedded CSS. In standalone mode, requires internet for both assets and scratchblocks. In local mode, only scratchblocks requires internet.
 
+### Run Web Server
+
+Start a web server that provides a GUI for documenting Scratch projects:
+
+```bash
+# Start server on default port (5000)
+uv run main.py server
+
+# Specify custom port
+uv run main.py server --port 8080
+
+# Bind to all interfaces (accessible from other machines)
+uv run main.py server --host 0.0.0.0 --port 8080
+
+# Run in debug mode
+uv run main.py server --debug
+```
+
+The web server provides:
+- **Home page** (`/`) - Beautiful web interface with input form for project ID/URL
+- **Documentation endpoint** (`/document/<project_id>`) - Generates and displays HTML documentation
+
+**For production deployment with Gunicorn:**
+
+```bash
+# Install gunicorn (already in dependencies)
+uv sync
+
+# Run with Gunicorn (production-grade WSGI server)
+uv run gunicorn main:flask_app
+
+# Recommended production configuration
+uv run gunicorn main:flask_app --bind 0.0.0.0:8000 --workers 4
+
+# Using configuration file
+uv run gunicorn main:flask_app -c gunicorn.conf.py
+```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive deployment instructions including:
+- Gunicorn configuration
+- Nginx reverse proxy setup
+- Systemd service configuration
+- Docker deployment
+- PythonAnywhere deployment
+
+**Use cases:**
+- Share documentation service with a team
+- Run as an internal tool without CLI
+- Integrate with CI/CD pipelines
+- Provide user-friendly interface for non-technical users
+
 ## Options
 
 ### Metadata Command
