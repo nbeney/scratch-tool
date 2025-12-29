@@ -197,6 +197,16 @@ The web server provides:
 - **Home page** (`/`) - Beautiful web interface with input form for project ID/URL
 - **Documentation endpoint** (`/document/<project_id>`) - Generates and displays HTML documentation
 
+**For cloud deployment (easiest):**
+
+Deploy to Render.com free tier in minutes:
+```bash
+# Files already created: requirements.txt, render_start.sh
+# Just push to GitHub and create Web Service on Render!
+```
+
+See [RENDER_QUICKSTART.md](RENDER_QUICKSTART.md) for 5-minute deployment guide.
+
 **For production deployment with Gunicorn:**
 
 ```bash
@@ -214,6 +224,7 @@ uv run gunicorn main:flask_app -c gunicorn.conf.py
 ```
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive deployment instructions including:
+- **Render.com** (free tier, easiest)
 - Gunicorn configuration
 - Nginx reverse proxy setup
 - Systemd service configuration

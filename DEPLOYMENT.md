@@ -110,7 +110,34 @@ uv run gunicorn main:flask_app --bind 0.0.0.0:8000 --workers 4
 
 Access at: `http://your-server:8000`
 
-### 3. Behind Nginx (Recommended for Production)
+### 3. Render.com (Free Tier) ⭐ RECOMMENDED FOR QUICK DEPLOYMENT
+
+**Easiest cloud deployment with free tier!**
+
+Files needed (already created):
+- `requirements.txt` - Python dependencies
+- `render_start.sh` - Startup script
+
+**Quick setup**:
+1. Push code to GitHub
+2. Create Web Service on Render.com
+3. Configure:
+   - **Build Command**: `uv sync`
+   - **Start Command**: `bash render_start.sh`
+   - **Plan**: Free
+4. Deploy! (takes ~1-2 minutes)
+
+**Features**:
+- ✅ Free SSL/HTTPS
+- ✅ Auto-deploy on git push
+- ✅ Free subdomain (e.g., `scratch-tool-xxxx.onrender.com`)
+- ⚠️ Sleeps after 15 min inactivity (wakes in ~1 min)
+- ✅ 750 hours/month (enough for 24/7)
+
+**Full guide**: [RENDER_DEPLOYMENT.md](RENDER_DEPLOYMENT.md)
+**Quick reference**: [RENDER_QUICKSTART.md](RENDER_QUICKSTART.md)
+
+### 4. Behind Nginx (Recommended for Production)
 
 **Nginx configuration** (`/etc/nginx/sites-available/scratch-tool`):
 
@@ -152,7 +179,7 @@ sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-### 4. Systemd Service (Linux)
+### 5. Systemd Service (Linux)
 
 Create `/etc/systemd/system/scratch-tool.service`:
 
@@ -192,7 +219,7 @@ sudo systemctl enable scratch-tool
 sudo systemctl status scratch-tool
 ```
 
-### 5. Docker Deployment
+### 6. Docker Deployment
 
 Create `Dockerfile`:
 
@@ -227,11 +254,22 @@ docker build -t scratch-tool .
 docker run -p 8000:8000 scratch-tool
 ```
 
-### 6. PythonAnywhere
+### 7. PythonAnywhere
 
 See [PYTHONANYWHERE.md](PYTHONANYWHERE.md) for detailed instructions.
 
 PythonAnywhere uses WSGI directly (no Gunicorn needed). Configure the WSGI file to point to `main.flask_app`.
+
+## Deployment Comparison
+
+| Platform | Cost | Difficulty | Setup Time | Sleep? | SSL | Auto-Deploy |
+|----------|------|------------|------------|--------|-----|-------------|
+| **Render.com** | Free | ⭐ Easy | 5 min | Yes (15min) | ✅ Yes | ✅ Yes |
+| **PythonAnywhere** | Free | ⭐⭐ Medium | 15 min | No | ✅ Yes | ❌ No |
+| **Docker** | Varies | ⭐⭐⭐ Hard | 30 min | No | Manual | Manual |
+| **VPS + Nginx** | $5+/mo | ⭐⭐⭐⭐ Expert | 1 hour | No | Manual | Manual |
+
+**Recommendation**: Start with Render.com for quick deployment, then upgrade to VPS when needed.
 
 ## Performance Tuning
 
