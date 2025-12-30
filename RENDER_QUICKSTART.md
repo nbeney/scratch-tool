@@ -45,9 +45,42 @@ git push origin master
 
 ### 3. Wait for Deployment
 
-⏱️ First deploy takes ~2-5 minutes
+⏱️ First deploy takes ~1-2 minutes
 
 You'll get a URL like: `https://scratch-tool-xxxx.onrender.com`
+
+## 🔄 Auto-Deploy (Enabled by Default!)
+
+✅ **Auto-deploy is ON by default** when you connect a GitHub repository!
+
+### How It Works
+
+```
+Code Change → git push → GitHub → Render → Auto Deploy! 🚀
+```
+
+### Quick Update Workflow
+
+```bash
+# 1. Make changes
+vim main.py
+
+# 2. Commit and push
+git add main.py
+git commit -m "Update feature"
+git push origin master
+
+# 3. Render automatically deploys! (1-2 min)
+# Check progress: Dashboard → Events tab
+```
+
+### Verify Auto-Deploy
+
+1. Go to Render Dashboard → Your Service
+2. Click **"Settings"**
+3. Check **"Auto-Deploy"** is enabled
+
+**See**: [RENDER_AUTO_DEPLOY.md](RENDER_AUTO_DEPLOY.md) for full guide on auto-deployment.
 
 ## 🎯 Alternative Start Commands
 

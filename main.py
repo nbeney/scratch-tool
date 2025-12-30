@@ -1975,7 +1975,7 @@ def server(
             </div>
             
             <div class="footer">
-                Powered by scratch-tool
+                © 2026 by Nicolas Beney - licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
             </div>
         </div>
     </body>
@@ -2284,7 +2284,7 @@ HOME_TEMPLATE = """
         </div>
         
         <div class="footer">
-            Powered by scratch-tool
+            © 2026 by Nicolas Beney - licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
         </div>
     </div>
 </body>

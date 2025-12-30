@@ -185,7 +185,7 @@ Create `/etc/systemd/system/scratch-tool.service`:
 
 ```ini
 [Unit]
-Description=Scratch Tool Web Server
+Description=Web Server
 After=network.target
 
 [Service]

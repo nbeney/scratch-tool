@@ -89,15 +89,56 @@ git push origin master
 
 Render will:
 1. ✅ Clone your repository
-2. ✅ Install Python dependencies
+2. ✅ Install Python dependencies (`uv sync`)
 3. ✅ Start your Gunicorn server
 4. ✅ Assign you a URL: `https://scratch-tool-xxxx.onrender.com`
 
-This takes about **2-5 minutes** for the first deployment.
+This takes about **1-2 minutes** for the first deployment.
 
 ### Step 6: Access Your App
 
 Once deployed, you'll see:
+- **Status**: "Live" (green)
+- **URL**: `https://your-service-name.onrender.com`
+
+Click the URL to access your Scratch documentation web service!
+
+## 🔄 Auto-Deploy (Default Behavior)
+
+**Good news**: Auto-deploy is **enabled by default** when you connect a GitHub repository!
+
+### How It Works
+
+Every time you push to your configured branch (e.g., `master`), Render automatically:
+1. Detects the push (within seconds)
+2. Starts a new build
+3. Runs `uv sync`
+4. Deploys the updated app
+5. Your site is updated! (zero-downtime)
+
+### Typical Workflow
+
+```bash
+# 1. Make changes locally
+vim main.py
+
+# 2. Commit and push
+git add main.py
+git commit -m "Add new feature"
+git push origin master
+
+# 3. Render automatically deploys (1-2 min)
+# 4. Check Dashboard → Events tab for progress
+# 5. Done! Visit your URL to see changes
+```
+
+### Monitor Deployments
+
+- **Events Tab**: See deploy history with commit messages
+- **Logs Tab**: View build and runtime logs
+- **Notifications**: Set up email/Slack alerts in Settings
+
+**Full Auto-Deploy Guide**: See [RENDER_AUTO_DEPLOY.md](RENDER_AUTO_DEPLOY.md)
 - **Status**: "Live" (green)
 - **URL**: `https://your-service-name.onrender.com`
 
