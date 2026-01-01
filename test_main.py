@@ -132,7 +132,7 @@ class TestDownloadCommand:
         output = result.stdout + result.stderr
         assert "Could not extract project ID from" in output
 
-    def test_download_valid_project_creates_file(self, tmp_path, mocker):
+    def test_download_valid_project_creates_file(self, tmp_path):
         """Test that downloading a valid project creates an .sb3 file."""
         # Change working directory to temp path
         import os
